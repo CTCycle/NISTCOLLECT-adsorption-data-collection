@@ -5,10 +5,10 @@ extracts data regarding adsorbent materials and adsorbate species and generate t
 (see https://pubchempy.readthedocs.io/en/latest/ for more information). 
 The adsorption isotherm dataset is split based on the number of component adsorbed (single component vs binary mixture), to generate two separate .csv files that are saved in the dataset folder
 
-# Requirements
+## Requirements
 
 Requirement.txt file is provided to ensure full compatibility with the python application. The application has been tested using Python 3.10.12  
 
-# How to use
+## How to use
 
 Run the main python file (NISTADS_composer.py) and wait until completion. The script may take long time as it has to fetch data for each experiment using a different URL, it heavily depends on your internet connection performance (more than 20k experiments are available at the time).
