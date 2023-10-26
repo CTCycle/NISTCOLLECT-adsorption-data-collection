@@ -1,15 +1,15 @@
 import os
 import pandas as pd
-import sys
 import pubchempy as pcp
 from tqdm import tqdm
+
+# set warnings
+#------------------------------------------------------------------------------
 import warnings
 warnings.simplefilter(action='ignore', category = Warning)
 
-# [IMPORT MODULES AND CLASSES]
-#==============================================================================
-if __name__ == '__main__':
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+# import modules and classes
+#------------------------------------------------------------------------------
 from modules.components.data_classes import AdsorptionDataset
 from modules.components.scraper_classes import NISTAdsorptionAPI
 import modules.global_variables as GlobVar
