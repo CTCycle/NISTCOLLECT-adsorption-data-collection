@@ -1,3 +1,4 @@
+import os
 import sqlalchemy as sql
 from sqlalchemy import create_engine, text
 from tqdm import tqdm
