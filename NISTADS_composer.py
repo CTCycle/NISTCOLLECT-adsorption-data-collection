@@ -1,4 +1,5 @@
 import os
+import art
 import pandas as pd
 import pubchempy as pcp
 from tqdm import tqdm
@@ -10,50 +11,62 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from modules.components.data_classes import AdsorptionDataset
+from modules.components.data_classes import AdsorptionDataset, DataStorage
 from modules.components.scraper_classes import NISTAdsorptionAPI
 import modules.global_variables as GlobVar
+import modules.configurations as cnf
+
+# welcome message
+#------------------------------------------------------------------------------
+ascii_art = art.text2art('NIST data collection')
+print(ascii_art)
 
 # [BUILD ADSORBATES AND ADSORBENTS DATASETS]
 #==============================================================================
 # module for the selection of different operations
 #==============================================================================
-print(f'''
+print('''
 -------------------------------------------------------------------------------
-BUILD DATASETS
+BUILD ADSORBENT/ADSORBATES DATASETS
 -------------------------------------------------------------------------------
-...
-''')
-
-print('''STEP 1 ---> BUILD ADSORBENT/ADSORBATES DATASETS
 ''')
 
 webworker = NISTAdsorptionAPI()
 
-# get index of guests and hosts from json file
+# get index of guests and hosts index and names from json file
 #------------------------------------------------------------------------------
 adsorbates_index, adsorbents_index = webworker.Get_GuestHost_Index()
-adsorbates_names, adsorbents_names = webworker.Get_GuestHost_Names()
+adsorbates_index = adsorbates_index[:int(len(adsorbates_index) * cnf.guest_fraction)] 
+adsorbents_index = adsorbents_index[:int(len(adsorbents_index) * cnf.host_fraction)]
+adsorbates_names = [x['InChIKey'] for x in adsorbates_index]
+adsorbents_names = [x['hashkey'] for x in adsorbents_index]
+
+# create dataset from guest and host indexes
+#------------------------------------------------------------------------------
 df_adsorbates = pd.DataFrame(adsorbates_index)
 df_adsorbents = pd.DataFrame(adsorbents_index) 
-print(f'''Total number of adsorbents: {df_adsorbents.shape[0]}
+print(f'''
+Total number of adsorbents: {df_adsorbents.shape[0]}
+Total number of adsorbates: {df_adsorbates.shape[0]}
 ''')
 
 # extract data for the adsorbents based on previously extracted indexes
 #------------------------------------------------------------------------------
-df_adsorbents_properties = webworker.Get_GuestHost_Data(focus = 'host')    
-df_hosts = pd.DataFrame(df_adsorbents_properties)
-print()  
+print('Extracting adsorbents data...')
+df_adsorbents_properties = webworker.Get_GuestHost_Data(adsorbents_names, focus = 'host')    
+df_hosts = pd.DataFrame(df_adsorbents_properties) 
+print()
 
 # extract data for the sorbates based on previously extracted indexes
 #------------------------------------------------------------------------------
-print(f'''Total number of adsorbates: {df_adsorbates.shape[0]}
-''')
-df_adsorbates_properties = webworker.Get_GuestHost_Data(focus = 'guest')    
+print('Extracting adsorbates data...')
+df_adsorbates_properties = webworker.Get_GuestHost_Data(adsorbates_names, focus = 'guest')    
 df_guests = pd.DataFrame(df_adsorbates_properties)
+print()
 
 # create list of molecular properties of sorbates (using pubchem as reference)
 #------------------------------------------------------------------------------
+print('Adding physicochemical properties to guest molecules dataset...')
 adsorbates_properties = []
 for row in tqdm(df_adsorbates.itertuples(), total = len(df_adsorbates)):    
     name = row[2].lower()        
@@ -64,19 +77,19 @@ for row in tqdm(df_adsorbates.itertuples(), total = len(df_adsorbates)):
     except:
         properties = 'None'
         adsorbates_properties.append(properties)    
+print()
 
 # extract single properties from the general list and create a dictionary with
 # property names and values
 #------------------------------------------------------------------------------
 canonical_smiles = [x['canonical_smiles'] if x != 'None' else 'NaN' for x in adsorbates_properties]
 complexity = [x['complexity'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-atoms = [x['elements'] if x != 'None' else 'NaN' for x in adsorbates_properties]
+atoms = [' '.join(x['elements']) if x != 'None' else 'NaN' for x in adsorbates_properties]
 mol_weight = [x['molecular_weight'] if x != 'None' else 'NaN' for x in adsorbates_properties]
 covalent_units = [x['covalent_unit_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
 H_acceptors = [x['h_bond_acceptor_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
 H_donors = [x['h_bond_donor_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
 heavy_atoms = [x['heavy_atom_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-
 properties = {'canonical_smiles': canonical_smiles,
               'complexity': complexity,
               'atoms': atoms,
@@ -91,31 +104,30 @@ properties = {'canonical_smiles': canonical_smiles,
 df_properties = pd.DataFrame(properties)
 df_guests_expanded = pd.concat([df_guests, df_properties], axis = 1)
 
-# save files as csv
-#------------------------------------------------------------------------------
-file_loc = os.path.join(GlobVar.data_path, 'adsorbents_dataset.csv') 
-df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
-file_loc = os.path.join(GlobVar.data_path, 'adsorbates_dataset.csv') 
-df_guests_expanded.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8') 
+
 
 # [BUILD ADSORPTION EXPERIMENTS DATASET]
 #==============================================================================
 # Builds the index of adsorption experiments as from the NIST database.
 # such index will be used to extract single experiment adsorption data 
 #==============================================================================
-print('''STEP 2 ---> COLLECT ADSORPTION DATA INDEX
+print('''
+-------------------------------------------------------------------------------
+COLLECT ADSORPTION DATA INDEX
+-------------------------------------------------------------------------------
 ''')
 
-webworker = NISTAdsorptionAPI()
 isotherm_index = webworker.Get_Isotherms_Index()
-isotherm_names = webworker.Get_Isotherms_Names()
+isotherm_index = isotherm_index[:int(len(isotherm_index) * cnf.experiments_fraction)] 
+isotherm_names = [x['filename'] for x in isotherm_index]
 df_experiments = pd.DataFrame(isotherm_index)    
-print('Total number of adsorption experiments: {}'.format(df_experiments.shape[0]))
+print(f'Total number of adsorption experiments: {df_experiments.shape[0]}')
 print()
-    
+
+
 # collect actual adsorption data using the experiments index
 #------------------------------------------------------------------------------
-isotherm_data = webworker.Get_Isotherms_Data()
+isotherm_data = webworker.Get_Isotherms_Data(isotherm_names)
 df_isotherms = pd.DataFrame(isotherm_data)
 drop_columns = ['category', 'tabular_data', 'isotherm_type', 'digitizer', 'articleSource']
 df_isotherms = df_isotherms.drop(columns = drop_columns)
@@ -128,35 +140,49 @@ print()
 # custom columns for pressure and uptake. Eventually, explode the dataset to ensure
 # each row will contain a specific pair of pressure-uptake data points.
 #==============================================================================
-print('''STEP 3 ---> PREPARING PRELIMINARY VERSION OF ADSORPTIONN DATASET
+print('''
+-------------------------------------------------------------------------------
+PREPARING PRELIMINARY VERSION OF ADSORPTIONN DATASET
+-------------------------------------------------------------------------------
 ''')
 
 dataworker = AdsorptionDataset(df_isotherms)
 
 # split dataset based on single or binary mixture composition
 #------------------------------------------------------------------------------
-grouped_datasets = dataworker.split_by_mixcomplexity()
+single_compound, binary_mixture = dataworker.split_by_mixcomplexity()
 
-# split dataset based on single or binary mixture composition
+# extract experimental data from the datasets and expand the latter
 #------------------------------------------------------------------------------
-SC_dataset, BM_dataset = dataworker.extract_adsorption_data()  
-SC_dataset_expanded, BM_dataset_expanded = dataworker.dataset_expansion()    
+SC_dataset = dataworker.extract_adsorption_data(single_compound, num_species=1) 
+BM_dataset = dataworker.extract_adsorption_data(binary_mixture, num_species=2) 
+SC_dataset_expanded, BM_dataset_expanded = dataworker.dataset_expansion(SC_dataset, BM_dataset)    
 print()  
-    
+
 # [SAVING DATASET INTO FILES]
 #==============================================================================
 # save files in the dataset folder as .csv files
 #==============================================================================
 print('STEP 4 ----> Saving files')
 print()
-file_loc = os.path.join(GlobVar.data_path, 'single_component_dataset.csv') 
-SC_dataset_expanded.to_csv(file_loc, index = False, sep = ';', encoding='utf-8')
-file_loc = os.path.join(GlobVar.data_path, 'binary_mixture_dataset.csv') 
-BM_dataset_expanded.to_csv(file_loc, index = False, sep = ';', encoding='utf-8')
-  
 
+# join list of items in single string
+#------------------------------------------------------------------------------
+datastorage = DataStorage()
+if cnf.output_type == 'CSV':
+    file_loc = os.path.join(GlobVar.data_path, 'adsorbents_dataset.csv') 
+    df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
+    file_loc = os.path.join(GlobVar.data_path, 'adsorbates_dataset.csv') 
+    df_guests_expanded.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
+    file_loc = os.path.join(GlobVar.data_path, 'single_component_dataset.csv') 
+    SC_dataset_expanded.to_csv(file_loc, index = False, sep = ';', encoding='utf-8')
+    file_loc = os.path.join(GlobVar.data_path, 'binary_mixture_dataset.csv') 
+    BM_dataset_expanded.to_csv(file_loc, index = False, sep = ';', encoding='utf-8')
 
-
-
-
-
+elif cnf.output_type == 'SQL':
+    df_dictionary = {'adsorbents_table' : df_hosts, 'adsorbates_table' : df_guests,
+                     'single_components_table' : SC_dataset_expanded,
+                     'binary_mixture_table' : BM_dataset_expanded}
+    SQL_string = datastorage.save_to_SQLDB(df_dictionary, cnf.SQL_config)
+    
+    
