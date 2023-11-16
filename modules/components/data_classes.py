@@ -1,6 +1,4 @@
 import os
-import sqlalchemy as sql
-from sqlalchemy import create_engine, text
 from tqdm import tqdm
 tqdm.pandas()
 
@@ -198,8 +196,6 @@ class AdsorptionDataset:
         
         return SC_exploded_dataset, BM_exploded_dataset
     
-
-
     
 # define the class for inspection of the input folder and generation of files list.
 #==============================================================================
@@ -218,24 +214,7 @@ class DataStorage:
         elif mode == 'LOAD':
             pass
 
-    #==========================================================================
-    def save_to_SQLDB(self, df_dict, config):
-        
-        connection_str = f"mysql+pymysql://{config['username']}:{config['password']}@localhost"
-        engine = create_engine(connection_str)        
-        with engine.connect() as connection:
-            connection.execute(text('DROP DATABASE IF EXISTS isodb;'))
-            connection.execute(text('CREATE DATABASE isodb;'))
-
-        connection_str = f"mysql+pymysql://{config['username']}:{config['password']}@localhost/ISODB"
-        engine = create_engine(connection_str) 
-
-        for name, df in df_dict.items():
-            df.to_sql(name, con=engine, if_exists='replace', index=False)
-        
-        engine.dispose()
-
-        return connection_str
+    
 
 
 

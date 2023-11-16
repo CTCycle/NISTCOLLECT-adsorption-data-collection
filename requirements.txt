@@ -1,6 +1,6 @@
 art==6.1
+boto3==1.29.1
 pandas==2.0.3
 PubChemPy==1.0.4
 requests==2.31.0
-SQLAlchemy==2.0.22
 tqdm==4.66.1

@@ -3,6 +3,8 @@ import art
 import pandas as pd
 import pubchempy as pcp
 from tqdm import tqdm
+import boto3
+from io import StringIO
 
 # set warnings
 #------------------------------------------------------------------------------
@@ -116,14 +118,12 @@ print('''
 COLLECT ADSORPTION DATA INDEX
 -------------------------------------------------------------------------------
 ''')
-
 isotherm_index = webworker.Get_Isotherms_Index()
 isotherm_index = isotherm_index[:int(len(isotherm_index) * cnf.experiments_fraction)] 
 isotherm_names = [x['filename'] for x in isotherm_index]
 df_experiments = pd.DataFrame(isotherm_index)    
 print(f'Total number of adsorption experiments: {df_experiments.shape[0]}')
 print()
-
 
 # collect actual adsorption data using the experiments index
 #------------------------------------------------------------------------------
@@ -166,10 +166,10 @@ print()
 print('STEP 4 ----> Saving files')
 print()
 
-# join list of items in single string
+# save files either as csv locally or in S3 bucket
 #------------------------------------------------------------------------------
 datastorage = DataStorage()
-if cnf.output_type == 'CSV':
+if cnf.output_type == 'HOST':
     file_loc = os.path.join(GlobVar.data_path, 'adsorbents_dataset.csv') 
     df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
     file_loc = os.path.join(GlobVar.data_path, 'adsorbates_dataset.csv') 
@@ -178,11 +178,24 @@ if cnf.output_type == 'CSV':
     SC_dataset_expanded.to_csv(file_loc, index = False, sep = ';', encoding='utf-8')
     file_loc = os.path.join(GlobVar.data_path, 'binary_mixture_dataset.csv') 
     BM_dataset_expanded.to_csv(file_loc, index = False, sep = ';', encoding='utf-8')
+else:
+    s3_resource = boto3.resource('s3', region_name=cnf.region_name)
+    csv_buffer = StringIO()
+    df_hosts.to_csv(csv_buffer)    
+    s3_resource.Object(cnf.S3_bucket_name, 'adsorbents_dataset.csv').put(Body=csv_buffer.getvalue())
+    csv_buffer = StringIO()
+    df_guests_expanded.to_csv(csv_buffer)    
+    s3_resource.Object(cnf.S3_bucket_name, 'adsorbates_dataset.csv').put(Body=csv_buffer.getvalue())
+    csv_buffer = StringIO()
+    SC_dataset_expanded.to_csv(csv_buffer)    
+    s3_resource.Object(cnf.S3_bucket_name, 'single_component_dataset.csv').put(Body=csv_buffer.getvalue())
+    csv_buffer = StringIO()
+    BM_dataset_expanded.to_csv(csv_buffer)    
+    s3_resource.Object(cnf.S3_bucket_name, 'binary_mixture_dataset.csv').put(Body=csv_buffer.getvalue())
 
-elif cnf.output_type == 'SQL':
-    df_dictionary = {'adsorbents_table' : df_hosts, 'adsorbates_table' : df_guests,
-                     'single_components_table' : SC_dataset_expanded,
-                     'binary_mixture_table' : BM_dataset_expanded}
-    SQL_string = datastorage.save_to_SQLDB(df_dictionary, cnf.SQL_config)
-    
-    
+print('''
+-------------------------------------------------------------------------------
+NISTADS data collection has terminated. All files have been saved and are ready
+to be used! Enjoy your data 
+-------------------------------------------------------------------------------
+''')
