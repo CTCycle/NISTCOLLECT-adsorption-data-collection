@@ -106,8 +106,23 @@ properties = {'canonical_smiles': canonical_smiles,
 df_properties = pd.DataFrame(properties)
 df_guests_expanded = pd.concat([df_guests, df_properties], axis = 1)
 
-
-
+# save files either as csv locally or in S3 bucket
+#------------------------------------------------------------------------------
+datastorage = DataStorage()
+if cnf.output_type == 'HOST':
+    file_loc = os.path.join(GlobVar.data_path, 'adsorbents_dataset.csv') 
+    df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
+    file_loc = os.path.join(GlobVar.data_path, 'adsorbates_dataset.csv') 
+    df_guests_expanded.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')    
+else:
+    s3_resource = boto3.resource('s3', region_name=cnf.region_name)
+    csv_buffer = StringIO()
+    df_hosts.to_csv(csv_buffer)    
+    s3_resource.Object(cnf.S3_bucket_name, 'adsorbents_dataset.csv').put(Body=csv_buffer.getvalue())
+    csv_buffer = StringIO()
+    df_guests_expanded.to_csv(csv_buffer)    
+    s3_resource.Object(cnf.S3_bucket_name, 'adsorbates_dataset.csv').put(Body=csv_buffer.getvalue())
+    
 # [BUILD ADSORPTION EXPERIMENTS DATASET]
 #==============================================================================
 # Builds the index of adsorption experiments as from the NIST database.

@@ -2,7 +2,7 @@
 #------------------------------------------------------------------------------
 guest_fraction = 1.0
 host_fraction = 1.0
-experiments_fraction = 0.001
+experiments_fraction = 1.0
 
 # Define how to save the extracted data (output mode)
 # 'HOST' = save data in .csv file

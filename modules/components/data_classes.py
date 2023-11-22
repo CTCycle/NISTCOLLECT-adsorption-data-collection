@@ -7,17 +7,7 @@ tqdm.pandas()
 #==============================================================================
 #==============================================================================
 class UserOperations:
-    
-    """    
-    A class for user operations such as interactions with the console, directories and files
-    cleaning and other maintenance operations.
-      
-    Methods:
         
-    menu_selection(menu):  console menu management 
-    clear_all_files(path): remove files and directories
-   
-    """
     
     # print custom menu on console and allows selecting an option
     #==========================================================================
@@ -39,15 +29,13 @@ class UserOperations:
         """        
         indexes = [idx + 1 for idx, val in enumerate(menu)]
         for key, value in menu.items():
-            print('{0} - {1}'.format(key, value))            
-        
+            print('{0} - {1}'.format(key, value))        
         print()
         while True:
             try:
                 op_sel = int(input('Select the desired operation: '))
             except:
                 continue            
-            
             while op_sel not in indexes:
                 try:
                     op_sel = int(input('Input is not valid, please select a valid option: '))
@@ -176,8 +164,9 @@ class AdsorptionDataset:
                         'adsorbates', 'isotherm_data', 'adsorbent_ID', 'adsorbates_ID']
         
         SC_exp_dataset = df_single.explode(explode_cols)
-        SC_exp_dataset.reset_index(inplace = True, drop = True)       
-        SC_exploded_dataset = SC_exp_dataset.drop(columns = drop_columns)        
+        SC_exp_dataset[explode_cols] = SC_exp_dataset[explode_cols].astype('float32')   
+        SC_exp_dataset.reset_index(inplace=True, drop=True)       
+        SC_exploded_dataset = SC_exp_dataset.drop(columns=drop_columns)        
         df_binary['compound_1'] = df_binary['adsorbates_name'].apply(lambda x : x[0])        
         df_binary['compound_2'] = df_binary['adsorbates_name'].apply(lambda x : x[1])        
         
@@ -187,7 +176,8 @@ class AdsorptionDataset:
                         'all_species_data', 'compound_1_data', 'compound_2_data',
                         'adsorbates', 'isotherm_data', 'adsorbent_ID', 'adsorbates_ID']
         
-        BM_exp_dataset = df_binary.explode(explode_cols)       
+        BM_exp_dataset = df_binary.explode(explode_cols)
+        BM_exp_dataset[explode_cols] = BM_exp_dataset[explode_cols].astype('float32')       
         BM_exp_dataset.reset_index(inplace = True, drop = True)        
         BM_exploded_dataset = BM_exp_dataset.drop(columns = drop_columns) 
         
