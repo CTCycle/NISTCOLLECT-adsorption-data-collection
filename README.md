@@ -20,7 +20,7 @@ The configurations.py file allows to change the script configuration. The follow
 - `guest_fraction:` fraction of adsorbate species data to be fetched
 - `host_fraction:` fraction of adsorbent materials data to be fetched
 - `experiments_fraction:` fraction of adsorption isotherm data to be fetched
-- `experiments_fraction:` fraction of adsorption isotherm data to be fetched
+- `chunk_size:` fraction of data chunks to be fed to the isotherm data extraction function
 - `output_type:` select where to save data (HOST for local files, S3 for AWS S3 buckets)
 - `S3_bucket_name:` the AWS S3 bucket name
 - `region_name:` the AWS region where your S3 bucket is located
