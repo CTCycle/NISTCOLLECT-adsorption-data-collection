@@ -124,13 +124,19 @@ else:
     s3_resource.Object(cnf.S3_bucket_name, 'adsorbates_dataset.csv').put(Body=csv_buffer.getvalue())
     
 # [BUILD ADSORPTION EXPERIMENTS DATASET]
+# [EXTRACT ADSORPTION DATA AND FILTER DATASET BASED ON ADSORPTION UNITS]
 #==============================================================================
 # Builds the index of adsorption experiments as from the NIST database.
 # such index will be used to extract single experiment adsorption data 
 #==============================================================================
+# split the dataset into experiments with a single component and with binary mixtures.
+# extract the adsorption data embedded in the NIST json dictionaries and add them to
+# custom columns for pressure and uptake. Eventually, explode the dataset to ensure
+# each row will contain a specific pair of pressure-uptake data points.
+#==============================================================================
 print('''
 -------------------------------------------------------------------------------
-COLLECT ADSORPTION DATA INDEX
+COLLECT ADSORPTION DATA
 -------------------------------------------------------------------------------
 ''')
 isotherm_index = webworker.Get_Isotherms_Index()
@@ -140,74 +146,42 @@ df_experiments = pd.DataFrame(isotherm_index)
 print(f'Total number of adsorption experiments: {df_experiments.shape[0]}')
 print()
 
-# collect actual adsorption data using the experiments index
+# function to split list of names into chunks to avoid out of memory issues
 #------------------------------------------------------------------------------
-isotherm_data = webworker.Get_Isotherms_Data(isotherm_names)
-df_isotherms = pd.DataFrame(isotherm_data)
-drop_columns = ['category', 'tabular_data', 'isotherm_type', 'digitizer', 'articleSource']
-df_isotherms = df_isotherms.drop(columns = drop_columns)
-print() 
-    
-# [EXTRACT ADSORPTION DATA AND FILTER DATASET BASED ON ADSORPTION UNITS]
-#==============================================================================
-# split the dataset into experiments with a single component and with binary mixtures.
-# extract the adsorption data embedded in the NIST json dictionaries and add them to
-# custom columns for pressure and uptake. Eventually, explode the dataset to ensure
-# each row will contain a specific pair of pressure-uptake data points.
-#==============================================================================
-print('''
--------------------------------------------------------------------------------
-PREPARING PRELIMINARY VERSION OF ADSORPTIONN DATASET
--------------------------------------------------------------------------------
-''')
+window_size = int(cnf.chunk_size * len(isotherm_names))
+def list_fragmenter(lst, n):    
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]    
 
-dataworker = AdsorptionDataset(df_isotherms)
-
+# collect actual adsorption data using the experiments index,
 # split dataset based on single or binary mixture composition
-#------------------------------------------------------------------------------
-single_compound, binary_mixture = dataworker.split_by_mixcomplexity()
-
 # extract experimental data from the datasets and expand the latter
-#------------------------------------------------------------------------------
-SC_dataset = dataworker.extract_adsorption_data(single_compound, num_species=1) 
-BM_dataset = dataworker.extract_adsorption_data(binary_mixture, num_species=2) 
-SC_dataset_expanded, BM_dataset_expanded = dataworker.dataset_expansion(SC_dataset, BM_dataset)    
-print()  
-
-# [SAVING DATASET INTO FILES]
-#==============================================================================
-# save files in the dataset folder as .csv files
-#==============================================================================
-print('STEP 4 ----> Saving files')
-print()
-
-# save files either as csv locally or in S3 bucket
+# save files in s3 bucket or locally
 #------------------------------------------------------------------------------
 datastorage = DataStorage()
-if cnf.output_type == 'HOST':
-    file_loc = os.path.join(GlobVar.data_path, 'adsorbents_dataset.csv') 
-    df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
-    file_loc = os.path.join(GlobVar.data_path, 'adsorbates_dataset.csv') 
-    df_guests_expanded.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
-    file_loc = os.path.join(GlobVar.data_path, 'single_component_dataset.csv') 
-    SC_dataset_expanded.to_csv(file_loc, index = False, sep = ';', encoding='utf-8')
-    file_loc = os.path.join(GlobVar.data_path, 'binary_mixture_dataset.csv') 
-    BM_dataset_expanded.to_csv(file_loc, index = False, sep = ';', encoding='utf-8')
-else:
-    s3_resource = boto3.resource('s3', region_name=cnf.region_name)
-    csv_buffer = StringIO()
-    df_hosts.to_csv(csv_buffer)    
-    s3_resource.Object(cnf.S3_bucket_name, 'adsorbents_dataset.csv').put(Body=csv_buffer.getvalue())
-    csv_buffer = StringIO()
-    df_guests_expanded.to_csv(csv_buffer)    
-    s3_resource.Object(cnf.S3_bucket_name, 'adsorbates_dataset.csv').put(Body=csv_buffer.getvalue())
-    csv_buffer = StringIO()
-    SC_dataset_expanded.to_csv(csv_buffer)    
-    s3_resource.Object(cnf.S3_bucket_name, 'single_component_dataset.csv').put(Body=csv_buffer.getvalue())
-    csv_buffer = StringIO()
-    BM_dataset_expanded.to_csv(csv_buffer)    
-    s3_resource.Object(cnf.S3_bucket_name, 'binary_mixture_dataset.csv').put(Body=csv_buffer.getvalue())
-
+drop_columns = ['category', 'tabular_data', 'isotherm_type', 'digitizer', 'articleSource']
+for i, fg in enumerate(list_fragmenter(isotherm_names, window_size)):
+    isotherm_data = webworker.Get_Isotherms_Data(fg)
+    df_isotherms = pd.DataFrame(isotherm_data).drop(columns = drop_columns)     
+    dataworker = AdsorptionDataset(df_isotherms)
+    single_compound, binary_mixture = dataworker.split_by_mixcomplexity()
+    SC_dataset = dataworker.extract_adsorption_data(single_compound, num_species=1) 
+    BM_dataset = dataworker.extract_adsorption_data(binary_mixture, num_species=2) 
+    SC_dataset_expanded, BM_dataset_expanded = dataworker.dataset_expansion(SC_dataset, BM_dataset) 
+    if cnf.output_type == 'HOST':            
+        file_loc = os.path.join(GlobVar.data_path, 'single_component_dataset.csv') 
+        SC_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index = False, sep = ';', encoding='utf-8')
+        file_loc = os.path.join(GlobVar.data_path, 'binary_mixture_dataset.csv') 
+        BM_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index = False, sep = ';', encoding='utf-8')
+    else:
+        s3_resource = boto3.resource('s3', region_name=cnf.region_name)        
+        csv_buffer = StringIO()
+        SC_dataset_expanded.to_csv(csv_buffer)    
+        s3_resource.Object(cnf.S3_bucket_name, 'single_component_dataset.csv').put(Body=csv_buffer.getvalue())
+        csv_buffer = StringIO()
+        BM_dataset_expanded.to_csv(csv_buffer)    
+        s3_resource.Object(cnf.S3_bucket_name, 'binary_mixture_dataset.csv').put(Body=csv_buffer.getvalue())
+   
 print('''
 -------------------------------------------------------------------------------
 NISTADS data collection has terminated. All files have been saved and are ready

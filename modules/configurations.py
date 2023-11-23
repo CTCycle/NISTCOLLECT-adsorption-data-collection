@@ -3,6 +3,7 @@
 guest_fraction = 1.0
 host_fraction = 1.0
 experiments_fraction = 1.0
+chunk_size = 0.05
 
 # Define how to save the extracted data (output mode)
 # 'HOST' = save data in .csv file
