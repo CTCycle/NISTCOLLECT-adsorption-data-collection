@@ -1,1 +1,4 @@
-EC2_configurations.yaml
+dataset/adsorbates_dataset.csv
+dataset/adsorbents_dataset.csv
+dataset/binary_mixture_dataset.csv
+dataset/single_component_dataset.csv

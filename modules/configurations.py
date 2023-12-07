@@ -1,8 +1,8 @@
 # general variables
 #------------------------------------------------------------------------------
-guest_fraction = 1.0
-host_fraction = 1.0
-experiments_fraction = 1.0
+guest_fraction = 0.02
+host_fraction = 0.02
+experiments_fraction = 0.2
 chunk_size = 0.05
 
 # Define how to save the extracted data (output mode)

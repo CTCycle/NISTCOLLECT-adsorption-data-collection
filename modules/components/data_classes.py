@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 from tqdm import tqdm
 tqdm.pandas()
 
@@ -89,11 +90,11 @@ class AdsorptionDataset:
         try:
             single_compound = grouped_df.get_group(1)
         except:
-            single_compound = 'None'
+            single_compound = pd.DataFrame()
         try:
             binary_mixture = grouped_df.get_group(2)
         except:
-            binary_mixture = 'None'        
+            binary_mixture = pd.DataFrame()        
         
         return single_compound, binary_mixture      
       
@@ -116,31 +117,33 @@ class AdsorptionDataset:
         
         '''  
         df_adsorption = raw_data.copy()
-        if num_species==1:                             
-            df_adsorption['adsorbent_ID'] = df_adsorption['adsorbent'].apply(lambda x : x['hashkey'])      
-            df_adsorption['adsorbent_name'] = df_adsorption['adsorbent'].apply(lambda x : x['name'])           
-            df_adsorption['adsorbates_ID'] = df_adsorption['adsorbates'].apply(lambda x : [f['InChIKey'] for f in x])            
-            df_adsorption['adsorbates_name'] = df_adsorption['adsorbates'].apply(lambda x : [f['name'] for f in x][0])
-            df_adsorption['pressure'] = df_adsorption['isotherm_data'].apply(lambda x : [f['pressure'] for f in x])                
-            df_adsorption['adsorbed_amount'] = df_adsorption['isotherm_data'].apply(lambda x : [f['total_adsorption'] for f in x])
-            df_adsorption['composition'] = 1.0 
-
-        elif num_species==2:            
-            df_adsorption['adsorbent_ID'] = df_adsorption['adsorbent'].apply(lambda x : x['hashkey'])           
-            df_adsorption['adsorbent_name'] = df_adsorption['adsorbent'].apply(lambda x : x['name'])               
-            df_adsorption['adsorbates_ID'] = df_adsorption['adsorbates'].apply(lambda x : [f['InChIKey'] for f in x])          
-            df_adsorption['adsorbates_name'] = df_adsorption['adsorbates'].apply(lambda x : [f['name'] for f in x])         
-            df_adsorption['total_pressure'] = df_adsorption['isotherm_data'].apply(lambda x : [f['pressure'] for f in x])                
-            df_adsorption['all_species_data'] = df_adsorption['isotherm_data'].apply(lambda x : [f['species_data'] for f in x])              
-            df_adsorption['compound_1_data'] = df_adsorption['all_species_data'].apply(lambda x : [f[0] for f in x])               
-            df_adsorption['compound_2_data'] = df_adsorption['all_species_data'].apply(lambda x : [f[0] for f in x])            
-            df_adsorption['compound_1_composition'] = df_adsorption['compound_1_data'].apply(lambda x : [f['composition'] for f in x])              
-            df_adsorption['compound_2_composition'] = df_adsorption['compound_2_data'].apply(lambda x : [f['composition'] for f in x])            
-            df_adsorption['compound_1_pressure'] = df_adsorption.apply(lambda x: [a * b for a, b in zip(x['compound_1_composition'], x['total_pressure'])], axis=1)             
-            df_adsorption['compound_2_pressure'] = df_adsorption.apply(lambda x: [a * b for a, b in zip(x['compound_2_composition'], x['total_pressure'])], axis=1)                
-            df_adsorption['compound_1_adsorption'] = df_adsorption['compound_1_data'].apply(lambda x : [f['adsorption'] for f in x])               
-            df_adsorption['compound_2_adsorption'] = df_adsorption['compound_2_data'].apply(lambda x : [f['adsorption'] for f in x])
-                                    
+        try:
+            if num_species==1:                             
+                df_adsorption['adsorbent_ID'] = df_adsorption['adsorbent'].apply(lambda x : x['hashkey'])      
+                df_adsorption['adsorbent_name'] = df_adsorption['adsorbent'].apply(lambda x : x['name'])           
+                df_adsorption['adsorbates_ID'] = df_adsorption['adsorbates'].apply(lambda x : [f['InChIKey'] for f in x])            
+                df_adsorption['adsorbates_name'] = df_adsorption['adsorbates'].apply(lambda x : [f['name'] for f in x][0])
+                df_adsorption['pressure'] = df_adsorption['isotherm_data'].apply(lambda x : [f['pressure'] for f in x])                
+                df_adsorption['adsorbed_amount'] = df_adsorption['isotherm_data'].apply(lambda x : [f['total_adsorption'] for f in x])
+                df_adsorption['composition'] = 1.0 
+            elif num_species==2:            
+                df_adsorption['adsorbent_ID'] = df_adsorption['adsorbent'].apply(lambda x : x['hashkey'])           
+                df_adsorption['adsorbent_name'] = df_adsorption['adsorbent'].apply(lambda x : x['name'])               
+                df_adsorption['adsorbates_ID'] = df_adsorption['adsorbates'].apply(lambda x : [f['InChIKey'] for f in x])          
+                df_adsorption['adsorbates_name'] = df_adsorption['adsorbates'].apply(lambda x : [f['name'] for f in x])         
+                df_adsorption['total_pressure'] = df_adsorption['isotherm_data'].apply(lambda x : [f['pressure'] for f in x])                
+                df_adsorption['all_species_data'] = df_adsorption['isotherm_data'].apply(lambda x : [f['species_data'] for f in x])              
+                df_adsorption['compound_1_data'] = df_adsorption['all_species_data'].apply(lambda x : [f[0] for f in x])               
+                df_adsorption['compound_2_data'] = df_adsorption['all_species_data'].apply(lambda x : [f[0] for f in x])            
+                df_adsorption['compound_1_composition'] = df_adsorption['compound_1_data'].apply(lambda x : [f['composition'] for f in x])              
+                df_adsorption['compound_2_composition'] = df_adsorption['compound_2_data'].apply(lambda x : [f['composition'] for f in x])            
+                df_adsorption['compound_1_pressure'] = df_adsorption.apply(lambda x: [a * b for a, b in zip(x['compound_1_composition'], x['total_pressure'])], axis=1)             
+                df_adsorption['compound_2_pressure'] = df_adsorption.apply(lambda x: [a * b for a, b in zip(x['compound_2_composition'], x['total_pressure'])], axis=1)                
+                df_adsorption['compound_1_adsorption'] = df_adsorption['compound_1_data'].apply(lambda x : [f['adsorption'] for f in x])               
+                df_adsorption['compound_2_adsorption'] = df_adsorption['compound_2_data'].apply(lambda x : [f['adsorption'] for f in x])
+        except:
+            pass            
+                                   
         return df_adsorption         
     
     #==========================================================================
@@ -157,18 +160,20 @@ class AdsorptionDataset:
 
         '''       
         df_single = df_SC.copy()
-        df_binary = df_BM.copy()       
+        df_binary = df_BM.copy() 
+              
                          
         explode_cols = ['pressure', 'adsorbed_amount']
         drop_columns = ['DOI', 'date', 'adsorbent', 'concentrationUnits', 
                         'adsorbates', 'isotherm_data', 'adsorbent_ID', 'adsorbates_ID']
         
-        SC_exp_dataset = df_single.explode(explode_cols)
-        SC_exp_dataset[explode_cols] = SC_exp_dataset[explode_cols].astype('float32')   
-        SC_exp_dataset.reset_index(inplace=True, drop=True)       
-        SC_exploded_dataset = SC_exp_dataset.drop(columns=drop_columns)        
-        df_binary['compound_1'] = df_binary['adsorbates_name'].apply(lambda x : x[0])        
-        df_binary['compound_2'] = df_binary['adsorbates_name'].apply(lambda x : x[1])        
+        try:
+            SC_exp_dataset = df_single.explode(explode_cols)
+            SC_exp_dataset[explode_cols] = SC_exp_dataset[explode_cols].astype('float32')   
+            SC_exp_dataset.reset_index(inplace=True, drop=True)       
+            SC_exploded_dataset = SC_exp_dataset.drop(columns=drop_columns)
+        except:
+            SC_exploded_dataset = pd.DataFrame()           
         
         explode_cols = ['compound_1_pressure', 'compound_2_pressure',
                         'compound_1_adsorption', 'compound_2_adsorption']
@@ -176,11 +181,16 @@ class AdsorptionDataset:
                         'all_species_data', 'compound_1_data', 'compound_2_data',
                         'adsorbates', 'isotherm_data', 'adsorbent_ID', 'adsorbates_ID']
         
-        BM_exp_dataset = df_binary.explode(explode_cols)
-        BM_exp_dataset[explode_cols] = BM_exp_dataset[explode_cols].astype('float32')       
-        BM_exp_dataset.reset_index(inplace = True, drop = True)        
-        BM_exploded_dataset = BM_exp_dataset.drop(columns = drop_columns) 
-        
+        try:
+            df_binary['compound_1'] = df_binary['adsorbates_name'].apply(lambda x : x[0])        
+            df_binary['compound_2'] = df_binary['adsorbates_name'].apply(lambda x : x[1])        
+            BM_exp_dataset = df_binary.explode(explode_cols)
+            BM_exp_dataset[explode_cols] = BM_exp_dataset[explode_cols].astype('float32')       
+            BM_exp_dataset.reset_index(inplace = True, drop = True)        
+            BM_exploded_dataset = BM_exp_dataset.drop(columns = drop_columns)
+        except:
+            BM_exploded_dataset = pd.DataFrame() 
+            
         SC_exploded_dataset.dropna(inplace = True)
         BM_exploded_dataset.dropna(inplace = True)        
         
