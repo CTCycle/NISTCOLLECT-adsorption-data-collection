@@ -1,4 +1,5 @@
 import sys
+import art
 
 # set warnings
 #------------------------------------------------------------------------------
@@ -9,16 +10,15 @@ warnings.simplefilter(action='ignore', category = Warning)
 #------------------------------------------------------------------------------
 from modules.components.data_assets import UserOperations
 
+# welcome message
+#------------------------------------------------------------------------------
+ascii_art = art.text2art('NISTADS COMPOSER')
+print(ascii_art)
+
 # [MAIN MENU]
 #==============================================================================
 # Ask for user prompts
 #==============================================================================
-print('''
--------------------------------------------------------------------------------
-NISTADS COMPOSER
--------------------------------------------------------------------------------
-...
-''')
 user_operations = UserOperations()
 operations_menu = {'1': 'Collect Guest-Host data', 
                    '2': 'Collect adsorption isotherm data',                  
