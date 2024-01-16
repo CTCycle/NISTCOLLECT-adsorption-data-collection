@@ -13,10 +13,10 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from modules.components.data_classes import AdsorptionDataset, DataStorage
-from modules.components.scraper_classes import NISTAdsorptionAPI
+from modules.components.data_assets import AdsorptionDataset
+from modules.components.scraper_assets import NISTAdsorptionAPI
 import modules.global_variables as GlobVar
-import modules.configurations as cnf
+import configurations as cnf
 
 # welcome message
 #------------------------------------------------------------------------------
@@ -108,7 +108,6 @@ df_guests_expanded = pd.concat([df_guests, df_properties], axis = 1)
 
 # save files either as csv locally or in S3 bucket
 #------------------------------------------------------------------------------
-datastorage = DataStorage()
 if cnf.output_type == 'HOST':
     file_loc = os.path.join(GlobVar.data_path, 'adsorbents_dataset.csv') 
     df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
@@ -124,11 +123,9 @@ else:
     s3_resource.Object(cnf.S3_bucket_name, 'adsorbates_dataset.csv').put(Body=csv_buffer.getvalue())
     
 # [BUILD ADSORPTION EXPERIMENTS DATASET]
-# [EXTRACT ADSORPTION DATA AND FILTER DATASET BASED ON ADSORPTION UNITS]
 #==============================================================================
 # Builds the index of adsorption experiments as from the NIST database.
 # such index will be used to extract single experiment adsorption data 
-#==============================================================================
 # split the dataset into experiments with a single component and with binary mixtures.
 # extract the adsorption data embedded in the NIST json dictionaries and add them to
 # custom columns for pressure and uptake. Eventually, explode the dataset to ensure
@@ -158,7 +155,6 @@ def list_fragmenter(lst, n):
 # extract experimental data from the datasets and expand the latter
 # save files in s3 bucket or locally
 #------------------------------------------------------------------------------
-datastorage = DataStorage()
 drop_columns = ['category', 'tabular_data', 'isotherm_type', 'digitizer', 'articleSource']
 for i, fg in enumerate(list_fragmenter(isotherm_names, window_size)):
     isotherm_data = webworker.Get_Isotherms_Data(fg)

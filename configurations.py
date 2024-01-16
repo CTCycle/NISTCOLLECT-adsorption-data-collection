@@ -1,9 +1,9 @@
 # general variables
 #------------------------------------------------------------------------------
-guest_fraction = 0.02
-host_fraction = 0.02
-experiments_fraction = 0.2
-chunk_size = 0.05
+guest_fraction = 1.0
+host_fraction = 1.0
+experiments_fraction = 1.0
+chunk_size = 0.1
 
 # Define how to save the extracted data (output mode)
 # 'HOST' = save data in .csv file

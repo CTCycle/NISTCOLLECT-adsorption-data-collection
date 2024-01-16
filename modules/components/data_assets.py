@@ -1,21 +1,19 @@
-import os
 import pandas as pd
 from tqdm import tqdm
 tqdm.pandas()
 
-# ...
+
+# [CONSOLE USER OPERATIONS]
 #==============================================================================
+# Perform operations to control the console
 #==============================================================================
-#==============================================================================
-class UserOperations:
-        
+class UserOperations:        
     
-    # print custom menu on console and allows selecting an option
-    #==========================================================================
+    
+    #--------------------------------------------------------------------------
     def menu_selection(self, menu):        
         
-        """        
-        menu_selection(menu)
+        '''        
         
         Presents a custom menu to the user and returns the selected option.
         
@@ -27,7 +25,7 @@ class UserOperations:
         Returns:            
             op_sel (int): The selected option number.
         
-        """        
+        '''        
         indexes = [idx + 1 for idx, val in enumerate(menu)]
         for key, value in menu.items():
             print('{0} - {1}'.format(key, value))        
@@ -47,9 +45,9 @@ class UserOperations:
         return op_sel        
 
 
-# define the class for inspection of the input folder and generation of files list.
+# [DATASET OPERATIONS]
 #==============================================================================
-#==============================================================================
+# Methods to perform operation on the built adsorption dataset
 #==============================================================================
 class AdsorptionDataset:
     
@@ -68,7 +66,7 @@ class AdsorptionDataset:
     def __init__(self, dataframe):
         self.dataframe = dataframe      
     
-    #==========================================================================           
+    #--------------------------------------------------------------------------           
     def split_by_mixcomplexity(self):   
 
         '''
@@ -99,11 +97,10 @@ class AdsorptionDataset:
         return single_compound, binary_mixture      
       
     
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def extract_adsorption_data(self, raw_data, num_species=1): 
 
         '''
-        extract_adsorption_data()
 
         Extracts adsorption data from the single_compound and binary_mixture dataframes.
         This function creates two new dataframes, df_SC and df_BN, as copies of the single_compound and 
@@ -146,12 +143,10 @@ class AdsorptionDataset:
                                    
         return df_adsorption         
     
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def dataset_expansion(self, df_SC, df_BM):
 
         '''
-        dataset_expansion()
-
         Expands the datasets by exploding and dropping columns.
 
         Returns:
@@ -165,8 +160,7 @@ class AdsorptionDataset:
                          
         explode_cols = ['pressure', 'adsorbed_amount']
         drop_columns = ['DOI', 'date', 'adsorbent', 'concentrationUnits', 
-                        'adsorbates', 'isotherm_data', 'adsorbent_ID', 'adsorbates_ID']
-        
+                        'adsorbates', 'isotherm_data', 'adsorbent_ID', 'adsorbates_ID']        
         try:
             SC_exp_dataset = df_single.explode(explode_cols)
             SC_exp_dataset[explode_cols] = SC_exp_dataset[explode_cols].astype('float32')   
@@ -179,8 +173,7 @@ class AdsorptionDataset:
                         'compound_1_adsorption', 'compound_2_adsorption']
         drop_columns = ['DOI', 'date', 'adsorbates_name', 'adsorbent', 'concentrationUnits',
                         'all_species_data', 'compound_1_data', 'compound_2_data',
-                        'adsorbates', 'isotherm_data', 'adsorbent_ID', 'adsorbates_ID']
-        
+                        'adsorbates', 'isotherm_data', 'adsorbent_ID', 'adsorbates_ID']        
         try:
             df_binary['compound_1'] = df_binary['adsorbates_name'].apply(lambda x : x[0])        
             df_binary['compound_2'] = df_binary['adsorbates_name'].apply(lambda x : x[1])        
@@ -196,25 +189,7 @@ class AdsorptionDataset:
         
         return SC_exploded_dataset, BM_exploded_dataset
     
-    
-# define the class for inspection of the input folder and generation of files list.
-#==============================================================================
-#==============================================================================
-#==============================================================================
-class DataStorage: 
 
-    #==========================================================================
-    def JSON_serializer(self, object, filename, path, mode='SAVE'):
-
-        if mode == 'SAVE':
-            object_json = object.to_json()          
-            json_path = os.path.join(path, f'{filename}.json')
-            with open(json_path, 'w', encoding = 'utf-8') as f:
-                f.write(object_json)
-        elif mode == 'LOAD':
-            pass
-
-    
 
 
 
