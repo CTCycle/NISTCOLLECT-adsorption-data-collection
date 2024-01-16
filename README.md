@@ -3,6 +3,8 @@
 ## Project description
 This is a python application that extracts adsorption isotherms data from the NIST adsorption database (https://adsorption.nist.gov/index.php#home) using their dedicated API. The application firstly extracts data regarding adsorbent materials and adsorbate species and generate two separate datasets, then collects the adsorption isotherm experimental data from the database. The dataset of adsorbate species is further modified adding molecular properties (such as molecular weight, canonical smiles, complexity, heavy atoms, etc.) through the PUG REST API (see https://pubchempy.readthedocs.io/en/latest/ for more information). The extracted data is organized in four different tables, which can be eventually saved as .csv files locally or to a S3 bucket if used with AWS services (see configurations.py):
 
+### Extracted data summary
+
 **Adsorbents data:** data regarding adsorbent materials 
 
 **Adsorbates data:** data regarding adsorbate species
@@ -12,7 +14,15 @@ This is a python application that extracts adsorption isotherms data from the NI
 **Binarey mixture isotherms:** collection of adsorption isotherm experiments of binary mixture
 
 ## How to use
-Run the main file NISTADS_composer.py and wait until completion. The script may take long time as it has to fetch data for each experiment using a different URL, and it heavily depends on your internet connection performance (more than 30k experiments are available as of now). You can select a fraction of data that you wish to extract (guest, host of experiments data), therefor decreasing the estimated time till completion.
+Run the main file NISTADS_composer.py to launch the application and show the main menu. Navigate the menu to select from the following options:
+
+**1) Collect guest-host data:** Collect data regarding adsorbent materials and adsorbate species
+
+**2) Collect adorption isotherm data:** Collect adsorption isotherm data from experiments database
+
+**3) Exit and close**
+
+The data fetching operation may take long time due to the large number of queries to perform, and it heavily depends on your internet connection performance (more than 30k experiments are available as of now). You can select a fraction of data that you wish to extract (guest, host of experiments data), therefor decreasing the estimated time till completion. Moreover, you can also split the total number of adsorption isotherm experiments in chunks, so that each chunk will be collected and saved as file prior to go for the next data subset.
 
 ### Configurations
 The configurations.py file allows to change the script configuration. The following parameters are available:
