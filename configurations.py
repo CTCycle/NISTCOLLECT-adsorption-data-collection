@@ -1,4 +1,4 @@
-# general variables
+# data settings
 #------------------------------------------------------------------------------
 guest_fraction = 1.0
 host_fraction = 1.0
