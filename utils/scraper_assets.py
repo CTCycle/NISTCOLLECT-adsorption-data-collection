@@ -4,7 +4,7 @@ import requests as r
 
 # define the class for inspection of the input folder and generation of files list.
 #==============================================================================
-#==============================================================================
+# 
 #==============================================================================
 class NISTAdsorptionAPI:  
     
@@ -14,7 +14,7 @@ class NISTAdsorptionAPI:
         self.url_adsorbents = 'https://adsorption.nist.gov/matdb/api/materials.json'        
         
     # function to retrieve HTML data
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def Get_GuestHost_Index(self):
         
         '''
@@ -46,7 +46,7 @@ class NISTAdsorptionAPI:
     
     
     # function to retrieve HTML data
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def Get_GuestHost_Data(self, item_names, focus = 'guest'):
 
         '''
@@ -94,7 +94,7 @@ class NISTAdsorptionAPI:
     
     
     # function to retrieve HTML data
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def Get_Isotherms_Index(self):
         
         '''
@@ -118,7 +118,7 @@ class NISTAdsorptionAPI:
     
     
     # function to retrieve HTML data
-    #==========================================================================
+    #--------------------------------------------------------------------------
     def Get_Isotherms_Data(self, exp_names): 
 
         '''        
