@@ -1,9 +1,9 @@
 import pandas as pd
-from tqdm import tqdm
-tqdm.pandas()
+import matplotlib.pyplot as plt
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
 import tensorflow as tf
-
+from tqdm import tqdm
+tqdm.pandas()
 
 # [DATASET OPERATIONS]
 #==============================================================================
@@ -135,6 +135,31 @@ class AdsorptionDataset:
         BM_exploded_dataset.dropna(inplace = True)        
         
         return SC_exploded_dataset, BM_exploded_dataset
+
+
+
+# [DATA VALIDATION]
+#==============================================================================
+# preprocess adsorption data
+#==============================================================================
+class DataValidation:   
+
+    def group_distribution(self, df, column):
+
+        # Grouping the DataFrame by 'group_column' and plotting a histogram of the 'value' column
+        grouped_df = df.groupby(by=column)
+        plt.figure(figsize=(14, 12))
+
+        # Iterate over groups and plot histogram for each group
+        for group_name, group_data in grouped_df:
+            plt.hist(group_data[column], bins=10, alpha=0.5, label=group_name)
+
+        plt.xlabel('Value')
+        plt.ylabel('Frequency')
+        plt.title('Histogram of Value Grouped by Group Column')
+        plt.legend()
+        plt.tight_layout()       
+        plt.show(block=False)
 
 
 # [DATA PREPROCESSING]
