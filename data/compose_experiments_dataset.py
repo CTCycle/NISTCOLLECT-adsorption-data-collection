@@ -25,16 +25,11 @@ import configurations as cnf
 # Builds the index of adsorption experiments from the NIST database data, which
 # will be used to extract adsorption experiments data 
 #==============================================================================
-print('''
--------------------------------------------------------------------------------
-COLLECT ADSORPTION DATA
--------------------------------------------------------------------------------
-''')
-
-webworker = NISTAdsorptionAPI()
+print('\nCollect experiments data\n')
 
 # get isotherm experiments index using the NIST API
 #------------------------------------------------------------------------------
+webworker = NISTAdsorptionAPI()
 isotherm_index = webworker.Get_Isotherms_Index()
 isotherm_index = isotherm_index[:int(len(isotherm_index) * cnf.experiments_fraction)] 
 isotherm_names = [x['filename'] for x in isotherm_index]
@@ -71,19 +66,11 @@ for i, fg in enumerate(list_fragmenter(isotherm_names, window_size)):
 
     # save data either locally or in a S3 bucket as .csv files
     SC_dataset_expanded, BM_dataset_expanded = dataworker.dataset_expansion(SC_dataset, BM_dataset) 
-    if cnf.output_type == 'HOST':            
-        file_loc = os.path.join(globpt.data_path, 'single_component_dataset.csv') 
-        SC_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index = False, sep = ';', encoding='utf-8')
-        file_loc = os.path.join(globpt.data_path, 'binary_mixture_dataset.csv') 
-        BM_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index = False, sep = ';', encoding='utf-8')
-    else:
-        s3_resource = boto3.resource('s3', region_name=cnf.region_name)        
-        csv_buffer = StringIO()
-        SC_dataset_expanded.to_csv(csv_buffer)    
-        s3_resource.Object(cnf.S3_bucket_name, 'single_component_dataset.csv').put(Body=csv_buffer.getvalue())
-        csv_buffer = StringIO()
-        BM_dataset_expanded.to_csv(csv_buffer)    
-        s3_resource.Object(cnf.S3_bucket_name, 'binary_mixture_dataset.csv').put(Body=csv_buffer.getvalue())
+    file_loc = os.path.join(globpt.data_path, 'single_component_dataset.csv') 
+    SC_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index = False, sep = ';', encoding='utf-8')
+    file_loc = os.path.join(globpt.data_path, 'binary_mixture_dataset.csv') 
+    BM_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index = False, sep = ';', encoding='utf-8')
+
    
 print('''
 -------------------------------------------------------------------------------

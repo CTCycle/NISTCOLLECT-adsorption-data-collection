@@ -20,16 +20,11 @@ import configurations as cnf
 #==============================================================================
 # module for the selection of different operations
 #==============================================================================
-print('''
--------------------------------------------------------------------------------
-BUILD ADSORBENT/ADSORBATES DATASETS
--------------------------------------------------------------------------------
-''')
-
-webworker = NISTAdsorptionAPI()
+print('\nCollect experiments data\n')
 
 # get index of guests and hosts index and names from json file
 #------------------------------------------------------------------------------
+webworker = NISTAdsorptionAPI()
 adsorbates_index, adsorbents_index = webworker.Get_GuestHost_Index()
 adsorbates_index = adsorbates_index[:int(len(adsorbates_index) * cnf.guest_fraction)] 
 adsorbents_index = adsorbents_index[:int(len(adsorbents_index) * cnf.host_fraction)]
@@ -40,28 +35,26 @@ adsorbents_names = [x['hashkey'] for x in adsorbents_index]
 #------------------------------------------------------------------------------
 df_adsorbates = pd.DataFrame(adsorbates_index)
 df_adsorbents = pd.DataFrame(adsorbents_index) 
-print(f'''
-Total number of adsorbents: {df_adsorbents.shape[0]}
-Total number of adsorbates: {df_adsorbates.shape[0]}
-''')
+print(f'Total number of adsorbents: {df_adsorbents.shape[0]}')
+print(f'Total number of adsorbates: {df_adsorbates.shape[0]}')
 
 # extract data for the adsorbents based on previously extracted indexes
 #------------------------------------------------------------------------------
-print('Extracting adsorbents data...')
+print('\nExtracting adsorbents data')
 df_adsorbents_properties = webworker.Get_GuestHost_Data(adsorbents_names, focus = 'host')    
 df_hosts = pd.DataFrame(df_adsorbents_properties) 
 print()
 
 # extract data for the sorbates based on previously extracted indexes
 #------------------------------------------------------------------------------
-print('Extracting adsorbates data...')
+print('\nExtracting adsorbates data')
 df_adsorbates_properties = webworker.Get_GuestHost_Data(adsorbates_names, focus = 'guest')    
 df_guests = pd.DataFrame(df_adsorbates_properties)
 print()
 
 # create list of molecular properties of sorbates (using PUG REST API as reference)
 #------------------------------------------------------------------------------
-print('Adding physicochemical properties to guest molecules dataset...')
+print('\ndding physicochemical properties to guest molecules dataset')
 adsorbates_properties = []
 for row in tqdm(df_adsorbates.itertuples(), total = len(df_adsorbates)):    
     name = row[2].lower()        
@@ -101,19 +94,10 @@ df_guests_expanded = pd.concat([df_guests, df_properties], axis = 1)
 
 # save files either as csv locally or in S3 bucket
 #------------------------------------------------------------------------------
-if cnf.output_type == 'HOST':
-    file_loc = os.path.join(globpt.data_path, 'adsorbents_dataset.csv') 
-    df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
-    file_loc = os.path.join(globpt.data_path, 'adsorbates_dataset.csv') 
-    df_guests_expanded.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')    
-else:
-    s3_resource = boto3.resource('s3', region_name=cnf.region_name)
-    csv_buffer = StringIO()
-    df_hosts.to_csv(csv_buffer)    
-    s3_resource.Object(cnf.S3_bucket_name, 'adsorbents_dataset.csv').put(Body=csv_buffer.getvalue())
-    csv_buffer = StringIO()
-    df_guests_expanded.to_csv(csv_buffer)    
-    s3_resource.Object(cnf.S3_bucket_name, 'adsorbates_dataset.csv').put(Body=csv_buffer.getvalue())
+file_loc = os.path.join(globpt.data_path, 'adsorbents_dataset.csv') 
+df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
+file_loc = os.path.join(globpt.data_path, 'adsorbates_dataset.csv') 
+df_guests_expanded.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')    
 
 print('''
 -------------------------------------------------------------------------------
