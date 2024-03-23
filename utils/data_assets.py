@@ -1,9 +1,15 @@
+import os
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
-import tensorflow as tf
+from keras.api._v2.keras import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, OrdinalEncoder
 from tqdm import tqdm
 tqdm.pandas()
+
 
 # [DATASET OPERATIONS]
 #==============================================================================
@@ -102,8 +108,7 @@ class AdsorptionDataset:
 
         '''       
         df_single = df_SC.copy()
-        df_binary = df_BM.copy() 
-              
+        df_binary = df_BM.copy()              
                          
         explode_cols = ['pressure', 'adsorbed_amount']
         drop_columns = ['DOI', 'date', 'adsorbent', 'concentrationUnits', 
@@ -137,36 +142,11 @@ class AdsorptionDataset:
         return SC_exploded_dataset, BM_exploded_dataset
 
 
-
-# [DATA VALIDATION]
-#==============================================================================
-# preprocess adsorption data
-#==============================================================================
-class DataValidation:   
-
-    def group_distribution(self, df, column):
-
-        # Grouping the DataFrame by 'group_column' and plotting a histogram of the 'value' column
-        grouped_df = df.groupby(by=column)
-        plt.figure(figsize=(14, 12))
-
-        # Iterate over groups and plot histogram for each group
-        for group_name, group_data in grouped_df:
-            plt.hist(group_data[column], bins=10, alpha=0.5, label=group_name)
-
-        plt.xlabel('Value')
-        plt.ylabel('Frequency')
-        plt.title('Histogram of Value Grouped by Group Column')
-        plt.legend()
-        plt.tight_layout()       
-        plt.show(block=False)
-
-
 # [DATA PREPROCESSING]
 #==============================================================================
 # preprocess adsorption data
 #==============================================================================
-class PreProcessing:   
+class PreProcessing:  
 
 
     def __init__(self):
@@ -296,7 +276,7 @@ class PreProcessing:
     
     # normalize parameters
     #--------------------------------------------------------------------------  
-    def normalize_parameters(self, train_X, train_Y, test_X, test_Y):
+    def normalize_parameters(self, train_X, test_X):
 
         '''
         Normalize the input features and output labels for training and testing data.
@@ -324,7 +304,7 @@ class PreProcessing:
         train_X[norm_columns] = self.param_normalizer.fit_transform(train_X[norm_columns])
         test_X[norm_columns] = self.param_normalizer.transform(test_X[norm_columns])        
 
-        return train_X, train_Y, test_X, test_Y   
+        return train_X, test_X
     
     # encode variables  
     #--------------------------------------------------------------------------  
@@ -356,17 +336,7 @@ class PreProcessing:
     
     #--------------------------------------------------------------------------  
     def sequence_padding(self, dataset, column, pad_value=-1, pad_length=50):
-
-        '''
-        Normalizes a series of values.
-    
-        Keyword arguments:
-            series (list): A list of values to be normalized
-    
-        Returns:
-            list: A list of normalized values
         
-        '''        
         dataset[column] = preprocessing.sequence.pad_sequences(dataset[column], 
                                                                maxlen=pad_length, 
                                                                value=pad_value, 
@@ -376,7 +346,33 @@ class PreProcessing:
         return dataset    
         
     
+# [DATA VALIDATION]
+#==============================================================================
+# preprocess adsorption data
+#==============================================================================
+class DataValidation:   
+
     
+
+    #--------------------------------------------------------------------------
+    def class_distribution(self, df, column, title):      
+
+        class_counts = df[column].value_counts().reset_index()
+        class_counts.columns = ['Class', 'Counts']
+
+        # Plotting with Seaborn
+        plt.figure(figsize=(18, 16))  
+        sns.barplot(x='Counts', y='Class', data=class_counts, orient='h')
+        plt.title(title, fontsize=14)
+        plt.xlabel(column, fontsize=12)
+        plt.ylabel('Frequency')
+        plt.xticks(rotation=0, ha='right', va='top', fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.tight_layout()  
+        plt.show(block=False)
+        
+
+  
 
 # [DATASET OPERATIONS]
 #==============================================================================
