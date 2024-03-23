@@ -370,6 +370,20 @@ class DataValidation:
         plt.yticks(fontsize=12)
         plt.tight_layout()  
         plt.show(block=False)
+
+    #--------------------------------------------------------------------------
+    def features_boxplot(self, df, columns, title):      
+
+        df_selected = df[columns]        
+        plt.figure(figsize=(14, 12))  
+        sns.boxplot(data=df_selected, orient='v')
+        plt.title(title, fontsize=14)
+        plt.xlabel('Feature', fontsize=12)
+        plt.ylabel('Frequency')
+        plt.xticks(rotation=0, ha='right', va='top', fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.tight_layout()  
+        plt.show(block=False)
         
 
   
