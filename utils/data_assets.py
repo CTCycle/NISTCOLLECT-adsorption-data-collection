@@ -355,24 +355,24 @@ class DataValidation:
     
 
     #--------------------------------------------------------------------------
-    def class_distribution(self, df, column, title):      
+    def class_distribution(self, df, column, params):      
 
         class_counts = df[column].value_counts().reset_index()
         class_counts.columns = ['Class', 'Counts']
 
         # Plotting with Seaborn
-        plt.figure(figsize=(18, 16))  
+        plt.figure(figsize=params['figsize'])  
         sns.barplot(x='Counts', y='Class', data=class_counts, orient='h')
-        plt.title(title, fontsize=14)
-        plt.xlabel(column, fontsize=12)
-        plt.ylabel('Frequency')
+        plt.title(params['title'], fontsize=params['fontsize_title'])
+        plt.xlabel(column, fontsize=params['fontsize_labels'])
+        plt.ylabel(params['ylabel'])
         plt.xticks(rotation=0, ha='right', va='top', fontsize=12)
         plt.yticks(fontsize=12)
         plt.tight_layout()  
         plt.show(block=False)
 
     #--------------------------------------------------------------------------
-    def features_boxplot(self, df, columns, title):      
+    def features_boxplot(self, df, columns):      
 
         df_selected = df[columns]        
         plt.figure(figsize=(14, 12))  
@@ -384,9 +384,8 @@ class DataValidation:
         plt.yticks(fontsize=12)
         plt.tight_layout()  
         plt.show(block=False)
-        
 
-  
+    
 
 # [DATASET OPERATIONS]
 #==============================================================================
