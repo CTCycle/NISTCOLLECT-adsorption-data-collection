@@ -362,26 +362,31 @@ class DataValidation:
 
         # Plotting with Seaborn
         plt.figure(figsize=params['figsize'])  
-        sns.barplot(x='Counts', y='Class', data=class_counts, orient='h')
+        sns.barplot(x='Counts', y='Class', data=class_counts, 
+                    color=params['color'], orient=params['orientation'])
         plt.title(params['title'], fontsize=params['fontsize_title'])
         plt.xlabel(column, fontsize=params['fontsize_labels'])
         plt.ylabel(params['ylabel'])
-        plt.xticks(rotation=0, ha='right', va='top', fontsize=12)
-        plt.yticks(fontsize=12)
+        plt.xticks(rotation=params['xticks_rotation'], ha=params['xticks_ha'], 
+                   va=params['xticks_va'], fontsize=params['fontsize_ticks'])
+        plt.yticks(rotation=0, ha=params['xticks_ha'], va=params['xticks_va'], 
+                   fontsize=params['fontsize_ticks'])
         plt.tight_layout()  
         plt.show(block=False)
 
     #--------------------------------------------------------------------------
-    def features_boxplot(self, df, columns):      
+    def features_boxplot(self, df, columns, params):      
 
         df_selected = df[columns]        
-        plt.figure(figsize=(14, 12))  
-        sns.boxplot(data=df_selected, orient='v')
-        plt.title(title, fontsize=14)
-        plt.xlabel('Feature', fontsize=12)
-        plt.ylabel('Frequency')
-        plt.xticks(rotation=0, ha='right', va='top', fontsize=12)
-        plt.yticks(fontsize=12)
+        plt.figure(figsize=params['figsize'])   
+        sns.boxplot(data=df_selected, orient=params['orientation'], palette=params['palette'])
+        plt.title(params['title'], fontsize=params['fontsize_title'])
+        plt.xlabel('Feature', fontsize=params['fontsize_labels'])
+        plt.ylabel(params['ylabel'])
+        plt.xticks(rotation=params['xticks_rotation'], ha=params['xticks_ha'], 
+                   va=params['xticks_va'], fontsize=params['fontsize_ticks'])
+        plt.yticks(rotation=0, ha=params['xticks_ha'], va=params['xticks_va'], 
+                   fontsize=params['fontsize_ticks'])
         plt.tight_layout()  
         plt.show(block=False)
 
