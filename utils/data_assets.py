@@ -366,7 +366,7 @@ class DataValidation:
                     color=params['color'], orient=params['orientation'])
         plt.title(params['title'], fontsize=params['fontsize_title'])
         plt.xlabel(column, fontsize=params['fontsize_labels'])
-        plt.ylabel(params['ylabel'])
+        plt.ylabel(params['ylabel'], fontsize=params['fontsize_labels'])
         plt.xticks(rotation=params['xticks_rotation'], ha=params['xticks_ha'], 
                    va=params['xticks_va'], fontsize=params['fontsize_ticks'])
         plt.yticks(rotation=0, ha=params['xticks_ha'], va=params['xticks_va'], 
@@ -382,7 +382,7 @@ class DataValidation:
         sns.boxplot(data=df_selected, orient=params['orientation'], palette=params['palette'])
         plt.title(params['title'], fontsize=params['fontsize_title'])
         plt.xlabel('Feature', fontsize=params['fontsize_labels'])
-        plt.ylabel(params['ylabel'])
+        plt.ylabel(params['ylabel'], fontsize=params['fontsize_labels'])
         plt.xticks(rotation=params['xticks_rotation'], ha=params['xticks_ha'], 
                    va=params['xticks_va'], fontsize=params['fontsize_ticks'])
         plt.yticks(rotation=0, ha=params['xticks_ha'], va=params['xticks_va'], 
