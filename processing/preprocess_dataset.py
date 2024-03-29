@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from utils.data_assets import PreProcessing
+from utils.preprocessing import add_guest_properties, pressure_converter, uptake_converter, remove_leading_zeros
 import utils.global_paths as globpt
 import configurations as cnf
 
@@ -37,13 +37,20 @@ df_SC = pd.read_csv(filepath, sep=';', encoding='utf-8')
 # [PREPROCESS DATA]
 #==============================================================================
 #==============================================================================
+ads_col, sorb_col  = ['adsorbent_name'], ['adsorbates_name'] 
+P_col, Q_col  = 'pressure_in_Pascal', 'uptake_in_mol_g'
+P_unit_col, Q_unit_col  = 'pressureUnits', 'adsorptionUnits' 
+valid_units = ['mmol/g', 'mol/kg', 'mol/g', 'mmol/kg', 'mg/g', 'g/g', 'cm3(STP)/g',
+                'wt%', 'g Adsorbate / 100g Adsorbent', 'g/100g', 'ml(STP)/g']
+                            
+parameters = ['temperature', 'mol_weight', 'complexity', 'covalent_units', 
+              'H_acceptors', 'H_donors', 'heavy_atoms']
 
-preprocessor = PreProcessing()
 
 # add molecular properties based on PUGCHEM API data
 #------------------------------------------------------------------------------ 
 print('\nAdding physicochemical properties from guest species dataset')
-dataset = preprocessor.add_guest_properties(df_SC, df_adsorbates)
+dataset = add_guest_properties(df_SC, df_adsorbates)
 dataset = dataset.dropna()
 
 # filter experiments leaving only valid uptake and pressure units, then convert 
@@ -52,27 +59,20 @@ dataset = dataset.dropna()
 print('\nConverting units and filtering bad values\n')
 
 # filter experiments by pressure and uptake units 
-dataset = dataset[dataset[preprocessor.Q_unit_col].isin(preprocessor.valid_units)]
-
+dataset = dataset[dataset[Q_unit_col].isin(valid_units)]
 
 # convert pressures to Pascal
-dataset[preprocessor.P_col] = dataset.progress_apply(lambda x : 
-                                                     preprocessor.pressure_converter(x[preprocessor.P_unit_col], 
-                                                                                                x['pressure']), 
-                                                                                                axis = 1)
+dataset[P_col] = dataset.progress_apply(lambda x : pressure_converter(x[P_unit_col], x['pressure']), axis = 1)
 # convert uptakes to mol/g
-dataset[preprocessor.Q_col] = dataset.progress_apply(lambda x : 
-                                                     preprocessor.uptake_converter(x[preprocessor.Q_unit_col], 
-                                                                                              x['adsorbed_amount'], 
-                                                                                              x['mol_weight']), 
-                                                                                              axis = 1)
+dataset[Q_col] = dataset.progress_apply(lambda x : uptake_converter(x[Q_unit_col], x['adsorbed_amount'], 
+                                                                    x['mol_weight']), axis = 1)
 
 # further filter the dataset to remove experiments which values are outside desired boundaries, 
 # such as experiments with negative temperature, pressure and uptake values
 #------------------------------------------------------------------------------ 
 dataset = dataset[dataset['temperature'].astype(int) > 0]
-dataset = dataset[dataset[preprocessor.P_col].astype(float).between(0.0, cnf.max_pressure)]
-dataset = dataset[dataset[preprocessor.Q_col].astype(float).between(0.0, cnf.max_uptake)]
+dataset = dataset[dataset[P_col].astype(float).between(0.0, cnf.max_pressure)]
+dataset = dataset[dataset[Q_col].astype(float).between(0.0, cnf.max_uptake)]
 
 # Aggregate values using groupby function in order to group the dataset by experiments
 #------------------------------------------------------------------------------ 
@@ -99,8 +99,8 @@ dataset_grouped.drop(columns='filename', axis=1, inplace=True)
 # remove series of pressure/uptake with less than X points, drop rows containing nan
 # values and select a subset of samples for training
 #------------------------------------------------------------------------------ 
-dataset_grouped = dataset_grouped[~dataset_grouped[preprocessor.P_col].apply(lambda x: all(elem == 0 for elem in x))]
-dataset_grouped = dataset_grouped[dataset_grouped[preprocessor.P_col].apply(lambda x: len(x)) >= cnf.min_points]
+dataset_grouped = dataset_grouped[~dataset_grouped[P_col].apply(lambda x: all(elem == 0 for elem in x))]
+dataset_grouped = dataset_grouped[dataset_grouped[P_col].apply(lambda x: len(x)) >= cnf.min_points]
 dataset_grouped = dataset_grouped.dropna()
 total_experiments = dataset_grouped.shape[0]
 
@@ -108,9 +108,9 @@ total_experiments = dataset_grouped.shape[0]
 # zero measurements at the start), make sure that every experiment starts with pressure
 # of 0 Pa and uptake of 0 mol/g (effectively converges to zero)
 #------------------------------------------------------------------------------
-dataset_grouped[[preprocessor.P_col, preprocessor.Q_col]] = dataset_grouped.apply(lambda row: 
-                 preprocessor.remove_leading_zeros(row[preprocessor.P_col],
-                 row[preprocessor.Q_col]), axis=1, result_type='expand')
+dataset_grouped[[P_col, Q_col]] = dataset_grouped.apply(lambda row: 
+                 remove_leading_zeros(row[P_col],
+                 row[Q_col]), axis=1, result_type='expand')
 
 # save files as csv locally
 #------------------------------------------------------------------------------

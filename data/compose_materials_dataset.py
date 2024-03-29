@@ -2,8 +2,6 @@ import os
 import pandas as pd
 import pubchempy as pcp
 from tqdm import tqdm
-import boto3
-from io import StringIO
 
 # set warnings
 #------------------------------------------------------------------------------
@@ -12,7 +10,7 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from utils.scraper_assets import NISTAdsorptionAPI
+from utils.core_API import NISTAdsorptionAPI
 import utils.global_paths as globpt
 import configurations as cnf
 

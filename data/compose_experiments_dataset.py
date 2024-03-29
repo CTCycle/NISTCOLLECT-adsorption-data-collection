@@ -1,13 +1,11 @@
 import os
 import sys
 import pandas as pd
-import boto3
-from io import StringIO
 
 # set warnings
 #------------------------------------------------------------------------------
 import warnings
-warnings.simplefilter(action='ignore', category = Warning)
+warnings.simplefilter(action='ignore', category=Warning)
 
 # add parent folder path to the namespace
 #------------------------------------------------------------------------------
@@ -15,8 +13,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from utils.data_assets import AdsorptionDataset
-from utils.scraper_assets import NISTAdsorptionAPI
+from utils.datasets import AdsorptionDataset
+from utils.core_API import NISTAdsorptionAPI
 import utils.global_paths as globpt
 import configurations as cnf
 
@@ -67,10 +65,9 @@ for i, fg in enumerate(list_fragmenter(isotherm_names, window_size)):
     # save data either locally or in a S3 bucket as .csv files
     SC_dataset_expanded, BM_dataset_expanded = dataworker.dataset_expansion(SC_dataset, BM_dataset) 
     file_loc = os.path.join(globpt.data_path, 'single_component_dataset.csv') 
-    SC_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index = False, sep = ';', encoding='utf-8')
+    SC_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index=False, sep=';', encoding='utf-8')
     file_loc = os.path.join(globpt.data_path, 'binary_mixture_dataset.csv') 
-    BM_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index = False, sep = ';', encoding='utf-8')
-
+    BM_dataset_expanded.to_csv(file_loc, mode='a' if i>0 else 'w', index=False, sep=';', encoding='utf-8')
    
 print('''
 -------------------------------------------------------------------------------
