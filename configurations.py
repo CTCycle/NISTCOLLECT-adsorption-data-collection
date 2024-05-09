@@ -1,10 +1,10 @@
 # data settings
 #------------------------------------------------------------------------------
-guest_fraction = 1.0
-host_fraction = 1.0
-experiments_fraction = 1.0
-chunk_size = 0.1
+GUEST_FRACTION = 1.0
+HOST_FRACTION = 1.0
+EXP_FRACTION = 1.0
+CHUNK_SIZE = 0.1
 
-min_points = 6
-max_pressure = 10e06
-max_uptake = 10
+MIN_POINTS = 6
+MAX_PRESSURE = 10e06
+MAX_UPTAKE = 10

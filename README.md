@@ -6,33 +6,33 @@ NISTADS is a python application developed to extract adsorption isotherms data f
 ## 2. Adsorption datasets
 The collected data is saved locally in 4 different .csv files, located in the `data\` folder. Adsorption isotherm datasets are saved in `data\experiments`, while the adsorbents and adsorbates datasets are saved into `data\materials`. The former will include the experiments datasets for both single component and binary mixture measurements, while the latter will host datasets on guest and host species. 
 
-### 2.1 Data preprocessing data
-The data undergoes preprocessing via a tailored pipeline, which initially filters out undesired experiments. These include experiments featuring negative values for temperature, pressure, and uptake, or those falling outside predefined boundaries for pressure and uptake ranges (refer to configurations for specifics). Pressure and uptakes are standardized to a uniform unit—Pascal for pressure and mol/g for uptakes. Following this refinement, the physicochemical attributes of the absorbate species are unearthed through the PUBCHEM API. This enriches the input data with molecular properties such as molecular weight, the count of heavy atoms, covalent units, and H-donor/acceptor statistics. Subsequently, features pertaining to experiment conditions (e.g., temperature) and adsorbate species (physicochemical properties) are normalized. Names of adsorbents and adsorbates are encoded into integer indices for subsequent vectorization by the designated embedding head of the model. Pressure and uptake series are also normalized, utilizing upper boundaries as the normalization ceiling. Additionally, initial zero measurements in pressure and uptakes series are removed to mitigate potential bias towards zero values. Finally, all sequences are reshaped to have the same length using post-padding with a specified padding value (defaulting to -1 to avoid conflicts with actual values) and then normalized.
+### 2.1 Data preprocessing
+The extracted data undergoes preprocessing via a tailored pipeline, which starts with filtering out undesired experiments. These include experiments featuring negative values for temperature, pressure, and uptake, or those falling outside predefined boundaries for pressure and uptake ranges (refer to configurations for specifics). Pressure and uptakes are standardized to a uniform unit—Pascal for pressure and mol/g for uptakes. Following this refinement, the physicochemical attributes of the absorbate species are unearthed through the PUBCHEM API. This enriches the input data with molecular properties such as molecular weight, the count of heavy atoms, covalent units, and H-donor/acceptor statistics. Subsequently, features pertaining to experiment conditions (e.g., temperature) and adsorbate species (physicochemical properties) are normalized. Names of adsorbents and adsorbates are encoded into integer indices for subsequent vectorization by the designated embedding head of the model. Pressure and uptake series are also normalized, utilizing upper boundaries as the normalization ceiling. Additionally, initial zero measurements in pressure and uptakes series are removed to mitigate potential bias towards zero values. Finally, all sequences are reshaped to have the same length using post-padding with a specified padding value (defaulting to -1 to avoid conflicts with actual values) and then normalized.
 
 ## 2. Installation 
-First, ensure that you have Python 3.10.12 installed on your system. Then, you can easily install the required Python packages using the provided requirements.txt file:
+The installation process is designed for simplicity, using .bat scripts to automatically create a virtual environment with all necessary dependencies. Please ensure that Anaconda or Miniconda is installed on your system before proceeding.
 
-`pip install -r requirements.txt` 
+- The `create_environment.bat` file, located in the scripts folder, offers a convenient one-click solution to set up your virtual environment.
 
 ## 3. How to use
-The project is organized into subfolders, each dedicated to specific tasks. The `utils/` folder houses crucial components utilized by various scripts. It's critical to avoid modifying these files, as doing so could compromise the overall integrity and functionality of the program.
+The project is organized into subfolders, each dedicated to specific tasks.
 
-**Data:** run `compose_experiments_dataset.py` or `compose_materials_dataset.py` to respectively fetch data for adsorption experiments or for the guest/host entries. The data collection operation may take long time due to the large number of queries to perform, and it heavily depends on your internet connection performance (more than 30k experiments are available as of now). You can select a fraction of data that you wish to extract (guest, host, or experiments data), and you can also split the total number of adsorption isotherm experiments in chunks, so that each chunk will be collected and saved as file iteratively.
+**data:** run `compose_experiments_dataset.py` or `compose_materials_dataset.py` to respectively fetch data for adsorption experiments or for the guest/host entries. The data collection operation may take long time due to the large number of queries to perform, and it heavily depends on your internet connection performance (more than 30k experiments are available as of now). You can select a fraction of data that you wish to extract (guest, host, or experiments data), and you can also split the total number of adsorption isotherm experiments in chunks, so that each chunk will be collected and saved as file iteratively.
 
-**Preprocessing:** run `preprocess_dataset.py` to perform preprocssing duties on the experiments dataset, specifically that including single component adsorption isotherm data. Use the jupiter notebook `data_analysis.ipynb` to perform explorative data analysis on the collected datasets.
+**preprocessing:** run `preprocess_dataset.py` to perform preprocssing duties on the experiments dataset, specifically that including single component adsorption isotherm data. Use the jupiter notebook `data_analysis.ipynb` to perform explorative data analysis on the collected datasets.
 
 ### 3.1 Configurations
 The configurations.py file allows to change the script configuration. 
 
 | Category              | Setting               | Description                                           |
 |-----------------------|-----------------------|-------------------------------------------------------|
-| **Data settings**     | guest_fraction        | fraction of adsorbate species data to be fetched      |
-|                       | host_fraction         | fraction of adsorbent materials data to be fetched    |
-|                       | experiments_fraction  | fraction of adsorption isotherm data to be fetched    |
-|                       | chunk_size            | fraction of data chunks to extract and save           |
-| **Series settings**   | min_points            | Minimum number of measurements per experiment         |
-|                       | max_pressure          | Max pressure to consider (in Pa)                      |
-|                       | max_uptake            | Max uptake to consider (in mol/g)                     |
+| **Data settings**     | GUEST_FRACTION        | fraction of adsorbate species data to be fetched      |
+|                       | HOST_FRACTION         | fraction of adsorbent materials data to be fetched    |
+|                       | EXP_FRACTION          | fraction of adsorption isotherm data to be fetched    |
+|                       | CHUNK_SIZE            | fraction of data chunks to extract and save           |
+| **Series settings**   | MIN_POINTS            | Minimum number of measurements per experiment         |
+|                       | MAX_PRESSURE          | Max pressure to consider (in Pa)                      |
+|                       | MAX_UPTAKE            | Max uptake to consider (in mol/g)                     |
                                          
 ## License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.

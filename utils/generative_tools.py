@@ -3,8 +3,6 @@ from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
 
 # [DATASET OPERATIONS]
 #==============================================================================
-# Methods to perform operation on the built adsorption dataset
-#==============================================================================
 class GPT2Model:    
     
     def __init__(self, path):

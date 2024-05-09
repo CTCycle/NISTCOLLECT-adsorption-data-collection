@@ -2,6 +2,7 @@ import pandas as pd
 from tqdm import tqdm
 tqdm.pandas()
 
+
 #------------------------------------------------------------------------------
 def pressure_converter(type, p_val):
 
@@ -82,7 +83,7 @@ def add_guest_properties(df_isotherms, df_adsorbates):
     return df_adsorption
 
 #------------------------------------------------------------------------------
-def remove_leading_zeros(self, sequence_A, sequence_B):
+def remove_leading_zeros(sequence_A, sequence_B):
 
     # Find the index of the first non-zero element or get the last index if all are zeros
     first_non_zero_index_A = next((i for i, x in enumerate(sequence_A) if x != 0), len(sequence_A) - 1)

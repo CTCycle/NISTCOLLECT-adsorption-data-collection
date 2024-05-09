@@ -5,8 +5,6 @@ tqdm.pandas()
 
 # [DATASET OPERATIONS]
 #==============================================================================
-# Methods to perform operation on the built adsorption dataset
-#==============================================================================
 class AdsorptionDataset:    
     
     def __init__(self, dataframe):

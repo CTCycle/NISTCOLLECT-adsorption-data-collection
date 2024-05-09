@@ -4,7 +4,6 @@ import requests as r
 
 # define the class for inspection of the input folder and generation of files list.
 #==============================================================================
-#==============================================================================
 class NISTAdsorptionAPI:  
     
     def __init__(self):        
