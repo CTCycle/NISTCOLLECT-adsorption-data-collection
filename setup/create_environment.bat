@@ -2,13 +2,12 @@
 rem Use this script to create a new environment called "NISTADS"
 
 echo STEP 1: Creation of NISTADS environment
-call conda create -n NISTADS python=3.10 
+call conda create -n NISTADS python=3.10 -y
 if errorlevel 1 (
     echo Failed to create the environment NISTADS
     goto :eof
 )
 
-echo Environment NISTADS successfully created!
 rem If present, activate the environment
 call conda activate NISTADS
 

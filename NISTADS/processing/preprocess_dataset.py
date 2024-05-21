@@ -13,7 +13,7 @@ sys.path.append(project_dir)
 # [IMPORT CUSTOM MODULES]
 from utils.preprocessing import add_guest_properties, pressure_converter, uptake_converter, remove_leading_zeros
 from utils.pathfinder import DATA_EXP_PATH, DATA_MAT_PATH
-import configurations as cnf
+import NISTADS.config.configurations as cnf
 
 # [DEFINE CONSTANTS]
 ADS_COL, SORB_COL  = ['adsorbent_name'], ['adsorbates_name'] 

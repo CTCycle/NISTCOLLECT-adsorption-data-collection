@@ -11,54 +11,54 @@ tqdm.pandas()
 class DataValidation:   
 
     #--------------------------------------------------------------------------
-    def class_distribution(self, df, column, params):      
+    def class_distribution(self, df, column, title='', y_label=''):      
 
         class_counts = df[column].value_counts().reset_index()
         class_counts.columns = ['Class', 'Counts']
         
-        plt.figure(figsize=params['figsize'])  
+        plt.figure(figsize=(14, 12))  
         sns.barplot(x='Counts', y='Class', data=class_counts, 
-                    color=params['color'], orient=params['orientation'])
-        plt.title(params['title'], fontsize=params['fontsize_title'])
-        plt.xlabel(column, fontsize=params['fontsize_labels'])
-        plt.ylabel(params['ylabel'], fontsize=params['fontsize_labels'])
-        plt.xticks(rotation=params['xticks_rotation'], ha='center', fontsize=params['fontsize_ticks'])
-        plt.yticks(rotation=0, ha='right', fontsize=params['fontsize_ticks'])
+                    color='skyblue', orient=45)
+        plt.title(title, fontsize=14)
+        plt.xlabel(column, fontsize=14)
+        plt.ylabel(y_label, fontsize=14)
+        plt.xticks(rotation=45, ha='center', fontsize=12)
+        plt.yticks(rotation=0, ha='right', fontsize=12)
         plt.gca().tick_params(axis='y', which='major', pad=10)  
         plt.tight_layout()  
         plt.show(block=False)
 
     #--------------------------------------------------------------------------
-    def features_boxplot(self, df, columns, params):      
+    def features_boxplot(self, df, columns, title='', x_label='', y_label=''):      
 
         df_selected = df[columns]        
-        plt.figure(figsize=params['figsize'])   
-        sns.boxplot(data=df_selected, orient=params['orientation'], palette=params['palette'])
-        plt.title(params['title'], fontsize=params['fontsize_title'])
-        plt.xlabel(params['xlabel'], fontsize=params['fontsize_labels'])
-        plt.ylabel(params['ylabel'], fontsize=params['fontsize_labels'])
-        plt.xticks(rotation=params['xticks_rotation'], ha='center', fontsize=params['fontsize_ticks'])
-        plt.yticks(rotation=0, ha='right', fontsize=params['fontsize_ticks'])
+        plt.figure(figsize=(14, 12)) 
+        sns.boxplot(data=df_selected, orient=45, palette='viridis')
+        plt.title(title, fontsize=14)
+        plt.xlabel(x_label, fontsize=14)
+        plt.ylabel(y_label, fontsize=14)
+        plt.xticks(rotation=45, ha='center', fontsize=14)
+        plt.yticks(rotation=0, ha='right', fontsize=14)
         plt.tight_layout()  
         plt.show(block=False)
 
     #--------------------------------------------------------------------------
-    def features_scatterplot(self, df, columns, params):      
+    def features_scatterplot(self, df, columns, title='', x_label='', y_label=''):
 
         df_selected = df[columns]        
-        plt.figure(figsize=params['figsize'])   
+        plt.figure(figsize=(14, 12))  
         sns.scatterplot(data=df_selected, x=columns[0], y=columns[1], 
-                        color=params['color'], edgecolor='black')
-        plt.title(params['title'], fontsize=params['fontsize_title'])
-        plt.xlabel(params['xlabel'], fontsize=params['fontsize_labels'])
-        plt.ylabel(params['ylabel'], fontsize=params['fontsize_labels'])
-        plt.xticks(rotation=params['xticks_rotation'], ha='center', fontsize=params['fontsize_ticks'])
-        plt.yticks(rotation=0, ha='right', fontsize=params['fontsize_ticks'])
+                        color='skyblue', edgecolor='black')
+        plt.title(title, fontsize=14)
+        plt.xlabel(x_label, fontsize=14)
+        plt.ylabel(y_label, fontsize=14)
+        plt.xticks(rotation=45, ha='center', fontsize=14)
+        plt.yticks(rotation=0, ha='right', fontsize=14)
         plt.tight_layout()  
         plt.show(block=False)
 
     #--------------------------------------------------------------------------
-    def DBSCAN_clustering(self, df, min_samples, params):  
+    def DBSCAN_clustering(self, df, min_samples, title='', x_label='', y_label=''):
 
              
         X_scaled = StandardScaler().fit_transform(df.values)        
@@ -78,11 +78,11 @@ class DataValidation:
     
         plt.scatter(cluster_data[df.columns[0]], cluster_data[df.columns[1]],
                     s=50, palette=color, label=f'Cluster {cluster}' if cluster != -1 else 'Noise')
-        plt.title(params['title'], fontsize=params['fontsize_title'])
-        plt.xlabel(params['xlabel'], fontsize=params['fontsize_labels'])
-        plt.ylabel(params['ylabel'], fontsize=params['fontsize_labels'])
-        plt.xticks(rotation=params['xticks_rotation'], ha='center', fontsize=params['fontsize_ticks'])
-        plt.yticks(rotation=0, ha='right', fontsize=params['fontsize_ticks'])
+        plt.title(title, fontsize=14)
+        plt.xlabel(x_label, fontsize=14)
+        plt.ylabel(y_label, fontsize=14)
+        plt.xticks(rotation=45, ha='center', fontsize=14)
+        plt.yticks(rotation=0, ha='right', fontsize=14)
         plt.tight_layout()  
         plt.show(block=False)
 

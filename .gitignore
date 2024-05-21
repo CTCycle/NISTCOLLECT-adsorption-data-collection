@@ -1,4 +1,4 @@
 __pycache__
-data/experiments/*
-data/materials/*
-model/*
+NISTADS/data/experiments/*
+NISTADS/data/materials/*
+NISTADS/model/*
