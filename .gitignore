@@ -2,3 +2,5 @@ __pycache__
 NISTADS/data/experiments/*
 NISTADS/data/materials/*
 NISTADS/model/*
+
+!.gitkeep

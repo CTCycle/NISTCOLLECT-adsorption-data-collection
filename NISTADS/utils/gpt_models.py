@@ -1,7 +1,7 @@
 from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
     
 
-# [DATASET OPERATIONS]
+# [GENERATIVE MODELS]
 #==============================================================================
 class GPT2Model:    
     

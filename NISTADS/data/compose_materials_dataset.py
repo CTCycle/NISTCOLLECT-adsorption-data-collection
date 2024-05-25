@@ -13,7 +13,7 @@ project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_dir) 
 
 # [IMPORT CUSTOM MODULES]
-from utils.API.core import NISTAdsorptionAPI
+from utils.NISTDB.core import NISTAdsorptionAPI
 from config.pathfinder import DATA_MAT_PATH
 import config.configurations as cnf
 

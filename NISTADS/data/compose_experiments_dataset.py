@@ -12,7 +12,7 @@ sys.path.append(project_dir)
 
 # [IMPORT CUSTOM MODULES]
 from utils.datamaker.datasets import AdsorptionDataset
-from utils.API.core import NISTAdsorptionAPI
+from utils.NISTDB.core import NISTAdsorptionAPI
 from config.pathfinder import DATA_EXP_PATH
 import config.configurations as cnf
 

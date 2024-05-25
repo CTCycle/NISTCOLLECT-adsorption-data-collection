@@ -1,16 +1,15 @@
 @echo off
-rem Use this script to create a new environment called "NISTADS"
+rem Use this script to create a new environment called "NISTCOLLECT"
 
-echo STEP 1: Creation of NISTADS environment
-call conda create -n NISTADS python=3.10 -y
+echo STEP 1: Creation of NISTCOLLECT environment
+call conda create -n NISTCOLLECT python=3.10 -y
 if errorlevel 1 (
-    echo Failed to create the environment NISTADS
+    echo Failed to create the environment NISTCOLLECT
     goto :eof
 )
 
 rem If present, activate the environment
-call conda activate NISTADS
-
+call conda activate NISTCOLLECT
 
 rem Install additional packages with pip
 echo STEP 2: Install python libraries and packages
