@@ -4,5 +4,4 @@ NISTADS/data/materials/*
 NISTADS/model/*
 
 *.egg-info
-
 !.gitkeep
