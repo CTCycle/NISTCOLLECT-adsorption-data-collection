@@ -6,15 +6,11 @@ import pandas as pd
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
-# [DEFINE PROJECT FOLDER PATH]
-project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_dir) 
-
 # [IMPORT CUSTOM MODULES]
-from utils.datamaker.datasets import AdsorptionDataset
-from utils.NISTDB.core import NISTAdsorptionAPI
-from config.pathfinder import DATA_EXP_PATH
-import config.configurations as cnf
+from NISTADS.utils.datamaker.datasets import AdsorptionDataset
+from NISTADS.utils.NISTDB.core import NISTAdsorptionAPI
+from NISTADS.config.pathfinder import DATA_EXP_PATH
+import NISTADS.config.configurations as cnf
 
 
 # [RUN MAIN]

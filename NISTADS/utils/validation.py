@@ -18,7 +18,7 @@ class DataValidation:
         
         plt.figure(figsize=(14, 12))  
         sns.barplot(x='Counts', y='Class', data=class_counts, 
-                    color='skyblue', orient=45)
+                    color='skyblue', orient='h')
         plt.title(title, fontsize=14)
         plt.xlabel(column, fontsize=14)
         plt.ylabel(y_label, fontsize=14)
