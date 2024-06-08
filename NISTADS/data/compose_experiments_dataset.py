@@ -7,10 +7,10 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTADS.utils.datamaker.datasets import AdsorptionDataset
-from NISTADS.utils.NISTDB.core import NISTAdsorptionAPI
-from NISTADS.config.pathfinder import DATA_EXP_PATH
-import NISTADS.config.configurations as cnf
+from NISTADS.commons.utils.datamaker.datasets import AdsorptionDataset
+from NISTADS.commons.utils.NISTDB.core import NISTAdsorptionAPI
+from NISTADS.commons.pathfinder import DATA_EXP_PATH
+import NISTADS.commons.configurations as cnf
 
 
 # [RUN MAIN]

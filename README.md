@@ -23,7 +23,7 @@ The project is organized into subfolders, each dedicated to specific tasks.
 **experimental:** contains experimental features to integrate further information into the dataset. Description of chemicals (both adsorbate species and adsorbent materials) can be generated using the pretrained GPT2 model using `NISTADS/experimental/gpt_enhancement.py`. Due to the model limitations, description may not be very accurate and lack context for more complex molecules and materials. 
 
 ### 3.1 Configurations
-The `NISTADS/config/configurations.py` file allows to change the script configuration. 
+For customization, you can modify the main script parameters via the `NISTADS/commons/configurations.py` file. 
 
 | Category              | Setting               | Description                                           |
 |-----------------------|-----------------------|-------------------------------------------------------|

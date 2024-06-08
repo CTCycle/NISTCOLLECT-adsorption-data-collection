@@ -9,9 +9,9 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTADS.utils.NISTDB.core import NISTAdsorptionAPI
-from NISTADS.config.pathfinder import DATA_MAT_PATH
-import NISTADS.config.configurations as cnf
+from NISTADS.commons.utils.NISTDB.core import NISTAdsorptionAPI
+from NISTADS.commons.pathfinder import DATA_MAT_PATH
+import NISTADS.commons.configurations as cnf
 
 
 # [RUN MAIN]
