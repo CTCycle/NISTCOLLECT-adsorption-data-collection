@@ -1,7 +1,7 @@
 __pycache__
-NISTADS/data/experiments/*
-NISTADS/data/materials/*
-NISTADS/experimental/model/*
+NISTCOLLECT/experimental/model/*
 
+*.log
+*.csv
 *.egg-info
 !.gitkeep

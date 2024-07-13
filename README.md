@@ -1,4 +1,4 @@
-# NISTADS: NIST/ARPA-E dataset composer
+# NISTCOLLECT: NIST/ARPA-E dataset composer
 
 ## 1. Project Overview
 NISTADS is a python application developed to extract adsorption isotherms data from the NIST/ARPA-E Database of Novel and Emerging Adsorbent Materials (https://adsorption.nist.gov/index.php#home) through their dedicated API. The user can either collect data regarding adsorbent materials and adsorbate species or fetch adsorption isotherm experimental data. Experiments are identified by name upon building the entire database experiments index from the API endpoint. Furthermore, NISTADS exploits the PUG REST API (see https://pubchempy.readthedocs.io/en/latest/ for more information) to enrich the adsorbate species dataset with molecular properties (such as molecular weight, canonical smiles, complexity, heavy atoms, etc.). Eventually, the adsorption isotherm dataset is split into two datasets, one containing data on single component adsorption and the other including experiments with binary mixtures.

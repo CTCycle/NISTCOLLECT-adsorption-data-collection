@@ -1,5 +1,4 @@
 import os
-import sys
 import pandas as pd
 import pubchempy as pcp
 from tqdm import tqdm
@@ -9,9 +8,9 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTADS.commons.utils.NISTDB.core import NISTAdsorptionAPI
-from NISTADS.commons.pathfinder import DATA_MAT_PATH
-import NISTADS.commons.configurations as cnf
+from NISTCOLLECT.commons.utils.datascraper.fetching import GuestHostAPI
+from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
+from NISTCOLLECT.commons.logger import logger
 
 
 # [RUN MAIN]
@@ -19,21 +18,11 @@ if __name__ == '__main__':
 
     # 1. [GET ISOTHERM MATERIALS INDEX]
     #--------------------------------------------------------------------------
-    print('\nCollect experiments data\n')
+    logger.info('Start collecting adsorption experiments data')
 
     # get isotherm indexes invoking API
-    webworker = NISTAdsorptionAPI()
-    adsorbates_index, adsorbents_index = webworker.Get_GuestHost_Index()
-    adsorbates_index = adsorbates_index[:int(len(adsorbates_index) * cnf.GUEST_FRACTION)] 
-    adsorbents_index = adsorbents_index[:int(len(adsorbents_index) * cnf.HOST_FRACTION)]
-    adsorbates_names = [x['InChIKey'] for x in adsorbates_index]
-    adsorbents_names = [x['hashkey'] for x in adsorbents_index]
-
-    # create a dataframe with extracted experiments data 
-    df_adsorbates = pd.DataFrame(adsorbates_index)
-    df_adsorbents = pd.DataFrame(adsorbents_index) 
-    print(f'Total number of adsorbents: {df_adsorbents.shape[0]}')
-    print(f'Total number of adsorbates: {df_adsorbates.shape[0]}')
+    webworker = GuestHostAPI()
+    guest_index, host_index = webworker.get_guest_host_indexes()     
 
     # 2. [COLLECT HOST DATA]
     #--------------------------------------------------------------------------

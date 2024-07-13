@@ -1,0 +1,7 @@
+{   
+    "GUEST_FRACTION" : 0.001,
+    "HOST_FRACTION" : 0.001,
+    "EXP_FRACTION" : 1.0,
+    "CHUNK_SIZE" : 0.1   
+  
+}

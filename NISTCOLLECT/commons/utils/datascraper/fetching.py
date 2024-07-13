@@ -1,19 +1,27 @@
+import pandas as pd
 from tqdm import tqdm
 import requests as r
 
+from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
+from NISTCOLLECT.commons.logger import logger
 
-# define the class for inspection of the input folder and generation of files list.
-#==============================================================================
-class NISTAdsorptionAPI:  
-    
-    def __init__(self):        
-        self.url_isotherms = 'https://adsorption.nist.gov/isodb/api/isotherms.json'
-        self.url_adsorbates = 'https://adsorption.nist.gov/isodb/api/gases.json'
-        self.url_adsorbents = 'https://adsorption.nist.gov/matdb/api/materials.json'        
-        
+
+# [NIST DATABASE API]
+#------------------------------------------------------------------------------
+class GuestHostAPI: 
+
+    def __init__(self):      
+        self.url_GUEST = 'https://adsorption.nist.gov/isodb/api/gases.json'
+        self.url_HOST = 'https://adsorption.nist.gov/matdb/api/materials.json'
+        self.guest_fraction = CONFIG["GUEST_FRACTION"]
+        self.host_fraction = CONFIG["HOST_FRACTION"]
+        self.guest_identifier = 'InChIKey'
+        self.host_identifier = 'hashkey'
+
+
     # function to retrieve HTML data
     #--------------------------------------------------------------------------
-    def Get_GuestHost_Index(self):
+    def get_guest_host_indexes(self):
         
         '''
         Retrieves adsorbates and adsorbents data from specified URLs. This function sends GET 
@@ -26,26 +34,52 @@ class NISTAdsorptionAPI:
             tuple: A tuple containing two elements:
                 - adsorbates_index (dict or None): A dictionary containing the adsorbates data if the request was successful, None otherwise.
                 - adsorbents_index (dict or None): A dictionary containing the adsorbents data if the request was successful, None otherwise.
+        
         ''' 
-        adsorbents_json = r.get(self.url_adsorbents)
-        adsorbates_json = r.get(self.url_adsorbates)        
-        if adsorbents_json.status_code == 200:    
-            adsorbents_index = adsorbents_json.json()       
+        guest_json = r.get(self.url_GUEST)
+        host_json = r.get(self.url_HOST)
+
+        if guest_json.status_code == 200:
+            guest_index = guest_json.json() 
+            df_guest = pd.DataFrame(guest_index)
+            logger.info(f'Total number of adsorbents: {df_guest.shape[0]}')
         else:
-            print(f'Error: Failed to retrieve adsorbents data. Status code: {adsorbents_json.status_code}')
-            adsorbents_index = None        
-        if adsorbates_json.status_code == 200:    
-            adsorbates_index = adsorbates_json.json()       
+            logger.error(f'Failed to retrieve adsorbents data. Status code: {guest_json.status_code}')       
+            df_guest = pd.DataFrame()
+        if host_json.status_code == 200:
+            host_index = host_json.json() 
+            df_host = pd.DataFrame(host_index) 
+            logger.info(f'Total number of adsorbates: {df_host.shape[0]}')
         else:
-            print(f'Error: Failed to retrieve adsorbates data. Status code: {adsorbates_json.status_code}')
-            adsorbates_index = None         
-            
-        return adsorbates_index, adsorbents_index    
+            logger.error(f'Failed to retrieve adsorbates data. Status code: {host_json.status_code}')
+            df_host = pd.DataFrame() 
+  
+        return df_guest, df_host 
+
+
+    # function to retrieve HTML data
+    #--------------------------------------------------------------------------
+    def get_guest_host_data(self, df_guest, df_host):
+
+        guest_names = df_guest[self.guest_identifier].to_list()
+        host_names = df_host[self.host_identifier].to_list()
+
+        # fetch guest data using the names in the dataframe as reference        
+        guest_data = []
+        for name in tqdm(guest_names):            
+            named_guest_url = f'https://adsorption.nist.gov/isodb/api/gas/{name}.json'
+            guest_response = r.get(named_guest_url)
+            if guest_response.status_code != 200:
+                logger.error(f'Could not fetch data from {named_guest_url}')
+                continue
+
+            guest_data.append(guest_response.json())      
+
     
     
     # function to retrieve HTML data
     #--------------------------------------------------------------------------
-    def Get_GuestHost_Data(self, item_names, focus = 'guest'):
+    def get_materials_data(self, item_names, focus='guest'):
 
         '''
         Retrieves the data of the specified guests or hosts from the NIST ISODB.
@@ -89,6 +123,20 @@ class NISTAdsorptionAPI:
                     host_entry = None        
        
         return extracted_data   
+
+# [NIST DATABASE API]
+#------------------------------------------------------------------------------
+class NISTAdsorptionAPI:  
+    
+    def __init__(self):        
+        self.url_isotherms = 'https://adsorption.nist.gov/isodb/api/isotherms.json'
+        
+
+
+
+            
+        
+    
     
     
     # function to retrieve HTML data

@@ -2,9 +2,12 @@ import pandas as pd
 from tqdm import tqdm
 tqdm.pandas()
 
+from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
+from NISTCOLLECT.commons.logger import logger
+
 
 # [DATASET OPERATIONS]
-#==============================================================================
+#------------------------------------------------------------------------------
 class AdsorptionDataset:    
     
     def __init__(self, dataframe):
