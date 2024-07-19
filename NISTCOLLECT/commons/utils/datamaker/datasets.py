@@ -7,7 +7,7 @@ from NISTCOLLECT.commons.logger import logger
 
 
 # [DATASET OPERATIONS]
-#------------------------------------------------------------------------------
+###############################################################################
 class AdsorptionDataset:    
     
     def __init__(self, dataframe):
@@ -136,4 +136,40 @@ class AdsorptionDataset:
 
 
 
-                
+# [DATASET OPERATIONS]
+###############################################################################
+class ProcessData:    
+    
+    def __init__(self, dataframe):
+        self.dataframe = dataframe                 
+
+        # extract single properties from the general list and create a dictionary with
+        # property names and values    
+        canonical_smiles = [x['canonical_smiles'] if x != 'None' else 'NaN' for x in adsorbates_properties]
+        complexity = [x['complexity'] if x != 'None' else 'NaN' for x in adsorbates_properties]
+        atoms = [' '.join(x['elements']) if x != 'None' else 'NaN' for x in adsorbates_properties]
+        mol_weight = [x['molecular_weight'] if x != 'None' else 'NaN' for x in adsorbates_properties]
+        covalent_units = [x['covalent_unit_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
+        H_acceptors = [x['h_bond_acceptor_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
+        H_donors = [x['h_bond_donor_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
+        heavy_atoms = [x['heavy_atom_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
+        properties = {'canonical_smiles': canonical_smiles,
+                        'complexity': complexity,
+                        'atoms': atoms,
+                        'mol_weight': mol_weight,
+                        'covalent_units': covalent_units,
+                        'H_acceptors': H_acceptors,
+                        'H_donors': H_donors,
+                        'heavy_atoms': heavy_atoms}
+
+        # create dataset of properties and concatenate it with sorbates dataset   
+        df_properties = pd.DataFrame(properties)
+        df_guests_expanded = pd.concat([df_guests, df_properties], axis = 1)
+
+        # save files either as csv locally or in S3 bucket    
+        file_loc = os.path.join(DATA_MAT_PATH, 'adsorbents_dataset.csv') 
+        df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
+        file_loc = os.path.join(DATA_MAT_PATH, 'adsorbates_dataset.csv') 
+        df_guests_expanded.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')    
+
+        print('NISTADS data collection has terminated. All files have been saved.')

@@ -2,80 +2,44 @@ import os
 import pandas as pd
 import pubchempy as pcp
 from tqdm import tqdm
+import asyncio
 
 # [SETTING WARNINGS]
 import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTCOLLECT.commons.utils.datascraper.fetching import GuestHostAPI
+from NISTCOLLECT.commons.utils.datascraper.getdata import GuestHostAPI
+from NISTCOLLECT.commons.utils.datamaker.properties import MolecularProperties
 from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
 from NISTCOLLECT.commons.logger import logger
 
 
 # [RUN MAIN]
+###############################################################################
 if __name__ == '__main__':
 
-    # 1. [GET ISOTHERM MATERIALS INDEX]
+    # 1. [COLLECT GUEST/HOST INDEXES]
     #--------------------------------------------------------------------------
-    logger.info('Start collecting adsorption experiments data')
-
     # get isotherm indexes invoking API
+    logger.info('Collect guest/host indexes')
     webworker = GuestHostAPI()
     guest_index, host_index = webworker.get_guest_host_indexes()     
 
-    # 2. [COLLECT HOST DATA]
+    # 2. [COLLECT GUEST/HOST DATA]
     #--------------------------------------------------------------------------
-    print('\nExtracting adsorbents data')
-    df_adsorbents_properties = webworker.Get_GuestHost_Data(adsorbents_names, focus = 'host')    
-    df_hosts = pd.DataFrame(df_adsorbents_properties) 
-    
-    # 3. [COLLECT GUEST DATA]
+    logger.info('Extracting adsorbents and sorbates data')
+    guest_data, host_data = webworker.get_guest_host_data(guest_index, host_index) 
+
+    # 3. [ADD MOLECULAR PROPERTIES]
     #--------------------------------------------------------------------------
-    print('\nExtracting adsorbates data')
-    df_adsorbates_properties = webworker.Get_GuestHost_Data(adsorbates_names, focus = 'guest')    
-    df_guests = pd.DataFrame(df_adsorbates_properties)
+    enricher = MolecularProperties()
+    df_properties = enricher.extract_molecular_properties(guest_data)
+
+
+    print()
     
-    # create list of molecular properties of sorbates (using PUG REST API as reference)    
-    print('\nAdding physicochemical properties to guest molecules dataset')
-    adsorbates_properties = []
-    for row in tqdm(df_adsorbates.itertuples(), total = len(df_adsorbates)):    
-        name = row[2].lower()        
-        try:
-            cid = pcp.get_cids(name, list_return='flat')
-            properties = pcp.Compound.from_cid(cid).to_dict()
-            adsorbates_properties.append(properties)
-        except:
-            properties = 'None'
-            adsorbates_properties.append(properties)    
     
-    # extract single properties from the general list and create a dictionary with
-    # property names and values    
-    canonical_smiles = [x['canonical_smiles'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-    complexity = [x['complexity'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-    atoms = [' '.join(x['elements']) if x != 'None' else 'NaN' for x in adsorbates_properties]
-    mol_weight = [x['molecular_weight'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-    covalent_units = [x['covalent_unit_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-    H_acceptors = [x['h_bond_acceptor_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-    H_donors = [x['h_bond_donor_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-    heavy_atoms = [x['heavy_atom_count'] if x != 'None' else 'NaN' for x in adsorbates_properties]
-    properties = {'canonical_smiles': canonical_smiles,
-                  'complexity': complexity,
-                  'atoms': atoms,
-                  'mol_weight': mol_weight,
-                  'covalent_units': covalent_units,
-                  'H_acceptors': H_acceptors,
-                  'H_donors': H_donors,
-                  'heavy_atoms': heavy_atoms}
-
-    # create dataset of properties and concatenate it with sorbates dataset   
-    df_properties = pd.DataFrame(properties)
-    df_guests_expanded = pd.concat([df_guests, df_properties], axis = 1)
-
-    # save files either as csv locally or in S3 bucket    
-    file_loc = os.path.join(DATA_MAT_PATH, 'adsorbents_dataset.csv') 
-    df_hosts.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')
-    file_loc = os.path.join(DATA_MAT_PATH, 'adsorbates_dataset.csv') 
-    df_guests_expanded.to_csv(file_loc, index = False, sep = ';', encoding = 'utf-8')    
-
-    print('NISTADS data collection has terminated. All files have been saved.')
+      
+    
+    

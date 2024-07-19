@@ -2,7 +2,7 @@ from transformers import TFGPT2LMHeadModel, GPT2Tokenizer
     
 
 # [GENERATIVE MODELS]
-#==============================================================================
+###############################################################################
 class GPT2Model:    
     
     def __init__(self, path):
