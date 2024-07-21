@@ -46,7 +46,7 @@ LOG_CONFIG =  {
     },
 }
 
-# override logger configuration and load the latter
+# override logger configuration and load root logger
 ###############################################################################
 logging.config.dictConfig(LOG_CONFIG)
 logger = logging.getLogger()
