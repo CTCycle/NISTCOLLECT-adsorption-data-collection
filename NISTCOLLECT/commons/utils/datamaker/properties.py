@@ -1,8 +1,9 @@
+import asyncio
+import aiohttp
 import pandas as pd
 import pubchempy as pcp
-from tqdm import tqdm
-tqdm.pandas()
 
+from NISTCOLLECT.commons.utils.datascraper.asynchronous import properties_from_multiple_names
 from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
 from NISTCOLLECT.commons.logger import logger
 
@@ -30,12 +31,14 @@ class MolecularProperties:
     #--------------------------------------------------------------------------
     def extract_molecular_properties(self, data):
 
-        # create list of molecular properties of sorbates (using PUG REST API as reference)
-        extracted_properties = [self.get_properties_by_name(d) for d in data if d is not None]        
-        # create dataframe with data extracted
-        df_properties = pd.DataFrame(extracted_properties)
+        names = [x.get('name', 'NA') for x in data]
+        loop = asyncio.get_event_loop()
+        extracted_properties = loop.run_until_complete(properties_from_multiple_names(names))
 
-        return df_properties
+        
+        #df_properties = pd.DataFrame(extracted_properties)
+
+        return extracted_properties
 
         
              

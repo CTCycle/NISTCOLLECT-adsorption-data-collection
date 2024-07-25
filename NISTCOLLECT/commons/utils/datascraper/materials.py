@@ -1,9 +1,10 @@
+import numpy as np
 import pandas as pd
 import requests as r
 import asyncio
 
 from NISTCOLLECT.commons.utils.datascraper.status import GetServerStatus
-from NISTCOLLECT.commons.utils.datascraper.asynchronous import fetch_data_chunk
+from NISTCOLLECT.commons.utils.datascraper.asynchronous import data_from_multiple_URLs
 from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
 from NISTCOLLECT.commons.logger import logger
 
@@ -68,21 +69,23 @@ class GuestHostAPI:
     #--------------------------------------------------------------------------
     def get_guest_host_data(self, df_guest, df_host):
 
+        guest_samples = int(np.ceil(CONFIG["GUEST_FRACTION"] * df_guest.shape[0]))
+        host_samples = int(np.ceil(CONFIG["HOST_FRACTION"] * df_host.shape[0]))
         loop = asyncio.get_event_loop()
 
         if df_guest is not None:
-            guest_names = df_guest[self.guest_identifier].to_list()[:100]
+            guest_names = df_guest[self.guest_identifier].to_list()[:guest_samples]
             guest_urls = [f'https://adsorption.nist.gov/isodb/api/gas/{name}.json' for name in guest_names]
-            guest_data = loop.run_until_complete(fetch_data_chunk(guest_urls))
+            guest_data = loop.run_until_complete(data_from_multiple_URLs(guest_urls))
             guest_data = [data for data in guest_data if data is not None]
         else:
             logger.error('No available guest data has been found. Skipping directly to host species')
             guest_data = None
 
         if df_host is not None:  
-            host_names = df_host[self.host_identifier].to_list()[:100]        
+            host_names = df_host[self.host_identifier].to_list()[:host_samples]       
             host_urls = [f'https://adsorption.nist.gov/isodb/api/material/{name}.json' for name in host_names]       
-            host_data = loop.run_until_complete(fetch_data_chunk(host_urls))        
+            host_data = loop.run_until_complete(data_from_multiple_URLs(host_urls))        
             host_data = [data for data in host_data if data is not None]
         else:
             logger.error('No available host data has been found.')

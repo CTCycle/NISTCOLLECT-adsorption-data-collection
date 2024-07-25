@@ -34,7 +34,9 @@ if __name__ == '__main__':
     # 3. [ADD MOLECULAR PROPERTIES]
     #--------------------------------------------------------------------------
     enricher = MolecularProperties()
-    df_properties = enricher.extract_molecular_properties(guest_data)
+    properties = enricher.extract_molecular_properties(guest_data)
+
+    pass
 
 
     print()
