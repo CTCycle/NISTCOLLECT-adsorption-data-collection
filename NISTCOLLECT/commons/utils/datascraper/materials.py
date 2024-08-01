@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import requests as r
@@ -30,7 +31,7 @@ class GuestHostAPI:
 
     # function to retrieve HTML data
     #--------------------------------------------------------------------------
-    def get_guest_host_indexes(self):
+    def get_guest_host_index(self):
         
         '''
         Retrieves adsorbates and adsorbents data from specified URLs. This function sends GET 
@@ -87,12 +88,19 @@ class GuestHostAPI:
             host_names = df_host[self.host_identifier].to_list()[:host_samples]       
             host_urls = [f'https://adsorption.nist.gov/isodb/api/material/{name}.json' for name in host_names]       
             host_data = loop.run_until_complete(data_from_multiple_URLs(host_urls, num_calls))        
-            host_data = [data for data in host_data if data is not None]
+            host_data = [data['name'] for data in host_data if data is not None]
+            self.save_host_dataframe(host_data)
         else:
             logger.error('No available host data has been found.')
             host_data = None
 
         return guest_data, host_data    
 
+    #--------------------------------------------------------------------------
+    def save_host_dataframe(self, data):
+
+        dataframe = pd.DataFrame(data, columns=['name'])  
+        file_loc = os.path.join(DATA_MAT_PATH, 'hosts_dataset.csv') 
+        dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')  
 
 

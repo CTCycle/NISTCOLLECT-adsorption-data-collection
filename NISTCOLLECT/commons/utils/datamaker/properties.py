@@ -52,15 +52,15 @@ class MolecularProperties:
     def process_extracted_properties(self, name, features):
            
         self.properties['name'].append(name)
-        self.properties['atoms'].append(features['atoms'])
-        self.properties['heavy_atoms'].append(features['heavy_atom_count'])
-        self.properties['bonds'].append(features['bonds'])
-        self.properties['elements'].append(' '.join(features['elements']))
-        self.properties['molecular_weight'].append(features['molecular_weight'])
-        self.properties['molecular_formula'].append(features['molecular_formula'])
-        self.properties['SMILE'].append(features['canonical_smiles'])
-        self.properties['H_acceptors'].append(features['h_bond_acceptor_count'])
-        self.properties['H_donors'].append(features['h_bond_donor_count'])          
+        self.properties['atoms'].append(features.get('atoms', 'NA'))
+        self.properties['heavy_atoms'].append(features.get('heavy_atom_count', 'NA'))
+        self.properties['bonds'].append(features.get('bonds', 'NA'))
+        self.properties['elements'].append(' '.join(features.get('elements', 'NA')))
+        self.properties['molecular_weight'].append(features.get('molecular_weight', 'NA'))
+        self.properties['molecular_formula'].append(features.get('molecular_formula', 'NA'))
+        self.properties['SMILE'].append(features.get('canonical_smiles', 'NA'))
+        self.properties['H_acceptors'].append(features.get('h_bond_acceptor_count', 'NA'))
+        self.properties['H_donors'].append(features.get('h_bond_donor_count', 'NA'))          
         
         return self.properties    
         

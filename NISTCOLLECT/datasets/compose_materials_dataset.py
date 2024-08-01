@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # get isotherm indexes invoking API
     logger.info('Collect guest/host indexes')
     webworker = GuestHostAPI()
-    guest_index, host_index = webworker.get_guest_host_indexes()     
+    guest_index, host_index = webworker.get_guest_host_index()     
 
     # 2. [COLLECT GUEST/HOST DATA]
     #--------------------------------------------------------------------------

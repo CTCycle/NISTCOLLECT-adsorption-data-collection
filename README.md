@@ -11,14 +11,20 @@ The collected data is saved locally in 4 different .csv files, located in the `N
 ## 2. Installation 
 The installation process is designed for simplicity, using .bat scripts to automatically create a virtual environment with all necessary dependencies. Please ensure that Anaconda or Miniconda is installed on your system before proceeding.
 
-- The `scripts/create_environment.bat` file, located in the scripts folder, offers a convenient one-click solution to set up your virtual environment.
-- Once the environment has been created, run `scripts/package_setup.bat` to install the app package locally.
-- **IMPORTANT:** run `scripts/package_setup.bat` if you move the project folder somewhere else after installation, or the app won't work!
+- The `scripts/environment_setup.bat` file, located in the scripts folder, offers a convenient one-click solution to set up your virtual environment.
+- **IMPORTANT:** run `scripts/package_setup.bat` if the path to the project folder is changed for any reason after installation, or the app won't work!
 
 ## 3. How to use
-The project is organized into subfolders, each dedicated to specific tasks.
+Within the main project folder (NISTCOLLECT) you will find other folders, each designated to specific tasks. 
 
-**data:** run `NISTADS/data/compose_experiments_dataset.py` or `NISTADS/data/compose_materials_dataset.py` to respectively fetch data for adsorption experiments or for the guest/host entries. The data collection operation may take long time due to the large number of queries to perform, and it heavily depends on your internet connection performance (more than 30k experiments are available as of now). You can select a fraction of data that you wish to extract (guest, host, or experiments data), and you can also split the total number of adsorption isotherm experiments in chunks, so that each chunk will be collected and saved as file iteratively. Use the notebook `NISTADS/data/dataset_info.ipynb` to perform explorative data analysis on the collected datasets.
+### Datasets
+Contains the scripts developed to extract data from the NIST DB and organise them into a readable .csv format. Data is collected through the NIST API in a concurrent fashion, allowing for fast data retrieval by selecting a maximum number of parallel HTTP requests.
+
+- Run `compose_experiments_dataset.py` to fetch data for adsorption experiments
+- Run `compose_materials_dataset.py` to respectively fetch data for adsorption experiments or for the guest/host entries. The data collection operation may take long time due to the large number of queries to perform, and it heavily depends on your internet connection performance (more than 30k experiments are available as of now). You can select a fraction of data that you wish to extract (guest, host, or experiments data), and you can also split the total number of adsorption isotherm experiments in chunks, so that each chunk will be collected and saved as file iteratively. Use the notebook `NISTADS/data/dataset_info.ipynb` to perform explorative data analysis on the collected datasets.
+
+### Resources
+This folder is used to organize data and results for various stages of the project, including data validation, model training, and evaluation. Here are the key subfolders:
 
 **experimental:** contains experimental features to integrate further information into the dataset. Description of chemicals (both adsorbate species and adsorbent materials) can be generated using the pretrained GPT2 model using `NISTADS/experimental/gpt_enhancement.py`. Due to the model limitations, description may not be very accurate and lack context for more complex molecules and materials. 
 

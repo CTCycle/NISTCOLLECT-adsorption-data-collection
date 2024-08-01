@@ -19,26 +19,16 @@ if __name__ == '__main__':
     # 1. [GET ISOTHERM EXPERIMENTS INDEX]
     #--------------------------------------------------------------------------
     # get isotherm indexes invoking API
-    logger.info('Collect guest/host indexes')
+    logger.info('Collect adsorption isotherm indexes')
     webworker = AdsorptionDataAPI()
-    experiment_index = webworker.get_experiments_indexes()     
+    experiments_index = webworker.get_experiments_index()     
 
     # 2. [COLLECT ADSORPTION EXPERIMENTS DATA]
     #--------------------------------------------------------------------------
     logger.info('Extracting adsorbents and sorbates data')
-    guest_data, host_data = webworker.get_experiments_data(experiment_index) 
+    adsorption_data = webworker.get_experiments_data(experiments_index) 
 
-    # # 3. [ADD MOLECULAR PROPERTIES]
-    # #--------------------------------------------------------------------------
-    # enricher = MolecularProperties()
-    # df_properties = enricher.extract_molecular_properties(guest_data)
-
-    # # define a function to split the index into chunks to be processed sequentially,
-    # # to avoid excessive burden on system memory (for low RAM machines)    
-    # window_size = int(cnf.CHUNK_SIZE * len(isotherm_names))
-    # def list_fragmenter(lst, n):    
-    #     for i in range(0, len(lst), n):
-    #         yield lst[i:i + n]    
+    pass  
 
     # # 2. [COLLECT DATA]
     # #--------------------------------------------------------------------------
