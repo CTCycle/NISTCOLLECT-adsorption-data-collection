@@ -1,6 +1,5 @@
 import aiohttp
 import asyncio
-import pubchempy as pcp
 from tqdm.asyncio import tqdm_asyncio
 
 
@@ -26,8 +25,8 @@ async def data_from_single_URL(session, url, semaphore):
 
 # function to retrieve HTML data
 ###############################################################################
-async def data_from_multiple_URLs(urls):
-    semaphore = asyncio.Semaphore(CONFIG["PARALLEL_TASKS"])
+async def data_from_multiple_URLs(urls, num_calls):
+    semaphore = asyncio.Semaphore(num_calls)
     async with aiohttp.ClientSession() as session:
         tasks = [data_from_single_URL(session, url, semaphore) for url in urls]
         results = await tqdm_asyncio.gather(*tasks)

@@ -1,8 +1,8 @@
 {   
-    "GUEST_FRACTION" : 0.5,
-    "HOST_FRACTION" : 0.01,
+    "GUEST_FRACTION" : 1.0,
+    "HOST_FRACTION" : 1.0,
     "EXP_FRACTION" : 1.0,
     "CHUNK_SIZE" : 0.1,
-    "PARALLEL_TASKS" : 50
+    "PARALLEL_TASKS" : 80
   
 }

@@ -1,8 +1,3 @@
-import os
-import pandas as pd
-import pubchempy as pcp
-from tqdm import tqdm
-import asyncio
 
 # [SETTING WARNINGS]
 import warnings
@@ -37,6 +32,5 @@ if __name__ == '__main__':
     properties = enricher.get_properties_from_multiple_names(guest_data)
 
     
-      
     
     
