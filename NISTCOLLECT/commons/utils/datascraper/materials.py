@@ -27,7 +27,7 @@ class GuestHostAPI:
         self.host_fraction = CONFIG["HOST_FRACTION"]
         self.guest_identifier = 'InChIKey'
         self.host_identifier = 'hashkey'
-        self.max_parallel_calls = CONFIG["PARALLEL_TASKS"]
+        self.max_parallel_calls = CONFIG["PARALLEL_TASKS_GH"]
 
     # function to retrieve HTML data
     #--------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class GuestHostAPI:
     #--------------------------------------------------------------------------
     def get_guest_host_data(self, df_guest, df_host):
 
-        num_calls = CONFIG["PARALLEL_TASKS"]
+        num_calls = CONFIG["PARALLEL_TASKS_GH"]
         guest_samples = int(np.ceil(CONFIG["GUEST_FRACTION"] * df_guest.shape[0]))
         host_samples = int(np.ceil(CONFIG["HOST_FRACTION"] * df_host.shape[0]))
         loop = asyncio.get_event_loop()
