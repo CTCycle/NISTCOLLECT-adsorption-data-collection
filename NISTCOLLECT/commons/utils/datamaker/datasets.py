@@ -158,8 +158,7 @@ class DataProcessing:
         return single_component, binary_mixture 
 
     #--------------------------------------------------------------------------
-    def save_adsorption_datasets(self, single_component, binary_mixture):       
-
+    def save_adsorption_datasets(self, single_component, binary_mixture): 
         
         file_loc = os.path.join(DATA_EXP_PATH, 'single_component_adsorption.csv') 
         single_component.to_csv(file_loc, index=False, sep=';', encoding='utf-8')

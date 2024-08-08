@@ -68,7 +68,7 @@ class AdsorptionDataAPI:
             list: A list of dictionaries where each dictionary contains the isotherm data for an experiment.
 
         ''' 
-        num_calls = CONFIG["PARALLEL_TASKS_GH"]
+        num_calls = CONFIG["PARALLEL_TASKS_EXP"]
         exp_samples = int(np.ceil(CONFIG["EXP_FRACTION"] * df_isotherms.shape[0]))
 
         if df_isotherms is not None:
