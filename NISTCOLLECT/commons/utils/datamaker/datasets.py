@@ -78,12 +78,13 @@ class AdsorptionDataset:
 
         # check if the number of guest species is two (binary mixture dataset)
         elif (dataframe['numGuests'] == 2).all():
+            data_placeholder = {'composition' : 1.0, 'adsorption': 1.0}
             dataframe['total_pressure'] = dataframe['isotherm_data'].apply(lambda x : [f['pressure'] for f in x])                
             dataframe['all_species_data'] = dataframe['isotherm_data'].apply(lambda x : [f['species_data'] for f in x])
             dataframe['compound_1'] = dataframe['adsorbates_name'].apply(lambda x : x[0])        
-            dataframe['compound_2'] = dataframe['adsorbates_name'].apply(lambda x : x[1])              
+            dataframe['compound_2'] = dataframe['adsorbates_name'].apply(lambda x : x[1] if len(x) > 1 else None)              
             dataframe['compound_1_data'] = dataframe['all_species_data'].apply(lambda x : [f[0] for f in x])               
-            dataframe['compound_2_data'] = dataframe['all_species_data'].apply(lambda x : [f[1] for f in x])            
+            dataframe['compound_2_data'] = dataframe['all_species_data'].apply(lambda x : [f[1] if len(f) > 1 else data_placeholder for f in x])
             dataframe['compound_1_composition'] = dataframe['compound_1_data'].apply(lambda x : [f['composition'] for f in x])              
             dataframe['compound_2_composition'] = dataframe['compound_2_data'].apply(lambda x : [f['composition'] for f in x])            
             dataframe['compound_1_pressure'] = dataframe.apply(lambda x: [a * b for a, b in zip(x['compound_1_composition'], x['total_pressure'])], axis=1)             
@@ -153,12 +154,14 @@ class DataProcessing:
         single_component, binary_mixture = self.datamanager.split_by_mixture_complexity(drop_data) 
         single_component = self.datamanager.process_experiment_data(single_component)
         binary_mixture = self.datamanager.process_experiment_data(binary_mixture)
-        single_component, binary_mixture = self.datamanager.expand_dataset(single_component, binary_mixture) 
+        single_component, binary_mixture = self.datamanager.expand_dataset(single_component, binary_mixture)
+        self.save_adsorption_datasets(single_component, binary_mixture) 
 
         return single_component, binary_mixture 
 
     #--------------------------------------------------------------------------
-    def save_adsorption_datasets(self, single_component, binary_mixture): 
+    def save_adsorption_datasets(self, single_component : pd.DataFrame, 
+                                 binary_mixture : pd.DataFrame): 
         
         file_loc = os.path.join(DATA_EXP_PATH, 'single_component_adsorption.csv') 
         single_component.to_csv(file_loc, index=False, sep=';', encoding='utf-8')

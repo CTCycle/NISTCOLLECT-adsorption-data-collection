@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     # 2. [COLLECT ADSORPTION EXPERIMENTS DATA]
     #--------------------------------------------------------------------------
-    logger.info('Extracting adsorbents and sorbates data')
+    logger.info('Extracting adsorption isotherms data')
     adsorption_data = webworker.get_experiments_data(experiments_index) 
     
     # # 2. [COLLECT DATA]
