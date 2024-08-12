@@ -1,5 +1,5 @@
 __pycache__
-NISTCOLLECT/experimental/model/*
+NISTADS/experimental/model/*
 
 *.log
 *.csv

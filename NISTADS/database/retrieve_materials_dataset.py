@@ -5,7 +5,7 @@ warnings.simplefilter(action='ignore', category=Warning)
 # [IMPORT CUSTOM MODULES]
 from NISTCOLLECT.commons.utils.datascraper.materials import GuestHostAPI
 from NISTCOLLECT.commons.utils.datamaker.properties import MolecularProperties
-from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
+from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
 from NISTCOLLECT.commons.logger import logger
 
 

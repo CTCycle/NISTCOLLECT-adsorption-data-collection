@@ -6,7 +6,7 @@ import asyncio
 
 from NISTCOLLECT.commons.utils.datascraper.status import GetServerStatus
 from NISTCOLLECT.commons.utils.datascraper.asynchronous import data_from_multiple_URLs
-from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
+from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
 from NISTCOLLECT.commons.logger import logger
 
 
@@ -100,7 +100,7 @@ class GuestHostAPI:
     def save_host_dataframe(self, data):
 
         dataframe = pd.DataFrame(data, columns=['name'])  
-        file_loc = os.path.join(DATA_MAT_PATH, 'hosts_dataset.csv') 
+        file_loc = os.path.join(DATA_PATH, 'hosts_dataset.csv') 
         dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')  
 
 

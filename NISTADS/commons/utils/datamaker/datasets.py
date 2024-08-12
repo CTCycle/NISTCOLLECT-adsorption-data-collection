@@ -3,7 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 tqdm.pandas()
 
-from NISTCOLLECT.commons.constants import CONFIG, DATA_EXP_PATH
+from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
 from NISTCOLLECT.commons.logger import logger
 
 
@@ -163,8 +163,8 @@ class DataProcessing:
     def save_adsorption_datasets(self, single_component : pd.DataFrame, 
                                  binary_mixture : pd.DataFrame): 
         
-        file_loc = os.path.join(DATA_EXP_PATH, 'single_component_adsorption.csv') 
+        file_loc = os.path.join(DATA_PATH, 'single_component_adsorption.csv') 
         single_component.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
-        file_loc = os.path.join(DATA_EXP_PATH, 'binary_mixture_adsorption.csv') 
+        file_loc = os.path.join(DATA_PATH, 'binary_mixture_adsorption.csv') 
         binary_mixture.to_csv(file_loc, index=False, sep=';', encoding='utf-8')         
-        logger.info(f'NISTCOLLECT data collection has terminated. All files have been saved in {DATA_EXP_PATH}')
+        logger.info(f'NISTCOLLECT data collection has terminated. All files have been saved in {DATA_PATH}')

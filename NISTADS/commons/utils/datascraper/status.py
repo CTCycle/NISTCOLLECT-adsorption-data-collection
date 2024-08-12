@@ -2,7 +2,7 @@ import sys
 import time
 import requests as r
 
-from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
+from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
 from NISTCOLLECT.commons.logger import logger
 
 

@@ -3,7 +3,7 @@ import pandas as pd
 import pubchempy as pcp
 from tqdm import tqdm
 
-from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
+from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
 from NISTCOLLECT.commons.logger import logger
 
 
@@ -68,5 +68,5 @@ class MolecularProperties:
     def save_properties_dataframe(self, properties):
 
         dataframe = pd.DataFrame(properties)  
-        file_loc = os.path.join(DATA_MAT_PATH, 'guests_dataset.csv') 
+        file_loc = os.path.join(DATA_PATH, 'guests_dataset.csv') 
         dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')       

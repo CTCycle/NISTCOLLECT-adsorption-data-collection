@@ -5,7 +5,7 @@ warnings.simplefilter(action='ignore', category=Warning)
 # [IMPORT CUSTOM MODULES]
 from NISTCOLLECT.commons.utils.datascraper.experiments import AdsorptionDataAPI
 from NISTCOLLECT.commons.utils.datamaker.datasets import DataProcessing
-from NISTCOLLECT.commons.constants import CONFIG, DATA_MAT_PATH
+from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
 from NISTCOLLECT.commons.logger import logger
 
 
