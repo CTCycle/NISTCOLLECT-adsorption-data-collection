@@ -24,8 +24,17 @@ if errorlevel 1 (
     goto :eof
 )
 
+rem Install additional tools
+echo STEP 3: Install additional libraries for model visualization
+call conda install pydot -y
+call conda install pydotplus -y
+if errorlevel 1 (
+    echo Failed to install Graphviz or Pydot.
+    goto :eof
+)
+
 rem install packages in editable mode
-echo STEP 3: Install utils packages in editable mode
+echo STEP 4: Install utils packages in editable mode
 call cd .. && pip install -e .
 if errorlevel 1 (
     echo Failed to install the package in editable mode
