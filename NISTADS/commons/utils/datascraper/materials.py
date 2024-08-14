@@ -4,10 +4,10 @@ import pandas as pd
 import requests as r
 import asyncio
 
-from NISTCOLLECT.commons.utils.datascraper.status import GetServerStatus
-from NISTCOLLECT.commons.utils.datascraper.asynchronous import data_from_multiple_URLs
-from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
-from NISTCOLLECT.commons.logger import logger
+from NISTADS.commons.utils.datascraper.status import GetServerStatus
+from NISTADS.commons.utils.datascraper.asynchronous import data_from_multiple_URLs
+from NISTADS.commons.constants import CONFIG, DATA_PATH
+from NISTADS.commons.logger import logger
 
 
 # [CHECK SERVER STATUS]
@@ -23,11 +23,11 @@ class GuestHostAPI:
     def __init__(self):      
         self.url_GUEST = 'https://adsorption.nist.gov/isodb/api/gases.json'
         self.url_HOST = 'https://adsorption.nist.gov/matdb/api/materials.json'
-        self.guest_fraction = CONFIG["GUEST_FRACTION"]
-        self.host_fraction = CONFIG["HOST_FRACTION"]
+        self.guest_fraction = CONFIG["collection"]["GUEST_FRACTION"]
+        self.host_fraction = CONFIG["collection"]["HOST_FRACTION"]        
+        self.max_parallel_calls = CONFIG["collection"]["PARALLEL_TASKS_GH"]
         self.guest_identifier = 'InChIKey'
         self.host_identifier = 'hashkey'
-        self.max_parallel_calls = CONFIG["PARALLEL_TASKS_GH"]
 
     # function to retrieve HTML data
     #--------------------------------------------------------------------------
@@ -69,16 +69,15 @@ class GuestHostAPI:
     # function to retrieve HTML data
     #--------------------------------------------------------------------------
     def get_guest_host_data(self, df_guest, df_host):
-
-        num_calls = CONFIG["PARALLEL_TASKS_GH"]
-        guest_samples = int(np.ceil(CONFIG["GUEST_FRACTION"] * df_guest.shape[0]))
-        host_samples = int(np.ceil(CONFIG["HOST_FRACTION"] * df_host.shape[0]))
+        
+        guest_samples = int(np.ceil(self.guest_fraction * df_guest.shape[0]))
+        host_samples = int(np.ceil(self.host_fraction * df_host.shape[0]))
         loop = asyncio.get_event_loop()
 
         if df_guest is not None:
             guest_names = df_guest[self.guest_identifier].to_list()[:guest_samples]
             guest_urls = [f'https://adsorption.nist.gov/isodb/api/gas/{name}.json' for name in guest_names]
-            guest_data = loop.run_until_complete(data_from_multiple_URLs(guest_urls, num_calls))
+            guest_data = loop.run_until_complete(data_from_multiple_URLs(guest_urls, self.max_parallel_calls))
             guest_data = [data for data in guest_data if data is not None]
         else:
             logger.error('No available guest data has been found. Skipping directly to host species')
@@ -87,7 +86,7 @@ class GuestHostAPI:
         if df_host is not None:  
             host_names = df_host[self.host_identifier].to_list()[:host_samples]       
             host_urls = [f'https://adsorption.nist.gov/isodb/api/material/{name}.json' for name in host_names]       
-            host_data = loop.run_until_complete(data_from_multiple_URLs(host_urls, num_calls))        
+            host_data = loop.run_until_complete(data_from_multiple_URLs(host_urls, self.max_parallel_calls))        
             host_data = [data['name'] for data in host_data if data is not None]
             self.save_host_dataframe(host_data)
         else:

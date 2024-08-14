@@ -3,10 +3,10 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTCOLLECT.commons.utils.datascraper.experiments import AdsorptionDataAPI
-from NISTCOLLECT.commons.utils.datamaker.datasets import DataProcessing
-from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
-from NISTCOLLECT.commons.logger import logger
+from NISTADS.commons.utils.datascraper.experiments import AdsorptionDataAPI
+from NISTADS.commons.utils.datamaker.datasets import AdsorptionDatasetPreparation
+from NISTADS.commons.constants import CONFIG, DATA_PATH
+from NISTADS.commons.logger import logger
 
 
 # [RUN MAIN]
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     
     # # 2. [COLLECT DATA]
     #--------------------------------------------------------------------------
-    processor = DataProcessing()
-    dataset = processor.process_dataset(adsorption_data)
+    processor = AdsorptionDatasetPreparation()
+    dataset = processor.prepare_dataset(adsorption_data)
 
     

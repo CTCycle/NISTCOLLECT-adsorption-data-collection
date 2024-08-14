@@ -3,8 +3,8 @@ import asyncio
 from tqdm.asyncio import tqdm_asyncio
 
 
-from NISTCOLLECT.commons.constants import CONFIG
-from NISTCOLLECT.commons.logger import logger
+from NISTADS.commons.constants import CONFIG
+from NISTADS.commons.logger import logger
 
 
 

@@ -1,8 +1,35 @@
-{   
-    "GUEST_FRACTION" : 0.2,
-    "HOST_FRACTION" : 0.2,
-    "EXP_FRACTION" : 0.1,    
-    "PARALLEL_TASKS_GH" : 60,
-    "PARALLEL_TASKS_EXP" : 30
-  
+{   "SEED" : 54, 
+
+    "collection" : {"GUEST_FRACTION" : 0.2,
+                    "HOST_FRACTION" : 0.2,
+                    "EXP_FRACTION" : 0.1,    
+                    "PARALLEL_TASKS_GH" : 60,
+                    "PARALLEL_TASKS_EXP" : 30},
+
+    "dataset" : {"SAMPLE_SIZE" : 1.0,
+                 "VALIDATION_SIZE" : 0.15,                 
+                 "MEASUREMENTS": 40,
+                 "PADDING_VALUE": -1,
+                 "MIN_POINTS": 6,
+                 "MAX_PRESSURE": 10e06,
+                 "MAX_UPTAKE": 10,
+                 "SPLIT_SEED" : 45},
+
+    "model" : {"IMG_SHAPE" : [192, 192, 3],
+               "EMBEDDING_DIMS": 256,
+               "SAVE_MODEL_PLOT" : true},
+
+    "training" : {"EPOCHS" : 30,
+                  "LEARNING_RATE" : 0.001,
+                  "BATCH_SIZE" : 16,
+                  "MIXED_PRECISION" : false,
+                  "USE_TENSORBOARD" : false,
+                  "XLA_STATE" : false,
+                  "ML_DEVICE" : "GPU",                 
+                  "NUM_PROCESSORS": 4,
+                  "PLOT_EPOCH_GAP": 5},                  
+                  
+    "evaluation" : {"BATCH_SIZE" : 20}     
+      
 }
+

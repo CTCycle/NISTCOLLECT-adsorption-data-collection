@@ -3,8 +3,8 @@ import pandas as pd
 from tqdm import tqdm
 tqdm.pandas()
 
-from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
-from NISTCOLLECT.commons.logger import logger
+from NISTADS.commons.constants import CONFIG, DATA_PATH
+from NISTADS.commons.logger import logger
 
 
 
@@ -47,7 +47,7 @@ class AdsorptionDataset:
         return single_compound, binary_mixture   
 
     #--------------------------------------------------------------------------
-    def process_experiment_data(self, dataframe): 
+    def process_experiment_data(self, dataframe : pd.DataFrame): 
 
         '''
         Processes the experimental data contained in the given DataFrame.
@@ -74,6 +74,7 @@ class AdsorptionDataset:
         if (dataframe['numGuests'] == 1).all():
             dataframe['pressure'] = dataframe['isotherm_data'].apply(lambda x : [f['pressure'] for f in x])                
             dataframe['adsorbed_amount'] = dataframe['isotherm_data'].apply(lambda x : [f['total_adsorption'] for f in x])
+            dataframe['adsorbates_name'] = dataframe['adsorbates'].apply(lambda x : [f['name'] for f in x][0])
             dataframe['composition'] = 1.0 
 
         # check if the number of guest species is two (binary mixture dataset)
@@ -95,8 +96,7 @@ class AdsorptionDataset:
         return dataframe           
     
     #--------------------------------------------------------------------------
-    def expand_dataset(self, single_component : pd.DataFrame, 
-                       binary_mixture : pd.DataFrame):
+    def expand_dataset(self, single_component : pd.DataFrame, binary_mixture : pd.DataFrame):
 
         '''
         Expands the datasets by exploding and dropping columns.
@@ -141,14 +141,14 @@ class AdsorptionDataset:
 
 # [DATASET OPERATIONS]
 ###############################################################################
-class DataProcessing:    
+class AdsorptionDatasetPreparation:    
     
     def __init__(self):
         
         self.datamanager = AdsorptionDataset()     
 
     #--------------------------------------------------------------------------
-    def process_dataset(self, dataframe):  
+    def prepare_dataset(self, dataframe):  
 
         drop_data = self.datamanager.remove_columns(dataframe) 
         single_component, binary_mixture = self.datamanager.split_by_mixture_complexity(drop_data) 

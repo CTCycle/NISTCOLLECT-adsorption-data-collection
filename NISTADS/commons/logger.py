@@ -3,7 +3,7 @@ import logging
 import logging.config
 from datetime import datetime
 
-from NISTCOLLECT.commons.constants import LOGS_PATH
+from NISTADS.commons.constants import LOGS_PATH
 
 
 # Generate timestamp for the log filename

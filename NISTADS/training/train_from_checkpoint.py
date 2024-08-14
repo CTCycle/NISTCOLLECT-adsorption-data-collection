@@ -7,11 +7,11 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from FEXT.commons.utils.dataloader.generators import training_data_pipeline
-from FEXT.commons.utils.dataloader.serializer import DataSerializer, ModelSerializer
-from FEXT.commons.utils.models.training import ModelTraining
-from FEXT.commons.constants import CONFIG
-from FEXT.commons.logger import logger
+from NISTADS.commons.utils.dataloader.generators import training_data_pipeline
+from NISTADS.commons.utils.dataloader.serializer import DataSerializer, ModelSerializer
+from NISTADS.commons.utils.models.training import ModelTraining
+from NISTADS.commons.constants import CONFIG, DATA_PATH
+from NISTADS.commons.logger import logger
 
 
 # [RUN MAIN]

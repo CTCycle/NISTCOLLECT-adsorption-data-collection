@@ -3,10 +3,10 @@ import pandas as pd
 import requests as r
 import asyncio
 
-from NISTCOLLECT.commons.utils.datascraper.status import GetServerStatus
-from NISTCOLLECT.commons.utils.datascraper.asynchronous import data_from_multiple_URLs
-from NISTCOLLECT.commons.constants import CONFIG
-from NISTCOLLECT.commons.logger import logger
+from NISTADS.commons.utils.datascraper.status import GetServerStatus
+from NISTADS.commons.utils.datascraper.asynchronous import data_from_multiple_URLs
+from NISTADS.commons.constants import CONFIG
+from NISTADS.commons.logger import logger
 
 
 # [CHECK SERVER STATUS]
@@ -20,6 +20,8 @@ server.check_status()
 class AdsorptionDataAPI:  
     
     def __init__(self):        
+        self.exp_fraction = CONFIG["collection"]["EXP_FRACTION"]
+        self.max_parallel_calls = CONFIG["collection"]["PARALLEL_TASKS_EXP"]
         self.url_isotherms = 'https://adsorption.nist.gov/isodb/api/isotherms.json'
         self.exp_identifier = 'filename'
     
@@ -67,25 +69,20 @@ class AdsorptionDataAPI:
         Returns:
             list: A list of dictionaries where each dictionary contains the isotherm data for an experiment.
 
-        ''' 
-        num_calls = CONFIG["PARALLEL_TASKS_EXP"]
-        exp_samples = int(np.ceil(CONFIG["EXP_FRACTION"] * df_isotherms.shape[0]))
+        '''         
+        exp_samples = int(np.ceil(self.exp_fraction * df_isotherms.shape[0]))
 
         if df_isotherms is not None:
             loop = asyncio.get_event_loop()
             exp_names = df_isotherms[self.exp_identifier].to_list()[:exp_samples]
             exp_URLs = [f'https://adsorption.nist.gov/isodb/api/isotherm/{name}.json' for name in exp_names]
-            exp_data = loop.run_until_complete(data_from_multiple_URLs(exp_URLs, num_calls))
+            exp_data = loop.run_until_complete(data_from_multiple_URLs(exp_URLs, self.max_parallel_calls))
             exp_data = [data for data in exp_data if data is not None]
 
-        df_experiments = self.create_experiments_dataframe(exp_data)
+        df_experiments = pd.DataFrame(exp_data)
 
         return df_experiments
-        
-    #--------------------------------------------------------------------------
-    def create_experiments_dataframe(self, data):
 
-        return pd.DataFrame(data)  
         
            
     

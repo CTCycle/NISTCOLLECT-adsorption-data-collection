@@ -15,11 +15,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from SCADS.commons.utils.preprocessing import PreProcessing
-from SCADS.commons.utils.inference import Inference
-from SCADS.commons.utils.validation import ModelValidation
-from SCADS.commons.pathfinder import DATA_PATH, CHECKPOINT_PATH, INFERENCE_PATH
-import SCADS.commons.configurations as cnf
+from NISTADS.commons.utils.preprocessing import PreProcessing
+from NISTADS.commons.utils.inference import Inference
+from NISTADS.commons.utils.validation import ModelValidation
+from NISTADS.commons.pathfinder import DATA_PATH, CHECKPOINT_PATH, INFERENCE_PATH
+import NISTADS.commons.configurations as cnf
 
 
 # [RUN MAIN]
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     #------------------------------------------------------------------------------
     inference = Inference(cnf.SEED) 
     model, parameters = inference.load_pretrained_model(CHECKPOINT_PATH)
-    model_path = inference.folder_path
+    NLP_PATH = inference.folder_path
     model.summary(expand_nested=True)
 
     file_loc = os.path.join(INFERENCE_PATH, 'adsorption_inputs.csv') 

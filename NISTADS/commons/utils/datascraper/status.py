@@ -2,8 +2,8 @@ import sys
 import time
 import requests as r
 
-from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
-from NISTCOLLECT.commons.logger import logger
+from NISTADS.commons.constants import CONFIG, DATA_PATH
+from NISTADS.commons.logger import logger
 
 
 # function to retrieve HTML data

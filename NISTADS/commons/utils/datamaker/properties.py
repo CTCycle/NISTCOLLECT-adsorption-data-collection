@@ -3,8 +3,8 @@ import pandas as pd
 import pubchempy as pcp
 from tqdm import tqdm
 
-from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
-from NISTCOLLECT.commons.logger import logger
+from NISTADS.commons.constants import CONFIG, DATA_PATH
+from NISTADS.commons.logger import logger
 
 
 # [DATASET OPERATIONS]

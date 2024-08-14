@@ -3,10 +3,10 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTCOLLECT.commons.utils.datascraper.materials import GuestHostAPI
-from NISTCOLLECT.commons.utils.datamaker.properties import MolecularProperties
-from NISTCOLLECT.commons.constants import CONFIG, DATA_PATH
-from NISTCOLLECT.commons.logger import logger
+from NISTADS.commons.utils.datascraper.materials import GuestHostAPI
+from NISTADS.commons.utils.datamaker.properties import MolecularProperties
+from NISTADS.commons.constants import CONFIG, DATA_PATH
+from NISTADS.commons.logger import logger
 
 
 # [RUN MAIN]
