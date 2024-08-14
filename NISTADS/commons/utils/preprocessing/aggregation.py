@@ -11,15 +11,13 @@ from NISTADS.commons.logger import logger
 ###############################################################################
 class GuestPropertiesMerge:
 
-    def __init__(self, properties : pd.DataFrame, adsorption : pd.DataFrame):
-        
-        self.properties = properties
-        self.adsorption = adsorption
+    def __init__(self):        
+        pass
 
     #--------------------------------------------------------------------------
-    def merge_guest_properties(self):
+    def merge_guest_properties(self, adsorption : pd.DataFrame, properties : pd.DataFrame):
 
-        dataset_with_properties = pd.merge(self.adsorption, self.properties, 
+        dataset_with_properties = pd.merge(adsorption, properties, 
                                            left_on='adsorbates_name', 
                                            right_on='name', how='inner')
         dataset_with_properties.drop(columns=['name'], inplace=True)
@@ -34,25 +32,27 @@ class AggregateMeasurements:
     def __init__(self):
 
         self.aggregate_dict = {'temperature' : 'first',                  
-                                'adsorbent_name' : 'first',
-                                'adsorbates_name' : 'first',                  
-                                'complexity' : 'first',                  
-                                'mol_weight' : 'first',
-                                'covalent_units' : 'first',
-                                'H_acceptors' : 'first',
-                                'H_donors' : 'first',
-                                'heavy_atoms' : 'first', 
-                                'pressure_in_Pascal' : join_str,
-                                'uptake_in_mol_g' : join_str}
+                               'adsorbent_name' : 'first',
+                               'adsorbates_name' : 'first',                  
+                               'molecular_weight' : 'first',
+                               'elements': 'first',
+                               'heavy_atoms': 'first',
+                               'molecular_formula' : 'first',
+                               'SMILE': 'first',
+                               'H_acceptors' : 'first',
+                               'H_donors' : 'first',
+                               'pressure_in_Pascal' : list,
+                               'uptake_in_mol_g' : list}
+        
+    #--------------------------------------------------------------------------
+    def join_to_string(self, x : list):        
+        return ' '.join(x.astype(str))
 
     #--------------------------------------------------------------------------
-    def merge_guest_properties(self):
+    def aggregate_experiment_measurements(self, dataset : pd.DataFrame):
 
-        dataset_with_properties = pd.merge(self.SCADS, self.properties, 
-                                           left_on='adsorbates_name', 
-                                           right_on='name', how='inner')
-        dataset_with_properties.drop(columns=['name'], inplace=True)
+        grouped_data = dataset.groupby(by='filename').agg(self.aggregate_dict).reset_index()
+
+        return grouped_data
+
         
-        return dataset_with_properties
-
-

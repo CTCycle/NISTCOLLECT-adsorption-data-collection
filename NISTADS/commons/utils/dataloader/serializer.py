@@ -2,29 +2,26 @@ import os
 import sys
 import cv2
 import json
+import pandas as pd
 import keras
 from datetime import datetime
 import tensorflow as tf
 
-from NISTADS.commons.constants import CONFIG, CHECKPOINT_PATH
+from NISTADS.commons.constants import CONFIG, DATA_PATH, CHECKPOINT_PATH
 from NISTADS.commons.logger import logger
 
 
 # get the path of multiple images from a given directory
 ###############################################################################
-def get_images_path(path, sample_size=None):
+def get_datasets():    
     
-    valid_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif')
-    logger.debug(f'Valid extensions are: {valid_extensions}')
-    images_path = []
-    for root, _, files in os.walk(path):
-        if sample_size is not None:
-            files = files[:int(sample_size*len(files))]           
-        for file in files:
-            if os.path.splitext(file)[1].lower() in valid_extensions:
-                images_path.append(os.path.join(root, file))                
+    SCADS_path = os.path.join(DATA_PATH, 'single_component_adsorption.csv') 
+    SCADS = pd.read_csv(SCADS_path, encoding='utf-8', sep=';')     
+    properties_path = os.path.join(DATA_PATH, 'guests_dataset.csv') 
+    properties = pd.read_csv(properties_path, encoding='utf-8', sep=';')
+      
 
-    return images_path
+    return SCADS, properties
 
 
 # [DATA SERIALIZATION]
@@ -32,30 +29,9 @@ def get_images_path(path, sample_size=None):
 class DataSerializer:
 
     def __init__(self):        
-        self.color_encoding = cv2.COLOR_BGR2RGB
-        self.img_shape = CONFIG["model"]["IMG_SHAPE"]
-        self.resized_img_shape = self.img_shape[:-1]
-        self.normalization = CONFIG["dataset"]["IMG_NORMALIZE"]       
-       
-    #--------------------------------------------------------------------------
-    def load_image(self, path, as_tensor=True):               
-        
-        if as_tensor:
-            image = tf.io.read_file(path)
-            image = tf.image.decode_image(image, channels=3)
-            image = tf.image.resize(image, self.resized_img_shape)
-            image = tf.reverse(image, axis=[-1])
-            if self.normalization:
-                image = image/255.0              
-        else:
-            image = cv2.imread(path)             
-            image = cv2.resize(image, self.resized_img_shape)            
-            image = cv2.cvtColor(image, self.color_encoding) 
-            if self.normalization:
-                image = image/255.0         
-           
-
-        return image
+        pass
+            
+    
 
     # ...
     #--------------------------------------------------------------------------
