@@ -24,6 +24,7 @@ class MolecularProperties:
                             'H_donors' : [],
                             'heavy_atoms' : []}
 
+    
     #--------------------------------------------------------------------------
     def get_properties_from_single_name(self, name):
         
@@ -42,9 +43,7 @@ class MolecularProperties:
         names = (dt.get('name', '') for dt in data)        
         for name in tqdm(names, total=len(data)):
             features = self.get_properties_from_single_name(name)
-            all_properties = self.process_extracted_properties(name, features)           
-
-        self.save_properties_dataframe(all_properties)     
+            all_properties = self.process_extracted_properties(name, features)             
 
         return all_properties
     
@@ -65,8 +64,13 @@ class MolecularProperties:
         return self.properties    
         
     #--------------------------------------------------------------------------
-    def save_properties_dataframe(self, properties):
+    def save_properties_dataframe(self, guest_properties=None, host_properties=None):
 
-        dataframe = pd.DataFrame(properties)  
-        file_loc = os.path.join(DATA_PATH, 'guests_dataset.csv') 
-        dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')       
+        if guest_properties is not None:            
+            guest_data = pd.DataFrame(guest_properties)
+            file_loc = os.path.join(DATA_PATH, 'guests_dataset.csv') 
+            guest_data.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+        if host_properties is not None:             
+            host_data = pd.DataFrame(host_properties)             
+            file_loc = os.path.join(DATA_PATH, 'host_dataset.csv') 
+            host_data.to_csv(file_loc, index=False, sep=';', encoding='utf-8')   

@@ -15,7 +15,7 @@ class GuestPropertiesMerge:
         pass
 
     #--------------------------------------------------------------------------
-    def merge_guest_properties(self, adsorption : pd.DataFrame, properties : pd.DataFrame):
+    def add_guest_properties(self, adsorption : pd.DataFrame, properties : pd.DataFrame):
 
         dataset_with_properties = pd.merge(adsorption, properties, 
                                            left_on='adsorbates_name', 
@@ -49,9 +49,10 @@ class AggregateMeasurements:
         return ' '.join(x.astype(str))
 
     #--------------------------------------------------------------------------
-    def aggregate_experiment_measurements(self, dataset : pd.DataFrame):
+    def aggregate_adsorption_measurements(self, dataset : pd.DataFrame):
 
         grouped_data = dataset.groupby(by='filename').agg(self.aggregate_dict).reset_index()
+        grouped_data.drop(columns=['filename'], inplace=True)
 
         return grouped_data
 

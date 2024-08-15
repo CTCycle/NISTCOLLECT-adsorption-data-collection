@@ -23,7 +23,9 @@ if __name__ == '__main__':
     #--------------------------------------------------------------------------     
     # load data from csv, retrieve and merge molecular properties 
     pipeline = ProcessPipeline()
-    train_data, validation_data = pipeline.preprocess_and_split_dataset()
+    preprocessed_data = pipeline.materials_dataset_pipeline()
+
+    pass
 
     
     

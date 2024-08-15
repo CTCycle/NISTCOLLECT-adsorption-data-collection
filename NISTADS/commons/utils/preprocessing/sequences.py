@@ -1,5 +1,9 @@
 import os
+import numpy as np
 import pandas as pd
+from keras.api.preprocessing import sequence
+from sklearn.preprocessing import MinMaxScaler, OrdinalEncoder
+
 from tqdm import tqdm
 tqdm.pandas()
       
@@ -10,28 +14,98 @@ from NISTADS.commons.logger import logger
 
 # [MERGE DATASETS]
 ###############################################################################
-def remove_leading_zeros(self, sequence_A, sequence_B):
+class SequenceProcessing:
 
-    # Find the index of the first non-zero element or get the last index if all are zeros
-    first_non_zero_index_A = next((i for i, x in enumerate(sequence_A) if x != 0), len(sequence_A) - 1)
-    first_non_zero_index_B = next((i for i, x in enumerate(sequence_B) if x != 0), len(sequence_B) - 1)
+    def __init__(self):
+
+        self.P_TARGET_COL = 'pressure_in_Pascal' 
+        self.Q_TARGET_COL = 'uptake_in_mol_g'
+
+    #--------------------------------------------------------------------------
+    def remove_leading_zeros(self, pressure_series, uptake_series):
+
+
+        pressure_values = pressure_series.values
+        uptake_values = uptake_series.values
+
+        # Find the index of the first non-zero element or get the last index if all are zeros
+        no_zero_indexes = next((i for i, x in enumerate(sequence) if x != 0), len(sequence) - 1)                
+        # Ensure to remove leading zeros except one, for both sequences
+        processed_sequence = sequence[max(0, no_zero_indexes - 1):]           
             
-    # Ensure to remove leading zeros except one, for both sequences
-    processed_seq_A = sequence_A[max(0, first_non_zero_index_A - 1):]
-    processed_seq_B = sequence_B[max(0, first_non_zero_index_B - 1):]        
-        
-    return processed_seq_A, processed_seq_B   
-
-# normalize sequences using a RobustScaler: X = X - median(X)/IQR(X)
-# flatten and reshape array to make it compatible with the scaler
-#--------------------------------------------------------------------------  
-def normalize_sequences(self, train, test, column):        
+        return processed_sequence  
     
-    normalizer = MinMaxScaler(feature_range=(0,1))
-    sequence_array = np.array([item for sublist in train[column] for item in sublist]).reshape(-1, 1)         
-    normalizer.fit(sequence_array)
-    train[column] = train[column].apply(lambda x: normalizer.transform(np.array(x).reshape(-1, 1)).flatten())
-    test[column] = test[column].apply(lambda x: normalizer.transform(np.array(x).reshape(-1, 1)).flatten())
+   
 
-    return train, test, normalizer
+
+    #--------------------------------------------------------------------------  
+    def sequence_padding(self, dataset, column, pad_value=-1, pad_length=50):
+            
+        dataset[column] = sequence.pad_sequences(dataset[column], 
+                                                maxlen=pad_length, 
+                                                value=pad_value, 
+                                                dtype='float32', 
+                                                padding='post').tolist()           
+
+        return dataset
+
+    #--------------------------------------------------------------------------
+    def remove_leading_zeros(self, sequence_A, sequence_B):
+
+        # Find the index of the first non-zero element or get the last index if all are zeros
+        first_non_zero_index_A = next((i for i, x in enumerate(sequence_A) if x != 0), len(sequence_A) - 1)
+        first_non_zero_index_B = next((i for i, x in enumerate(sequence_B) if x != 0), len(sequence_B) - 1)
+                
+        # Ensure to remove leading zeros except one, for both sequences
+        processed_seq_A = sequence_A[max(0, first_non_zero_index_A - 1):]
+        processed_seq_B = sequence_B[max(0, first_non_zero_index_B - 1):]        
+            
+        return processed_seq_A, processed_seq_B   
+
+    
+    
+    # normalize sequences using a RobustScaler: X = X - median(X)/IQR(X)
+    # flatten and reshape array to make it compatible with the scaler
+    #--------------------------------------------------------------------------  
+    def normalize_sequences(self, train, test, column):        
+        
+        normalizer = MinMaxScaler(feature_range=(0,1))
+        sequence_array = np.array([item for sublist in train[column] for item in sublist]).reshape(-1, 1)         
+        normalizer.fit(sequence_array)
+        train[column] = train[column].apply(lambda x: normalizer.transform(np.array(x).reshape(-1, 1)).flatten())
+        test[column] = test[column].apply(lambda x: normalizer.transform(np.array(x).reshape(-1, 1)).flatten())
+
+        return train, test, normalizer
+    
+    # normalize parameters
+    #--------------------------------------------------------------------------  
+    def normalize_parameters(self, train_X, train_Y, test_X, test_Y):
+
+        '''
+        Normalize the input features and output labels for training and testing data.
+        This method normalizes the input features and output labels to facilitate 
+        better model training and evaluation.
+
+        Keyword Arguments:
+            train_X (DataFrame): DataFrame containing the features of the training data.
+            train_Y (list): List containing the labels of the training data.
+            test_X (DataFrame): DataFrame containing the features of the testing data.
+            test_Y (list): List containing the labels of the testing data.
+
+        Returns:
+            Tuple: A tuple containing the normalized training features, normalized training labels,
+                   normalized testing features, and normalized testing labels.
+        
+        '''        
+        # cast float type for both the labels and the continuous features columns 
+        norm_columns = ['temperature', 'mol_weight', 'complexity', 'heavy_atoms']       
+        train_X[norm_columns] = train_X[norm_columns].astype(float)        
+        test_X[norm_columns] = test_X[norm_columns].astype(float)
+        
+        # normalize the numerical features (temperature and physicochemical properties)      
+        self.param_normalizer = MinMaxScaler(feature_range=(0, 1))
+        train_X[norm_columns] = self.param_normalizer.fit_transform(train_X[norm_columns])
+        test_X[norm_columns] = self.param_normalizer.transform(test_X[norm_columns])        
+
+        return train_X, train_Y, test_X, test_Y 
 

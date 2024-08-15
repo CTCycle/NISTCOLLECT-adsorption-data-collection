@@ -15,13 +15,14 @@ from NISTADS.commons.logger import logger
 ###############################################################################
 def get_datasets():    
     
-    SCADS_path = os.path.join(DATA_PATH, 'single_component_adsorption.csv') 
-    SCADS = pd.read_csv(SCADS_path, encoding='utf-8', sep=';')     
-    properties_path = os.path.join(DATA_PATH, 'guests_dataset.csv') 
-    properties = pd.read_csv(properties_path, encoding='utf-8', sep=';')
-      
+    adsorption_path = os.path.join(DATA_PATH, 'single_component_adsorption.csv') 
+    adsorption_data = pd.read_csv(adsorption_path, encoding='utf-8', sep=';')     
+    guest_path = os.path.join(DATA_PATH, 'guests_dataset.csv') 
+    guest_properties = pd.read_csv(guest_path, encoding='utf-8', sep=';')
+    host_path = os.path.join(DATA_PATH, 'host_dataset.csv') 
+    host_properties = pd.read_csv(host_path, encoding='utf-8', sep=';')      
 
-    return SCADS, properties
+    return adsorption_data, guest_properties, host_properties 
 
 
 # [DATA SERIALIZATION]

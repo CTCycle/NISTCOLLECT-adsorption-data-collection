@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     # 1. [COLLECT GUEST/HOST INDEXES]
     #--------------------------------------------------------------------------
-    # get isotherm indexes invoking API
+    # get guest and host indexes invoking API
     logger.info('Collect guest/host indexes')
     webworker = GuestHostAPI()
     guest_index, host_index = webworker.get_guest_host_index()     
@@ -28,7 +28,9 @@ if __name__ == '__main__':
     # 3. [ADD MOLECULAR PROPERTIES]
     #--------------------------------------------------------------------------
     enricher = MolecularProperties()
-    properties = enricher.get_properties_from_multiple_names(guest_data)
+    guest_properties = enricher.get_properties_from_multiple_names(guest_data)
+    enricher.save_properties_dataframe(guest_properties)
+  
 
     
     
