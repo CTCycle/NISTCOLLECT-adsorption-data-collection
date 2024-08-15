@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 tqdm.pandas()
@@ -12,12 +13,13 @@ from NISTADS.commons.logger import logger
 class GuestPropertiesMerge:
 
     def __init__(self):        
-        pass
+        self.selected_properties = ['name', 'heavy_atoms', 'elements', 'molecular_weight',
+                                    'molecular_formula', 'SMILE', 'H_acceptors', 'H_donors']
 
     #--------------------------------------------------------------------------
     def add_guest_properties(self, adsorption : pd.DataFrame, properties : pd.DataFrame):
 
-        dataset_with_properties = pd.merge(adsorption, properties, 
+        dataset_with_properties = pd.merge(adsorption, properties[self.selected_properties], 
                                            left_on='adsorbates_name', 
                                            right_on='name', how='inner')
         dataset_with_properties.drop(columns=['name'], inplace=True)
@@ -33,20 +35,11 @@ class AggregateMeasurements:
 
         self.aggregate_dict = {'temperature' : 'first',                  
                                'adsorbent_name' : 'first',
-                               'adsorbates_name' : 'first',                  
-                               'molecular_weight' : 'first',
-                               'elements': 'first',
-                               'heavy_atoms': 'first',
-                               'molecular_formula' : 'first',
-                               'SMILE': 'first',
-                               'H_acceptors' : 'first',
-                               'H_donors' : 'first',
-                               'pressure_in_Pascal' : list,
-                               'uptake_in_mol_g' : list}
-        
-    #--------------------------------------------------------------------------
-    def join_to_string(self, x : list):        
-        return ' '.join(x.astype(str))
+                               'adsorbates_name' : 'first',
+                               'pressureUnits' : 'first',
+                               'adsorptionUnits' : 'first',                            
+                               'pressure' : list,
+                               'adsorbed_amount' : list}   
 
     #--------------------------------------------------------------------------
     def aggregate_adsorption_measurements(self, dataset : pd.DataFrame):

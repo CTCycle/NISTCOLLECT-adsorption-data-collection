@@ -22,20 +22,23 @@ class SequenceProcessing:
         self.Q_TARGET_COL = 'uptake_in_mol_g'
 
     #--------------------------------------------------------------------------
-    def remove_leading_zeros(self, pressure_series, uptake_series):
+    def remove_leading_zeros(self, dataframe: pd.DataFrame):
+        
+        def _inner_function(row):
+            pressure_series = row[self.P_TARGET_COL]
+            uptake_series = row[self.Q_TARGET_COL]
+            # Find the index of the first non-zero element or get the last index if all are zeros
+            no_zero_index = next((i for i, x in enumerate(pressure_series) if x != 0), len(pressure_series) - 1)                
+            # Determine how many leading zeros were removed
+            zeros_removed = max(0, no_zero_index - 1)                
+            processed_pressure_series = pressure_series[zeros_removed:]             
+            processed_uptake_series = uptake_series[zeros_removed:]
 
+            return pd.Series([processed_pressure_series, processed_uptake_series])
 
-        pressure_values = pressure_series.values
-        uptake_values = uptake_series.values
-
-        # Find the index of the first non-zero element or get the last index if all are zeros
-        no_zero_indexes = next((i for i, x in enumerate(sequence) if x != 0), len(sequence) - 1)                
-        # Ensure to remove leading zeros except one, for both sequences
-        processed_sequence = sequence[max(0, no_zero_indexes - 1):]           
-            
-        return processed_sequence  
-    
-   
+        dataframe[[self.P_TARGET_COL, self.Q_TARGET_COL]] = dataframe.apply(_inner_function, axis=1)
+        
+        return dataframe  
 
 
     #--------------------------------------------------------------------------  
@@ -49,20 +52,7 @@ class SequenceProcessing:
 
         return dataset
 
-    #--------------------------------------------------------------------------
-    def remove_leading_zeros(self, sequence_A, sequence_B):
-
-        # Find the index of the first non-zero element or get the last index if all are zeros
-        first_non_zero_index_A = next((i for i, x in enumerate(sequence_A) if x != 0), len(sequence_A) - 1)
-        first_non_zero_index_B = next((i for i, x in enumerate(sequence_B) if x != 0), len(sequence_B) - 1)
-                
-        # Ensure to remove leading zeros except one, for both sequences
-        processed_seq_A = sequence_A[max(0, first_non_zero_index_A - 1):]
-        processed_seq_B = sequence_B[max(0, first_non_zero_index_B - 1):]        
-            
-        return processed_seq_A, processed_seq_B   
-
-    
+       
     
     # normalize sequences using a RobustScaler: X = X - median(X)/IQR(X)
     # flatten and reshape array to make it compatible with the scaler

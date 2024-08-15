@@ -5,7 +5,7 @@ from tqdm import tqdm
 tqdm.pandas()
 
 from NISTADS.commons.utils.dataloader.serializer import get_datasets
-from NISTADS.commons.utils.preprocessing.filtering import filter_outside_boundaries 
+from NISTADS.commons.utils.preprocessing.filtering import DataFilter
 from NISTADS.commons.utils.preprocessing.splitting import DatasetSplit 
 from NISTADS.commons.utils.preprocessing.aggregation import GuestPropertiesMerge, AggregateMeasurements
 from NISTADS.commons.utils.preprocessing.conversion import PressureConversion, UptakeConversion
@@ -25,8 +25,11 @@ class ProcessPipeline:
 
         self.sample_size = CONFIG["dataset"]["SAMPLE_SIZE"]
         self.max_pressure = CONFIG["dataset"]["MAX_PRESSURE"] 
-        self.max_uptake = CONFIG["dataset"]["MAX_UPTAKE"]         
+        self.max_uptake = CONFIG["dataset"]["MAX_UPTAKE"]  
+        self.max_points = CONFIG["dataset"]["MAX_POINTS"]                
+        self.min_points = CONFIG["dataset"]["MIN_POINTS"]       
 
+        self.filter = DataFilter()
         self.merger = GuestPropertiesMerge()
         self.aggregator = AggregateMeasurements()
         self.splitter = DatasetSplit()
@@ -37,14 +40,19 @@ class ProcessPipeline:
     #--------------------------------------------------------------------------
     def adsorption_dataset_pipeline(self):
 
+        num_raw_measurements = self.adsorption.shape[0]
+        filtered_data = self.filter.filter_outside_boundaries(self.adsorption, self.max_pressure, self.max_uptake)
+        measurements_out_of_bound = self.adsorption.shape[0] - filtered_data.shape[0] 
 
-        processed_data = filter_outside_boundaries(processed_data, self.max_pressure, self.max_uptake) 
-
-        # processed_data = self.merger.add_guest_properties(self.adsorption, self.guests)
-        # processed_data = self.P_converter.convert_data(processed_data)
-        # processed_data = self.Q_converter.convert_data(processed_data)
-        # processed_data = filter_outside_boundaries(processed_data, self.max_pressure, self.max_uptake) 
-        # aggregated_data = self.aggregator.aggregate_adsorption_measurements(processed_data)        
+        processed_data = self.aggregator.aggregate_adsorption_measurements(filtered_data)
+        processed_data = self.merger.add_guest_properties(processed_data, self.guests)
+        
+        processed_data = self.P_converter.convert_data(processed_data)
+        processed_data = self.Q_converter.convert_data(processed_data)
+        processed_data = self.sequencer.remove_leading_zeros(processed_data)
+        processed_data = self.filter.filter_by_measurements_count(processed_data, self.max_points, self.min_points)
+        num_of_experiments = processed_data.shape[0]
+        
         # train_X, val_X, train_Y, val_Y = self.splitter.split_train_and_validation(aggregated_data)
 
         # train_exp, train_guest, train_host, train_pressure = self.splitter.isolate_inputs(train_X)

@@ -19,7 +19,7 @@ def get_datasets():
     adsorption_data = pd.read_csv(adsorption_path, encoding='utf-8', sep=';')     
     guest_path = os.path.join(DATA_PATH, 'guests_dataset.csv') 
     guest_properties = pd.read_csv(guest_path, encoding='utf-8', sep=';')
-    host_path = os.path.join(DATA_PATH, 'host_dataset.csv') 
+    host_path = os.path.join(DATA_PATH, 'hosts_dataset.csv') 
     host_properties = pd.read_csv(host_path, encoding='utf-8', sep=';')      
 
     return adsorption_data, guest_properties, host_properties 

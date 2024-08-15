@@ -8,8 +8,7 @@
 
     "dataset" : {"SAMPLE_SIZE" : 1.0,
                  "VALIDATION_SIZE" : 0.15,                 
-                 "MEASUREMENTS": 40,
-                 "PADDING_VALUE": -1,
+                 "MAX_POINTS": 40,                 
                  "MIN_POINTS": 6,
                  "MAX_PRESSURE": 10e06,
                  "MAX_UPTAKE": 10,
