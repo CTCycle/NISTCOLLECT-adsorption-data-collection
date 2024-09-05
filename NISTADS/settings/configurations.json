@@ -1,10 +1,10 @@
 {   "SEED" : 54, 
 
-    "collection" : {"GUEST_FRACTION" : 0.05,
-                    "HOST_FRACTION" : 0.05,
-                    "EXP_FRACTION" : 0.1,    
-                    "PARALLEL_TASKS_GH" : 60,
-                    "PARALLEL_TASKS_EXP" : 30},
+    "collection" : {"GUEST_FRACTION" : 0.1,
+                    "HOST_FRACTION" : 0.1,
+                    "EXP_FRACTION" : 0.05,    
+                    "PARALLEL_TASKS_GH" : 40,
+                    "PARALLEL_TASKS_EXP" : 20},
 
     "dataset" : {"SAMPLE_SIZE" : 1.0,
                  "VALIDATION_SIZE" : 0.15,                 

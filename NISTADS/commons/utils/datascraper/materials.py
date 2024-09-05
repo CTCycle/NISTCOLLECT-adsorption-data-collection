@@ -52,14 +52,14 @@ class GuestHostAPI:
         if guest_json.status_code == 200:
             guest_index = guest_json.json() 
             df_guest = pd.DataFrame(guest_index)
-            logger.info(f'Total number of adsorbents: {df_host.shape[0]}')
+            logger.info(f'Total number of adsorbents: {df_guest.shape[0]}')
         else:
             logger.error(f'Failed to retrieve adsorbents data. Status code: {guest_json.status_code}')       
             df_guest = None
         if host_json.status_code == 200:
             host_index = host_json.json() 
             df_host = pd.DataFrame(host_index) 
-            logger.info(f'Total number of adsorbates: {df_guest.shape[0]}')
+            logger.info(f'Total number of adsorbates: {df_host.shape[0]}')
         else:
             logger.error(f'Failed to retrieve adsorbates data. Status code: {host_json.status_code}')
             df_host = None
@@ -82,13 +82,12 @@ class GuestHostAPI:
             logger.error('No available guest data has been found. Skipping directly to host species')
             guest_data = None
 
-        if df_host is not None and isinstance(df_guest, pd.DataFrame):  
+        if df_host is not None and isinstance(df_host, pd.DataFrame):  
             host_samples = int(np.ceil(self.host_fraction * df_host.shape[0]))
             host_names = df_host[self.host_identifier].to_list()[:host_samples]       
             host_urls = [f'https://adsorption.nist.gov/isodb/api/material/{name}.json' for name in host_names]       
             host_data = loop.run_until_complete(data_from_multiple_URLs(host_urls, self.max_parallel_calls))        
-            host_data = [data['name'] for data in host_data if data is not None]
-            self.save_host_dataframe(host_data)
+            host_data = [data for data in host_data if data is not None]            
         else:
             logger.error('No available host data has been found.')
             host_data = None
@@ -96,9 +95,13 @@ class GuestHostAPI:
         return guest_data, host_data    
 
     #--------------------------------------------------------------------------
-    def save_host_dataframe(self, data):
+    def save_dataframe(self, guest_data, host_data):
 
-        dataframe = pd.DataFrame(data, columns=['name'])  
+        dataframe = pd.DataFrame.from_dict(guest_data)  
+        file_loc = os.path.join(DATA_PATH, 'guests_dataset.csv') 
+        dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+
+        dataframe = pd.DataFrame.from_dict(host_data)  
         file_loc = os.path.join(DATA_PATH, 'hosts_dataset.csv') 
         dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')  
 

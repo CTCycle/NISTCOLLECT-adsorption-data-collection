@@ -6,12 +6,15 @@ from tqdm import tqdm
 from NISTADS.commons.constants import CONFIG, DATA_PATH
 from NISTADS.commons.logger import logger
 
+ 
+
 
 # [DATASET OPERATIONS]
 ###############################################################################
-class MolecularProperties:    
+class GuestProperties:    
     
     def __init__(self):
+
         self.properties = {'name' : [],
                             'atoms' : [],
                             'heavy_atoms' : [],
@@ -26,7 +29,7 @@ class MolecularProperties:
 
     
     #--------------------------------------------------------------------------
-    def get_properties_from_single_name(self, name):
+    def get_properties_for_single_guest(self, name):
         
         try:
             compounds = pcp.get_compounds(name.lower(), namespace='name', list_return='flat')
@@ -38,11 +41,11 @@ class MolecularProperties:
             return {}
 
     #--------------------------------------------------------------------------
-    def get_properties_from_multiple_names(self, data):
+    def get_properties_for_multiple_guests(self, data):
 
         names = (dt.get('name', '') for dt in data)        
         for name in tqdm(names, total=len(data)):
-            features = self.get_properties_from_single_name(name)
+            features = self.get_properties_for_single_guest(name)
             all_properties = self.process_extracted_properties(name, features)             
 
         return all_properties
@@ -64,13 +67,40 @@ class MolecularProperties:
         return self.properties    
         
     #--------------------------------------------------------------------------
-    def save_properties_dataframe(self, guest_properties=None, host_properties=None):
+    def save_properties_dataframe(self, guest_properties=None):
 
         if guest_properties is not None:            
             guest_data = pd.DataFrame(guest_properties)
             file_loc = os.path.join(DATA_PATH, 'guests_dataset.csv') 
-            guest_data.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+            guest_data.to_csv(file_loc, index=False, sep=';', encoding='utf-8')         
+
+
+# [DATASET OPERATIONS]
+###############################################################################
+class HostProperties:    
+    
+    def __init__(self):
+        pass   
+    
+        
+    #--------------------------------------------------------------------------
+    def save_properties_dataframe(self, host_properties=None):
+        
         if host_properties is not None:             
             host_data = pd.DataFrame(host_properties)             
             file_loc = os.path.join(DATA_PATH, 'host_dataset.csv') 
             host_data.to_csv(file_loc, index=False, sep=';', encoding='utf-8')   
+
+
+
+
+# [DATASET OPERATIONS]
+###############################################################################
+class FetchMolecularProperties: 
+
+    def __init__(self):
+        self.guest_property = GuestProperties()
+
+    def get_guest_properties(self, data):
+    
+        guest_properties = self.guest_property.get_properties_for_multiple_guests(data)

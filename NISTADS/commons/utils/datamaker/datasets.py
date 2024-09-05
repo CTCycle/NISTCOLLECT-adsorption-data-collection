@@ -167,4 +167,4 @@ class AdsorptionDatasetPreparation:
         single_component.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
         file_loc = os.path.join(DATA_PATH, 'binary_mixture_adsorption.csv') 
         binary_mixture.to_csv(file_loc, index=False, sep=';', encoding='utf-8')         
-        logger.info(f'NISTCOLLECT data collection has terminated. All files have been saved in {DATA_PATH}')
+        
