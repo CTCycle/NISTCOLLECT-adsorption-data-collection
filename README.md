@@ -19,48 +19,60 @@ The collected data is saved locally in 4 different .csv files. Adsorption isothe
 ### 2.1 Data preprocessing
 The extracted data undergoes preprocessing via a tailored pipeline, which starts with filtering out undesired experiments. These include experiments featuring negative values for temperature, pressure, and uptake, or those falling outside predefined boundaries for pressure and uptake ranges (refer to configurations for specifics). Pressure and uptakes are standardized to a uniform unit—Pascal for pressure and mol/g for uptakes. Following this refinement, the physicochemical attributes of the absorbate species are unearthed through the PUBCHEM API. This enriches the input data with molecular properties such as molecular weight, the count of heavy atoms, covalent units, and H-donor/acceptor statistics. Subsequently, features pertaining to experiment conditions (e.g., temperature) and adsorbate species (physicochemical properties) are normalized. Names of adsorbents and adsorbates are encoded into integer indices for subsequent vectorization by the designated embedding head of the model. Pressure and uptake series are also normalized, utilizing upper boundaries as the normalization ceiling. Additionally, initial zero measurements in pressure and uptakes series are removed to mitigate potential bias towards zero values. Finally, all sequences are reshaped to have the same length using post-padding with a specified padding value (defaulting to -1 to avoid conflicts with actual values) and then normalized.
 
-## 4. Installation
-The installation process is designed for simplicity, using .bat scripts to automatically create a virtual environment with all necessary dependencies. Please ensure that Anaconda or Miniconda is properly installed on your system before proceeding.
+## 3. Installation
+The installation process on Windows has been designed for simplicity and ease of use. To begin, simply run `NISTADS_AutoEncoder.bat`. On its first execution, the installation procedure will automatically start with minimal user input required. The script will check if either Anaconda or Miniconda is installed on your system. If neither is found, you will need to install it manually. You can download and install Miniconda by following the instructions here: (https://docs.anaconda.com/miniconda/).
 
-- To set up the environment, run `scripts/environment_setup.bat`. This script installs Keras 3 with pytorch support as backend, and includes includes all required CUDA dependencies to enable GPU utilization (CUDA 12.1).
-- **IMPORTANT:** if the path to the project folder is changed for any reason after installation, the app will cease to work. Run `scripts/package_setup.bat` or alternatively use `pip install -e . --use-pep517` from cmd when in the project folder (upon activating the conda environment).
+After setting up Anaconda/Miniconda, the installation script will install all the necessary Python dependencies. This includes Keras 3 (with PyTorch support as the backend) and the required CUDA dependencies (CUDA 12.1) to enable GPU acceleration. If you'd prefer to handle the installation process separately, you can run the standalone installer by executing `setup/NISTADS_installer.bat`. You can also use a custom python environment by modifying `settings/launcher_configurations.ini` and setting use_custom_environment as true, while specifying the name of your custom environment.
+
+**Important:** After installation, if the project folder is moved or its path is changed, the application will no longer function correctly. To fix this, you can either:
+
+- Open the main menu, select "NISTADS setup," and choose "Install project packages"
+- Manually run the following commands in the terminal, ensuring the project folder is set as the current working directory (CWD):
+
+    `conda activate NISTADS`
+
+    `pip install -e . --use-pep517` 
 
 ### 3.1 Additional Package for XLA Acceleration
-XLA is designed to optimize computations for speed and efficiency, particularly beneficial when working with TensorFlow and other machine learning frameworks that support XLA. Since this project uses Keras 3 with PyTorch as backend, the approach for optimizing computations for speed and efficiency has shifted from XLA to PyTorch's native acceleration tools, particularly TorchScript. This latter allows for the compilation of PyTorch models into an optimized, efficient form that enhances performance, especially when working with large-scale machine learning models or deploying models in production. TorchScript is designed to accelerate both CPU and GPU computations without requiring additional environment variables or complex setup.
+XLA is designed to optimize computations for speed and efficiency, particularly beneficial when working with TensorFlow and other machine learning frameworks that support XLA. Since this project uses Keras 3 with PyTorch as backend, the approach for optimizing computations for speed and efficiency has shifted from XLA to PyTorch's native acceleration tools, particularly TorchScript (currently not implemented). For those who wish to use Tensorflow as backend, XLA acceleration can be globally enabled setting the `XLA_FLAGS` environmental variabile with the following value: `--xla_gpu_cuda_data_dir=path\to\XLA`, where `path\to\XLA` is the actual directory path to the folder containing the nvvm subdirectory (where the file `libdevice.10.bc` resides).
 
-For those who wish to use Tensorflow as backend in their own fork of the project, XLA acceleration can be globally enables across your system setting an environment variable named `XLA_FLAGS`. The value of this variable should be `--xla_gpu_cuda_data_dir=path\to\XLA`, where `path\to\XLA` must be replaced with the actual directory path that leads to the folder containing the nvvm subdirectory. It is crucial that this path directs to the location where the file `libdevice.10.bc` resides, as this file is essential for the optimal functioning of XLA. This setup ensures that XLA can efficiently interface with the necessary CUDA components for GPU acceleration.
+## 4. How to use
+On Windows, run `NISTADS.bat` to launch the main navigation menu and browse through the various options. Alternatively, you can run each file separately using `python path/filename.py` or `jupyter path/notebook.ipynb`. 
 
-## 3. How to use
-Within the main project folder (NISTADS) you will find other folders, each designated to specific tasks. 
+### 4.1 Navigation menu
 
-### Resources
-This folder is used to organize the main data for the project, including all collected data from the NIST database (which is saved in `resources/datasets`), and the app logs that are saved in `resources/logs`.
+**1) Data analysis:** run `validation/data_validation.ipynb` to perform data validation using a series of metrics for the analysis of the dataset. This feature cannot be directly started from the launcher due to unpredictable behavior of .ipynb files when executed from batch scripts.
 
-### Database
-Contains the scripts developed to extract data from the NIST DB and organise them into a readable .csv format. Data is collected through the NIST API in a concurrent fashion, allowing for fast data retrieval by selecting a maximum number of parallel HTTP requests.
+**2) Collect adsorption data:** extract data from the NIST DB and organise them into a readable .csv format. Data is collected through the NIST API in a concurrent fashion, allowing for fast data retrieval by selecting a maximum number of parallel HTTP requests. Alternatively, one can run `database/retrieve_adsorption_data.py`
 
-- Run `retrieve_experiments_dataset.py` to fetch data for adsorption experiments
-- Run `retrieve_materials_dataset.py` to respectively fetch data for adsorption experiments or for the guest/host entries. The data collection operation may take long time due to the large number of queries to perform, and it heavily depends on your internet connection performance (more than 30k experiments are available as of now). You can select a fraction of data that you wish to extract (guest, host, or experiments data), and you can also split the total number of adsorption isotherm experiments in chunks, so that each chunk will be collected and saved as file iteratively. Use the notebook `dataset_analysis.ipynb` to perform explorative data analysis on the collected datasets.
+**2) Data preprocessing:** prepare the adsorption dataset for machine learning. This is done by running `preprocessing/data_preprocessing.py`
+
+**3) Model training and evaluation:** open the machine learning menu to explore various options for model training and validation. Once the menu is open, you will see different options:
+- **train from scratch:** runs `training/model_training.py` to start training an instance of the NISTADS model from scratch using the available data and parameters. 
+- **train from checkpoint:** runs `training/train_from_checkpoint.py` to start training a pretrained NISTADS checkpoint for an additional amount of epochs, using pretrained model settings and data.  
+- **model evaluation:** run `validation/model_validation.ipynb` to evaluate the performance of pretrained model checkpoints using different metrics. This feature cannot be directly started from the launcher due to unpredictable behavior of .ipynb files when executed from batch scripts.
+
+**4) Predict adsorption of compounds:** Run `inference/adsorption_prediction.py` to use the pretrained NISTADS model and predict adsorption of compounds based on pressure.  
+
+**5) NISTADS setup:** allows running some options command such as **install project packages** to run the developer model project installation, and **remove logs** to remove all logs saved in `resources/logs`. 
+
+**6) Exit and close:** exit the program immediately
+
+### 4.2 Resources
+This folder is used to organize data and results for various stages of the project, including data validation, model training, and evaluation. Here are the key subfolders:
+
+**datasets:** ....
+
+**predictions:** ...
+
+**checkpoints:** pretrained model checkpoints are stored here, and can be used either for resuming training or performing inference with an already trained model.
 
 ### Experimental
 Contains experimental features to integrate further information into the dataset. Description of chemicals (both adsorbate species and adsorbent materials) can be generated using the pretrained GPT2 model using `gpt_enhancement.py`. Due to the model limitations, description may not be very accurate and lack context for more complex molecules and materials. 
 
-### Inference
-Here you can find the necessary files to run pretrained models in inference mode and use them to extract major features from images
 
-- Run `images_encoding.py` to use the pretrained encoder from a model checkpoint to extract abstract representation of image features in the form of lower-dimension embeddings. 
-
-### Training
-This folder contains the necessary files for conducting model training and evaluation: 
-- Run `model_training.py` to initiate the training process for the autoencoder
-
-### Validation
-Data validation and pretrained model evaluations are performed using the scripts within this folder.
-- Launch the jupyter notebook `model_evaluation.ipynb` to evaluate the performance of pretrained model checkpoints using different metrics.
-- Launch the jupyter notebook `data_validation.ipynb` to validate the available data with different metrics.
-
-### 4.1 Configurations
-For customization, you can modify the main configuration parameters using `settings/configurations.json`
+## 5. Configurations
+For customization, you can modify the main configuration parameters using `settings/app_configurations.json` 
 
 #### General Configuration
 The script is able to perform parallel data fetching through asynchronous HTML requests. However, too many calls may lead to server busy errors, especially when collecting adsorption isotherm data. Try to keep the number of parallel calls for the experiments data below 50 concurrent calls and you should not see any error!
@@ -74,11 +86,7 @@ The script is able to perform parallel data fetching through asynchronous HTML r
 | PARALLEL_TASKS_EXP    | parallel calls to get experiment data                 |
 
                                         
-## License
-This project is licensed under the terms of the MIT license. See the LICENSE file for details.
-
-
-#### Dataset Configuration
+#### Dataset Configuration (to be changed)
 
 | Parameter          | Description                                              |
 |--------------------|----------------------------------------------------------|

@@ -1,6 +1,8 @@
 import json
 from os.path import join, dirname, abspath 
 
+# [PATHS]
+###############################################################################
 PROJECT_DIR = dirname(dirname(abspath(__file__)))
 RSC_PATH = join(PROJECT_DIR, 'resources')
 DATA_PATH = join(RSC_PATH, 'datasets')
@@ -11,6 +13,12 @@ CHECKPOINT_PATH = join(RSC_PATH, 'checkpoints')
 PREDS_PATH = join(RSC_PATH, 'predictions')
 LOGS_PATH = join(PROJECT_DIR, 'resources', 'logs')
 
-CONFIG_PATH = join(PROJECT_DIR, 'settings', 'configurations.json')
+# [FILENAMES]
+###############################################################################
+
+
+# [CONFIGURATIONS]
+###############################################################################
+CONFIG_PATH = join(PROJECT_DIR, 'settings', 'app_configurations.json')
 with open(CONFIG_PATH, 'r') as file:
     CONFIG = json.load(file)
