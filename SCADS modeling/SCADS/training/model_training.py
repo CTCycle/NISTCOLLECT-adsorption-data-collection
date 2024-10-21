@@ -1,8 +1,4 @@
-# [SET KERAS BACKEND]
-import os 
-os.environ["KERAS_BACKEND"] = "torch"
-
-# [IMPORT LIBRARIES]
+import os
 import pandas as pd
 import tensorflow as tf
 from keras.utils import plot_model
@@ -14,28 +10,18 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTADS.commons.utils.preprocessing import PreProcessPipeline
-from NISTADS.commons.utils.dataloader.serializer import DataSerializer, ModelSerializer
-from NISTADS.commons.utils.models import ModelTraining, SCADSModel, model_savefolder
-from NISTADS.commons.utils.callbacks import RealTimeHistory
-from NISTADS.commons.constants import CONFIG, DATA_PATH
-from NISTADS.commons.logger import logger
+from SCADS.commons.utils.preprocessing import PreProcessPipeline
+from SCADS.commons.utils.models import ModelTraining, SCADSModel, model_savefolder
+from SCADS.commons.utils.callbacks import RealTimeHistory
+from SCADS.commons.pathfinder import DATA_PATH, CHECKPOINT_PATH
+import SCADS.commons.configurations as cnf
 
 
 # [RUN MAIN]
-###############################################################################
 if __name__ == '__main__':
 
-    # 1. [LOAD PREPROCESSED DATA]
-    #--------------------------------------------------------------------------     
-    # load data from csv, add paths to images 
-    dataserializer = DataSerializer()
-    train_data, validation_data, metadata = dataserializer.load_preprocessed_data()    
-
-    # create subfolder for preprocessing data    
-    modelserializer = ModelSerializer()
-    model_folder_path = modelserializer.create_checkpoint_folder() 
-
+    # 1. [LOAD AND PREPROCESS DATA]
+    #--------------------------------------------------------------------------
     model_folder_path, model_folder_name = model_savefolder(CHECKPOINT_PATH, 'SCADS')
     pp_path = os.path.join(model_folder_path, 'preprocessing')
     os.mkdir(pp_path) if not os.path.exists(pp_path) else None
