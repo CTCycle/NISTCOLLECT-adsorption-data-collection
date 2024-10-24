@@ -3,8 +3,8 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTADS.commons.utils.datascraper.materials import GuestHostAPI
-from NISTADS.commons.utils.datascraper.experiments import AdsorptionDataAPI
+from NISTADS.commons.utils.datafetch.materials import GuestHostAPI
+from NISTADS.commons.utils.datafetch.experiments import AdsorptionDataAPI
 from NISTADS.commons.utils.datamaker.properties import FetchMolecularProperties
 from NISTADS.commons.utils.datamaker.datasets import AdsorptionDatasetPreparation
 from NISTADS.commons.constants import CONFIG, DATA_PATH
@@ -40,16 +40,13 @@ if __name__ == '__main__':
     logger.info('Extracting adsorption isotherms data')
     adsorption_data = webworker.get_experiments_data(experiments_index) 
 
-
-    # 3. [ADD MOLECULAR PROPERTIES]
+    # 5. [ADD MOLECULAR PROPERTIES]
     #--------------------------------------------------------------------------
     property = FetchMolecularProperties()
     guest_properties = property.get_guest_properties(guest_data)
 
-
-
     
-    # 5. [PREPARE COLLECTED EXPERIMENTS DATA]
+    # 6. [PREPARE COLLECTED EXPERIMENTS DATA]
     #--------------------------------------------------------------------------
     processor = AdsorptionDatasetPreparation()
     dataset = processor.prepare_dataset(adsorption_data)

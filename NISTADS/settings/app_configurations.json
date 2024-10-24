@@ -1,7 +1,7 @@
-{   "SEED" : 54, 
-
-    "collection" : {"GUEST_FRACTION" : 0.1,
-                    "HOST_FRACTION" : 0.1,
+{   
+    "SEED" : 54,
+    "collection" : {"GUEST_FRACTION" : 0.05,
+                    "HOST_FRACTION" : 0.05,
                     "EXP_FRACTION" : 0.05,    
                     "PARALLEL_TASKS_GH" : 40,
                     "PARALLEL_TASKS_EXP" : 20},
@@ -14,18 +14,20 @@
                  "MAX_UPTAKE": 10,
                  "SPLIT_SEED" : 45},
 
+    "device" : {"DEVICE" : "GPU",
+                "DEVICE_ID" : 0,
+                "MIXED_PRECISION" : false,                                                
+                "NUM_PROCESSORS": 6},
+
     "model" : {"IMG_SHAPE" : [192, 192, 3],
                "EMBEDDING_DIMS": 256,
                "SAVE_MODEL_PLOT" : true},
 
     "training" : {"EPOCHS" : 30,
+                  "ADDITIONAL_EPOCHS" : 20,
                   "LEARNING_RATE" : 0.001,
-                  "BATCH_SIZE" : 16,
-                  "MIXED_PRECISION" : false,
-                  "USE_TENSORBOARD" : false,
-                  "XLA_STATE" : false,
-                  "ML_DEVICE" : "GPU",                 
-                  "NUM_PROCESSORS": 4,
+                  "BATCH_SIZE" : 16,                  
+                  "USE_TENSORBOARD" : false,               
                   "PLOT_EPOCH_GAP": 5},                  
                   
     "evaluation" : {"BATCH_SIZE" : 20}     
