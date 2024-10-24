@@ -15,7 +15,7 @@ class DataValidation:
         
         self.parameters = ['temperature', 'mol_weight', 'complexity', 'covalent_units', 
                            'H_acceptors', 'H_donors', 'heavy_atoms']
-        self.categoricals  = ['adsorbent_name', 'adsorbates_name'] 
+        self.categoricals  = ['adsorbent_name', 'adsorbate_name'] 
         self.sequences  = ['pressure_in_Pascal', 'uptake_in_mol_g']        
 
     #--------------------------------------------------------------------------

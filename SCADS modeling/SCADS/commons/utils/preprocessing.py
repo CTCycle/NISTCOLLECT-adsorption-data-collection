@@ -24,7 +24,7 @@ class PreProcessing:
         self.max_P = max_P
         self.max_Q = max_Q
 
-        self.ADS_COL, self.SORB_COL  = ['adsorbent_name'], ['adsorbates_name'] 
+        self.ADS_COL, self.SORB_COL  = ['adsorbent_name'], ['adsorbate_name'] 
         self.P_COL, self.Q_COL  = 'pressure_in_Pascal', 'uptake_in_mol_g'
         self.P_UNIT_COL, self.Q_UNIT_COL  = 'pressureUnits', 'adsorptionUnits' 
         self.VALID_UNITS = ['mmol/g', 'mol/kg', 'mol/g', 'mmol/kg', 'mg/g', 'g/g', 'cm3(STP)/g',
@@ -35,7 +35,7 @@ class PreProcessing:
         
         self.aggregate_dict = {'temperature' : 'first',                  
                                 'adsorbent_name' : 'first',
-                                'adsorbates_name' : 'first',                  
+                                'adsorbate_name' : 'first',                  
                                 'complexity' : 'first',                  
                                 'mol_weight' : 'first',
                                 'covalent_units' : 'first',
@@ -138,7 +138,7 @@ class PreProcessing:
 
         This function takes two pandas DataFrames: one containing isotherm data (df_isotherms)
         and another containing adsorbate properties (df_adsorbates). It merges the two DataFrames
-        on the 'adsorbates_name' column, assigns properties to each adsorbate, and returns a new
+        on the 'adsorbate_name' column, assigns properties to each adsorbate, and returns a new
         DataFrame containing the merged data with assigned properties.
 
         Keyword Arguments:
@@ -250,7 +250,7 @@ class PreProcessing:
     #--------------------------------------------------------------------------  
     def sequence_padding(self, dataset, column, pad_value=-1, pad_length=50):
             
-        dataset[column] = preprocessing.sequence.pad_sequences(dataset[column], 
+        dataset[column] = process.sequence.pad_sequences(dataset[column], 
                                                                maxlen=pad_length, 
                                                                value=pad_value, 
                                                                dtype='float32', 

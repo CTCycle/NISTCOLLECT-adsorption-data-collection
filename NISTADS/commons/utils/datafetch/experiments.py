@@ -17,7 +17,7 @@ server.check_status()
 
 # [NIST DATABASE API]
 ###############################################################################
-class AdsorptionDataAPI:  
+class AdsorptionDataFetch:  
     
     def __init__(self):        
         self.exp_fraction = CONFIG["collection"]["EXP_FRACTION"]
@@ -44,7 +44,7 @@ class AdsorptionDataAPI:
         if response.status_code == 200:             
             isotherm_index = response.json()    
             df_isotherms = pd.DataFrame(isotherm_index) 
-            logger.info('Successfully retrieve adsorption isotherm index')    
+            logger.info(f'Successfully retrieved adsorption isotherm index from {self.url_isotherms}')    
         else:
             logger.error(f'Error: Failed to retrieve data. Status code: {response.status_code}')
             df_isotherms = None
@@ -54,7 +54,7 @@ class AdsorptionDataAPI:
     
     # function to retrieve HTML data
     #--------------------------------------------------------------------------
-    def get_experiments_data(self, df_isotherms): 
+    def get_experiments_data(self, df_isotherms : pd.DataFrame): 
 
         '''        
         Retrieve isotherm data for a given list of experiment names from the NIST ISODB.
@@ -72,27 +72,15 @@ class AdsorptionDataAPI:
         '''         
         exp_samples = int(np.ceil(self.exp_fraction * df_isotherms.shape[0]))
 
+        df_experiments = None
         if df_isotherms is not None:
             loop = asyncio.get_event_loop()
             exp_names = df_isotherms[self.exp_identifier].to_list()[:exp_samples]
             exp_URLs = [f'https://adsorption.nist.gov/isodb/api/isotherm/{name}.json' for name in exp_names]
             exp_data = loop.run_until_complete(data_from_multiple_URLs(exp_URLs, self.max_parallel_calls))
             exp_data = [data for data in exp_data if data is not None]
-
-        df_experiments = pd.DataFrame(exp_data)
+            df_experiments = pd.DataFrame(exp_data)        
 
         return df_experiments
 
-        
-           
-    
-    
-    
-    
-            
-        
-            
-       
-            
-                
-                
+             

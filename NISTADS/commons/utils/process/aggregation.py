@@ -20,7 +20,7 @@ class GuestPropertiesMerge:
     def add_guest_properties(self, adsorption : pd.DataFrame, properties : pd.DataFrame):
 
         dataset_with_properties = pd.merge(adsorption, properties[self.selected_properties], 
-                                           left_on='adsorbates_name', 
+                                           left_on='adsorbate_name', 
                                            right_on='name', how='inner')
         dataset_with_properties.drop(columns=['name'], inplace=True)
         
@@ -35,7 +35,7 @@ class AggregateMeasurements:
 
         self.aggregate_dict = {'temperature' : 'first',                  
                                'adsorbent_name' : 'first',
-                               'adsorbates_name' : 'first',
+                               'adsorbate_name' : 'first',
                                'pressureUnits' : 'first',
                                'adsorptionUnits' : 'first',                            
                                'pressure' : list,

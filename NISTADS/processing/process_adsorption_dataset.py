@@ -10,13 +10,13 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from NISTADS.commons.utils.dataloader.serializer import get_datasets
+from NISTADS.commons.utils.dataloader.serializer import load_all_datasets
 from NISTADS.commons.utils.datamaker.properties import FetchMolecularProperties
-from NISTADS.commons.utils.preprocessing.filtering import DataFilter
-from NISTADS.commons.utils.preprocessing.splitting import DatasetSplit 
-from NISTADS.commons.utils.preprocessing.aggregation import GuestPropertiesMerge, AggregateMeasurements
-from NISTADS.commons.utils.preprocessing.conversion import PressureConversion, UptakeConversion
-from NISTADS.commons.utils.preprocessing.sequences import SequenceProcessing
+from NISTADS.commons.utils.process.filtering import DataFilter
+from NISTADS.commons.utils.process.splitting import DatasetSplit 
+from NISTADS.commons.utils.process.aggregation import GuestPropertiesMerge, AggregateMeasurements
+from NISTADS.commons.utils.process.conversion import PressureConversion, UptakeConversion
+from NISTADS.commons.utils.process.sequences import SequenceProcessing
 from NISTADS.commons.constants import CONFIG, DATA_PATH
 from NISTADS.commons.logger import logger
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     #--------------------------------------------------------------------------     
     # load data from csv, retrieve and merge molecular properties 
     logger.info(f'Loading SCADS dataset from {DATA_PATH}')
-    adsorption, guests, hosts = get_datasets() 
+    adsorption, guests, hosts = load_all_datasets() 
 
     
     

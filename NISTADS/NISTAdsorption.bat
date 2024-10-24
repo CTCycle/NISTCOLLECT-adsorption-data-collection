@@ -142,7 +142,7 @@ goto :main_menu
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :preprocess
 cls
-call conda activate %env_name% && python .\preprocessing\data_preprocessing.py
+call conda activate %env_name% && python .\preprocessing\data_process.py
 goto :main_menu
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

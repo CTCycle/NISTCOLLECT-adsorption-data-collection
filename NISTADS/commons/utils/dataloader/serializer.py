@@ -1,11 +1,9 @@
 import os
 import sys
-import cv2
 import json
 import pandas as pd
 import keras
 from datetime import datetime
-import tensorflow as tf
 
 from NISTADS.commons.constants import CONFIG, DATA_PATH, CHECKPOINT_PATH
 from NISTADS.commons.logger import logger
@@ -13,7 +11,7 @@ from NISTADS.commons.logger import logger
 
 # get the path of multiple images from a given directory
 ###############################################################################
-def get_datasets():    
+def load_all_datasets():    
     
     adsorption_path = os.path.join(DATA_PATH, 'single_component_adsorption.csv') 
     adsorption_data = pd.read_csv(adsorption_path, encoding='utf-8', sep=';')     
@@ -23,6 +21,26 @@ def get_datasets():
     host_properties = pd.read_csv(host_path, encoding='utf-8', sep=';')      
 
     return adsorption_data, guest_properties, host_properties 
+
+###############################################################################
+def save_adsorption_datasets(single_component : pd.DataFrame, binary_mixture : pd.DataFrame): 
+    
+    file_loc = os.path.join(DATA_PATH, 'single_component_adsorption.csv') 
+    single_component.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+    file_loc = os.path.join(DATA_PATH, 'binary_mixture_adsorption.csv') 
+    binary_mixture.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+
+
+###############################################################################
+def save_materials_datasets(guest_data, host_data):
+
+    dataframe = pd.DataFrame.from_dict(guest_data)  
+    file_loc = os.path.join(DATA_PATH, 'guests_dataset.csv') 
+    dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+
+    dataframe = pd.DataFrame.from_dict(host_data)  
+    file_loc = os.path.join(DATA_PATH, 'hosts_dataset.csv') 
+    dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8') 
 
 
 # [DATA SERIALIZATION]

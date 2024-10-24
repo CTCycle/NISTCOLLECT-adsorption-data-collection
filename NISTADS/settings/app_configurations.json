@@ -2,7 +2,7 @@
     "SEED" : 54,
     "collection" : {"GUEST_FRACTION" : 0.05,
                     "HOST_FRACTION" : 0.05,
-                    "EXP_FRACTION" : 0.05,    
+                    "EXP_FRACTION" : 0.001,    
                     "PARALLEL_TASKS_GH" : 40,
                     "PARALLEL_TASKS_EXP" : 20},
 

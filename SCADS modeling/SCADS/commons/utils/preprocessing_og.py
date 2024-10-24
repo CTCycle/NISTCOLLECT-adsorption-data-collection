@@ -19,7 +19,7 @@ class PreProcessing:
     def __init__(self):        
         self.parameters = ['temperature', 'mol_weight', 'complexity', 'covalent_units', 
                            'H_acceptors', 'H_donors', 'heavy_atoms']
-        self.ads_col, self.sorb_col  = ['adsorbent_name'], ['adsorbates_name'] 
+        self.ads_col, self.sorb_col  = ['adsorbent_name'], ['adsorbate_name'] 
         self.P_col, self.Q_col  = 'pressure_in_Pascal', 'uptake_in_mol_g'
         self.P_unit_col, self.Q_unit_col  = 'pressureUnits', 'adsorptionUnits'   
 
@@ -100,16 +100,16 @@ class PreProcessing:
         self.guest_encoder = OrdinalEncoder(categories='auto', handle_unknown='use_encoded_value',  unknown_value=unique_sorbates - 1)
         
         train_X[['adsorbent_name']] = self.host_encoder.fit_transform(train_X[['adsorbent_name']])
-        train_X[['adsorbates_name']] = self.guest_encoder.fit_transform(train_X[['adsorbates_name']])
+        train_X[['adsorbate_name']] = self.guest_encoder.fit_transform(train_X[['adsorbate_name']])
         test_X[['adsorbent_name']] = self.host_encoder.transform(test_X[['adsorbent_name']])
-        test_X[['adsorbates_name']] = self.guest_encoder.transform(test_X[['adsorbates_name']])
+        test_X[['adsorbate_name']] = self.guest_encoder.transform(test_X[['adsorbate_name']])
 
         return train_X, test_X    
     
     #--------------------------------------------------------------------------  
     def sequence_padding(self, dataset, column, pad_value=-1, pad_length=50):
             
-        dataset[column] = preprocessing.sequence.pad_sequences(dataset[column], 
+        dataset[column] = process.sequence.pad_sequences(dataset[column], 
                                                                maxlen=pad_length, 
                                                                value=pad_value, 
                                                                dtype='float32', 

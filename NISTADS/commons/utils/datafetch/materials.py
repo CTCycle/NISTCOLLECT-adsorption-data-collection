@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import pandas as pd
 import requests as r
@@ -6,7 +5,7 @@ import asyncio
 
 from NISTADS.commons.utils.datafetch.status import GetServerStatus
 from NISTADS.commons.utils.datafetch.asynchronous import data_from_multiple_URLs
-from NISTADS.commons.constants import CONFIG, DATA_PATH
+from NISTADS.commons.constants import CONFIG
 from NISTADS.commons.logger import logger
 
 
@@ -18,7 +17,7 @@ server.check_status()
 
 # [NIST DATABASE API: GUEST/HOST]
 ###############################################################################
-class GuestHostAPI: 
+class GuestHostDataFetch: 
 
     def __init__(self):      
         self.url_GUEST = 'https://adsorption.nist.gov/isodb/api/gases.json'
@@ -72,37 +71,29 @@ class GuestHostAPI:
         
         loop = asyncio.get_event_loop()
 
+        guest_data = None
         if df_guest is not None and isinstance(df_guest, pd.DataFrame):
             guest_samples = int(np.ceil(self.guest_fraction * df_guest.shape[0]))
             guest_names = df_guest[self.guest_identifier].to_list()[:guest_samples]
             guest_urls = [f'https://adsorption.nist.gov/isodb/api/gas/{name}.json' for name in guest_names]
             guest_data = loop.run_until_complete(data_from_multiple_URLs(guest_urls, self.max_parallel_calls))
             guest_data = [data for data in guest_data if data is not None]
+            df_guest = pd.DataFrame(guest_data) 
         else:
             logger.error('No available guest data has been found. Skipping directly to host species')
-            guest_data = None
-
+            
         if df_host is not None and isinstance(df_host, pd.DataFrame):  
             host_samples = int(np.ceil(self.host_fraction * df_host.shape[0]))
             host_names = df_host[self.host_identifier].to_list()[:host_samples]       
             host_urls = [f'https://adsorption.nist.gov/isodb/api/material/{name}.json' for name in host_names]       
             host_data = loop.run_until_complete(data_from_multiple_URLs(host_urls, self.max_parallel_calls))        
-            host_data = [data for data in host_data if data is not None]            
+            host_data = [data for data in host_data if data is not None] 
+            df_host = pd.DataFrame(host_data)            
         else:
             logger.error('No available host data has been found.')
-            host_data = None
+            
+        return df_guest, df_host 
 
-        return guest_data, host_data    
-
-    #--------------------------------------------------------------------------
-    def save_dataframe(self, guest_data, host_data):
-
-        dataframe = pd.DataFrame.from_dict(guest_data)  
-        file_loc = os.path.join(DATA_PATH, 'guests_dataset.csv') 
-        dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
-
-        dataframe = pd.DataFrame.from_dict(host_data)  
-        file_loc = os.path.join(DATA_PATH, 'hosts_dataset.csv') 
-        dataframe.to_csv(file_loc, index=False, sep=';', encoding='utf-8')  
+      
 
 
