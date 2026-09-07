@@ -6,7 +6,6 @@ from adsmod_common.config import PublicDataConfig, TrainingConfig, load_config
 
 CANONICAL_CONFIGURATION_FILE = Path("app/resources/adsmod.json")
 
-
 ###############################################################################
 def test_json_training_configuration_projects_from_canonical_model() -> None:
     config = load_config(CANONICAL_CONFIGURATION_FILE)
@@ -19,7 +18,6 @@ def test_json_training_configuration_projects_from_canonical_model() -> None:
     )
     assert config.application.public_data.pubchem_parallel_requests == 2
     assert config.application.public_data.cod_max_interactive_results == 250
-
 
 ###############################################################################
 def test_training_configuration_values_are_validated_by_canonical_model() -> None:
@@ -39,7 +37,6 @@ def test_training_configuration_values_are_validated_by_canonical_model() -> Non
     assert training.dataloader_workers == 4
     assert training.persistent_workers is True
 
-
 ###############################################################################
 def test_canonical_training_defaults_are_single_source() -> None:
     training = TrainingConfig.model_validate({"persistent_workers": False})
@@ -50,7 +47,6 @@ def test_canonical_training_defaults_are_single_source() -> None:
     assert training.dataloader_workers == 0
     assert training.persistent_workers is False
 
-
 ###############################################################################
 def test_public_data_configuration_bounds_external_request_policy() -> None:
     config = PublicDataConfig.model_validate({})
@@ -59,7 +55,6 @@ def test_public_data_configuration_bounds_external_request_policy() -> None:
     assert config.retry_attempts == 3
     assert config.pubchem_parallel_requests == 2
     assert config.cod_max_interactive_results == 250
-
 
 ###############################################################################
 def test_canonical_runtime_configuration_validates() -> None:

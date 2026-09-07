@@ -10,7 +10,6 @@ from playwright.sync_api import APIRequestContext
 
 from .test_datasets_api import _commit_sample
 
-
 ###############################################################################
 class TestFittingRun:
     """Tests for the fitting run endpoint."""
@@ -137,7 +136,6 @@ class TestFittingRun:
         # Assert
         assert response.status == 422  # Pydantic validation error
 
-
 ###############################################################################
 class TestModelCatalog:
     """Tests for the current fitting model catalog endpoint."""
@@ -156,7 +154,6 @@ class TestModelCatalog:
         assert {
             parameter["name"] for parameter in models["langmuir"]["parameters"]
         } == {"k", "qsat"}
-
 
 ###############################################################################
 class TestFittingJobs:

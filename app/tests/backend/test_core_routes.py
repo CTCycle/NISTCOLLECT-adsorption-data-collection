@@ -10,6 +10,7 @@ from adsmod_core.app import create_app
 CONFIG_PATH = Path("app/resources/adsmod.json")
 
 
+###############################################################################
 def _config(tmp_path: Path):  # type: ignore[no-untyped-def]
     base = load_config(CONFIG_PATH)
     return base.model_copy(
@@ -26,6 +27,7 @@ def _config(tmp_path: Path):  # type: ignore[no-untyped-def]
     )
 
 
+###############################################################################
 def test_unified_routes_expose_core_optional_ml_and_public_data_surface(
     tmp_path: Path,
 ) -> None:
@@ -47,6 +49,7 @@ def test_unified_routes_expose_core_optional_ml_and_public_data_surface(
         assert client.get("/api/health").status_code == 404
 
 
+###############################################################################
 def test_unified_openapi_surface_contains_public_data_routes(tmp_path: Path) -> None:
     with TestClient(create_app(_config(tmp_path))) as client:
         paths = client.get("/openapi.json").json()["paths"]

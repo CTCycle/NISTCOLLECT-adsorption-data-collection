@@ -33,7 +33,6 @@ from adsmod_core.repositories.fitting import FittingRepository
 from adsmod_core.services.job_responses import JobResponseFactory
 from adsmod_core.services.jobs import JobManager
 
-
 ###############################################################################
 class FittingService:
     JOB_TYPE = "fitting"

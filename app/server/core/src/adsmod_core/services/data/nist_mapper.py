@@ -8,7 +8,6 @@ from adsmod_common.units import UnitRegistry, parse_number
 from adsmod_core.common.utils.logger import logger
 from adsmod_core.repositories.datasets import stable_material_key
 
-
 ###############################################################################
 def _text(value: object) -> str:
     if value is None:
@@ -19,7 +18,6 @@ def _text(value: object) -> str:
     except (TypeError, ValueError):
         pass
     return str(value).strip()
-
 
 ###############################################################################
 class NISTCanonicalMapper:

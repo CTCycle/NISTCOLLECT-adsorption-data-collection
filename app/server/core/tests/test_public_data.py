@@ -31,6 +31,7 @@ from adsmod_core.repositories.schemas.public_data import (
 )
 
 
+###############################################################################
 def _manager() -> DatabaseManager:
     manager = DatabaseManager(
         DatabaseConfig(
@@ -44,6 +45,7 @@ def _manager() -> DatabaseManager:
     return manager
 
 
+###############################################################################
 def _count_selects(manager: DatabaseManager, operation) -> int:  # type: ignore[no-untyped-def]
     statements: list[str] = []
 
@@ -62,6 +64,7 @@ def _count_selects(manager: DatabaseManager, operation) -> int:  # type: ignore[
     return len(statements)
 
 
+###############################################################################
 def _seed_listing_rows(repository: PublicDataRepository) -> int:
     with repository.database.transaction() as session:
         dataset = Dataset(name="Public data performance", source="nist")
@@ -155,6 +158,7 @@ def _seed_listing_rows(repository: PublicDataRepository) -> int:
     return first_structure_id
 
 
+###############################################################################
 def test_provider_registry_and_source_identity_constraints() -> None:
     manager = _manager()
     try:
@@ -198,6 +202,7 @@ def test_provider_registry_and_source_identity_constraints() -> None:
         manager.dispose()
 
 
+###############################################################################
 def test_pubchem_resolution_normalizes_properties_without_network(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     provider = PubChemProvider(parallel_requests=1)
 
@@ -248,6 +253,7 @@ def test_pubchem_resolution_normalizes_properties_without_network(monkeypatch) -
     assert payload["conformer_3d_url"] is not None
 
 
+###############################################################################
 def test_pubchem_upsert_uses_strong_identity_and_does_not_merge_by_name() -> None:
     manager = _manager()
     try:
@@ -289,6 +295,7 @@ def test_pubchem_upsert_uses_strong_identity_and_does_not_merge_by_name() -> Non
         manager.dispose()
 
 
+###############################################################################
 def test_cod_atom_parser_normalizes_fractional_coordinates() -> None:
     cif = """
 data_test
@@ -325,6 +332,7 @@ O1 O 0.500(2) 0.625 0.750 0.5
     ]
 
 
+###############################################################################
 def test_cod_reimport_without_material_preserves_existing_association() -> None:
     manager = _manager()
     try:
@@ -369,6 +377,7 @@ def test_cod_reimport_without_material_preserves_existing_association() -> None:
         manager.dispose()
 
 
+###############################################################################
 def test_public_data_list_queries_do_not_scale_with_page_size() -> None:
     manager = _manager()
     try:
@@ -396,6 +405,7 @@ def test_public_data_list_queries_do_not_scale_with_page_size() -> None:
         manager.dispose()
 
 
+###############################################################################
 def test_structure_reference_matches_primary_provenance_record() -> None:
     manager = _manager()
     try:

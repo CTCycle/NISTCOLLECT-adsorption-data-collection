@@ -6,7 +6,10 @@ from pathlib import Path
 import sys
 
 
+###############################################################################
 class UnicodeSafeFormatter(logging.Formatter):
+
+    # -------------------------------------------------------------------------
     def format(self, record: logging.LogRecord) -> str:
         message = super().format(record)
         stream_encoding = getattr(sys.stderr, "encoding", None) or "utf-8"
@@ -26,6 +29,7 @@ if not logger.handlers:
 logger.propagate = False
 
 
+###############################################################################
 def configure_logging(log_directory: Path | None = None) -> None:
     """Configure optional Core-owned file logging below the supplied storage root."""
 
@@ -59,6 +63,7 @@ def configure_logging(log_directory: Path | None = None) -> None:
         )
 
 
+###############################################################################
 def close_file_logging() -> None:
     for handler in list(logger.handlers):
         if isinstance(handler, logging.FileHandler):

@@ -11,7 +11,6 @@ from adsmod_common.units import UnitRegistry
 PressureBasis = Literal["absolute", "partial", "relative"]
 ModelFunction = Callable[..., np.ndarray]
 
-
 ###############################################################################
 @dataclass(frozen=True)
 class ParameterSpec:
@@ -20,7 +19,6 @@ class ParameterSpec:
     lower: float
     upper: float
     unit_kind: str
-
 
 ###############################################################################
 @dataclass(frozen=True)
@@ -35,34 +33,28 @@ class ModelSpec:
     reference: str
     function: ModelFunction
 
-
 ###############################################################################
 def langmuir(pressure: np.ndarray, k: float, qsat: float) -> np.ndarray:
     kp = k * pressure
     return qsat * kp / (1.0 + kp)
-
 
 ###############################################################################
 def sips(pressure: np.ndarray, k: float, qsat: float, n: float) -> np.ndarray:
     kp_n = np.power(k * pressure, n)
     return qsat * kp_n / (1.0 + kp_n)
 
-
 ###############################################################################
 def freundlich(pressure: np.ndarray, k: float, n: float) -> np.ndarray:
     return k * np.power(pressure, 1.0 / n)
-
 
 ###############################################################################
 def temkin(pressure: np.ndarray, k: float, beta: float) -> np.ndarray:
     return beta * np.log(k * pressure)
 
-
 ###############################################################################
 def toth(pressure: np.ndarray, k: float, qsat: float, t: float) -> np.ndarray:
     kp = k * pressure
     return qsat * kp / np.power(1.0 + np.power(kp, t), 1.0 / t)
-
 
 ###############################################################################
 def dubinin_radushkevich(
@@ -83,7 +75,6 @@ def dubinin_radushkevich(
     output[positive] = qsat * np.exp(-beta * potential * potential)
     return output
 
-
 ###############################################################################
 def dual_site_langmuir(
     pressure: np.ndarray,
@@ -94,23 +85,19 @@ def dual_site_langmuir(
 ) -> np.ndarray:
     return langmuir(pressure, k1, qsat1) + langmuir(pressure, k2, qsat2)
 
-
 ###############################################################################
 def redlich_peterson(
     pressure: np.ndarray, k: float, a: float, beta: float
 ) -> np.ndarray:
     return k * pressure / (1.0 + a * np.power(pressure, beta))
 
-
 ###############################################################################
 def jovanovic(pressure: np.ndarray, k: float, qsat: float) -> np.ndarray:
     return qsat * (1.0 - np.exp(-k * pressure))
 
-
 ###############################################################################
 def _affinity(name: str = "k") -> ParameterSpec:
     return ParameterSpec(name, "Affinity coefficient", 1e-16, 1.0, "pressure^-1")
-
 
 ###############################################################################
 def _capacity(name: str = "qsat", label: str = "Saturation capacity") -> ParameterSpec:
@@ -259,7 +246,6 @@ MODEL_SPECS: dict[str, ModelSpec] = {
         function=jovanovic,
     ),
 }
-
 
 ###############################################################################
 class AdsorptionModels:

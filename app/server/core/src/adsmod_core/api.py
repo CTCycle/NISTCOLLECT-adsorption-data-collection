@@ -4,7 +4,6 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 ###############################################################################
 class SnapshotCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -13,6 +12,7 @@ class SnapshotCreateRequest(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+###############################################################################
 class SnapshotDatasetSelection(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -21,12 +21,12 @@ class SnapshotDatasetSelection(BaseModel):
     dataset_id: int | None = Field(default=None, ge=1)
 
 
+###############################################################################
 class SnapshotFromSelectionsRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     selections: list[SnapshotDatasetSelection] = Field(min_length=1)
     metadata: dict[str, Any] = Field(default_factory=dict)
-
 
 ###############################################################################
 class SnapshotCreateResponse(BaseModel):
@@ -34,7 +34,6 @@ class SnapshotCreateResponse(BaseModel):
     content_hash: str
     created_at: str
     row_count: int
-
 
 ###############################################################################
 class SnapshotPageResponse(BaseModel):

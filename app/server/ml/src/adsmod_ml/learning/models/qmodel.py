@@ -20,9 +20,9 @@ from torch import compile as torch_compile
 
 # [SCADS SEQUENCE MODEL]
 
-
 ###############################################################################
 class SCADSModel:
+
     # -------------------------------------------------------------------------
     def __init__(self, configuration: dict[str, Any], metadata: dict[str, Any]) -> None:
         smile_vocab = metadata.get("smile_vocabulary") or {}
@@ -142,9 +142,9 @@ class SCADSModel:
 
         return model
 
-
 ###############################################################################
 class SCADSAtomicModel:
+
     # -------------------------------------------------------------------------
     def __init__(self, configuration: dict[str, Any], metadata: dict[str, Any]) -> None:
         smile_vocab = metadata.get("smile_vocabulary") or {}

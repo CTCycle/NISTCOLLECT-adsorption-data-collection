@@ -3,9 +3,9 @@ from __future__ import annotations
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.sql.schema import Table
 
-
 ###############################################################################
 class ConflictCandidateRanker:
+
     # -------------------------------------------------------------------------
     def __init__(self, table: Table, column_positions: dict[str, int]) -> None:
         self.table = table
@@ -30,7 +30,6 @@ class ConflictCandidateRanker:
             ordered_positions,
             lowered,
         )
-
 
 ###############################################################################
 def resolve_conflict_columns(table: Table) -> list[str]:

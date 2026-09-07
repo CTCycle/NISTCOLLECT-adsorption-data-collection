@@ -13,9 +13,9 @@ from adsmod_core.repositories.schemas.models import (
     FittingRun,
 )
 
-
 ###############################################################################
 class FittingRepository:
+
     # -------------------------------------------------------------------------
     def __init__(self, database: DatabaseManager) -> None:
         self.database = database

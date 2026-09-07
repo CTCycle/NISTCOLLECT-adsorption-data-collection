@@ -18,6 +18,7 @@ _FORMULA_TOKEN = re.compile(r"([A-Z][a-z]?)(\d+(?:\.\d+)?)?")
 _INCHI_KEY = re.compile(r"^[A-Z]{14}-[A-Z]{10}-[A-Z]$")
 
 
+###############################################################################
 class PubChemProvider(RetryingHttpProvider):
     key = "pubchem"
     name = "PubChem"
@@ -54,6 +55,7 @@ class PubChemProvider(RetryingHttpProvider):
         "MonoisotopicMass",
     )
 
+    # -------------------------------------------------------------------------
     def __init__(
         self,
         *,
@@ -70,6 +72,7 @@ class PubChemProvider(RetryingHttpProvider):
         self._next_request_at = 0.0
         self._minimum_interval_seconds = 0.22
 
+    # -------------------------------------------------------------------------
     async def _before_attempt(self) -> None:
         # PubChem asks programmatic clients to stay below five requests/second.
         async with self._rate_lock:
@@ -79,12 +82,14 @@ class PubChemProvider(RetryingHttpProvider):
                 await asyncio.sleep(delay)
             self._next_request_at = monotonic() + self._minimum_interval_seconds
 
+    # -------------------------------------------------------------------------
     async def _health_request(self) -> None:
         await self._request(
             "GET",
             f"{self.base_url}/compound/cid/1/property/Title/JSON",
         )
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _namespace(query: str) -> tuple[str, str]:
         normalized = query.strip()
@@ -95,6 +100,7 @@ class PubChemProvider(RetryingHttpProvider):
             return "inchikey", upper
         return "name", normalized
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _number(value: Any) -> float | None:
         if value in (None, ""):
@@ -104,6 +110,7 @@ class PubChemProvider(RetryingHttpProvider):
         except (TypeError, ValueError):
             return None
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _elemental_composition(formula: str | None) -> dict[str, float]:
         if not formula:
@@ -114,6 +121,7 @@ class PubChemProvider(RetryingHttpProvider):
             composition[symbol] = composition.get(symbol, 0.0) + count
         return composition
 
+    # -------------------------------------------------------------------------
     async def resolve(self, query: str) -> dict[str, Any]:
         namespace, value = self._namespace(query)
         if not value:

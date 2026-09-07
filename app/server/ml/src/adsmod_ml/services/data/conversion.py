@@ -7,7 +7,6 @@ import pandas as pd
 from adsmod_ml.common.utils.logger import logger
 from adsmod_common.units import UnitConversionError, UnitRegistry, normalize_token
 
-
 ###############################################################################
 def map_values(
     values: list[int | float] | int | float | None,
@@ -26,7 +25,6 @@ def map_values(
     if pd.isna(values):
         return None
     return converter(float(values))
-
 
 ###############################################################################
 class PressureConversion:
@@ -71,7 +69,6 @@ class PressureConversion:
             axis=1,
         )
         return dataframe.drop(columns=self.P_UNIT_COL)
-
 
 ###############################################################################
 class UptakeConversion:
@@ -129,7 +126,6 @@ class UptakeConversion:
             for _, row in dataframe.iterrows()
         ]
         return dataframe.drop(columns=self.Q_UNIT_COL)
-
 
 ###############################################################################
 def PQ_units_conversion(dataframe: pd.DataFrame) -> pd.DataFrame:

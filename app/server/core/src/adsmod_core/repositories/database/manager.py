@@ -16,11 +16,13 @@ from adsmod_core.common.utils.logger import logger
 from adsmod_core.repositories.database.utils import normalize_postgres_engine
 
 
+###############################################################################
 def _expand_path(value: str) -> Path:
     expanded = os.path.expandvars(os.path.expanduser(value))
     return Path(expanded)
 
 
+###############################################################################
 def resolve_sqlite_path(
     database: DatabaseConfig,
     *,
@@ -40,9 +42,11 @@ def resolve_sqlite_path(
     return (base / configured_path).resolve()
 
 
+###############################################################################
 class DatabaseManager:
     """Own Core's one engine, session factory, and transaction boundary."""
 
+    # -------------------------------------------------------------------------
     def __init__(
         self,
         database: DatabaseConfig,
@@ -63,6 +67,7 @@ class DatabaseManager:
             expire_on_commit=False,
         )
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _normalize_backend(engine: str | None) -> str:
         value = (engine or "postgres").strip().lower()
@@ -70,6 +75,7 @@ class DatabaseManager:
             return "postgres"
         raise ValueError(f"Unsupported database engine: {engine}")
 
+    # -------------------------------------------------------------------------
     def _create_engine(self) -> Engine:
         if self.backend == "sqlite":
             sqlite_connect_args: dict[str, Any] = {
@@ -123,6 +129,7 @@ class DatabaseManager:
             url, future=True, connect_args=connect_args, pool_pre_ping=True
         )
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _configure_sqlite(dbapi_connection: Any, connection_record: Any) -> None:
         del connection_record
@@ -139,6 +146,7 @@ class DatabaseManager:
                 dbapi_connection.autocommit = previous_autocommit
                 dbapi_connection.rollback()
 
+    # -------------------------------------------------------------------------
     @contextmanager
     def transaction(self) -> Iterator[Session]:
         with self.session_factory() as session:
@@ -149,9 +157,11 @@ class DatabaseManager:
                 session.rollback()
                 raise
 
+    # -------------------------------------------------------------------------
     def session(self) -> Session:
         return self.session_factory()
 
+    # -------------------------------------------------------------------------
     def dispose(self) -> None:
         logger.debug("Disposing %s database engine", self.backend)
         self.engine.dispose()

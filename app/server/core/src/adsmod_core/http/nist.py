@@ -34,9 +34,9 @@ from adsmod_core.contracts.jobs import (
     JobStatusResponse,
 )
 
-
 ###############################################################################
 class NistEndpoint:
+
     # -------------------------------------------------------------------------
     def __init__(self, router: APIRouter, service: NISTDataService) -> None:
         self.router = router
@@ -262,7 +262,6 @@ class NistEndpoint:
             response_model=JobCancelResponse,
             status_code=status.HTTP_200_OK,
         )
-
 
 ###############################################################################
 def create_nist_router(container: CoreServiceContainer) -> APIRouter:

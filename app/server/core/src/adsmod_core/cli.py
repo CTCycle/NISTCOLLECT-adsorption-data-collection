@@ -7,13 +7,11 @@ import uvicorn
 
 from .app import create_app_from_path
 
-
 ###############################################################################
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="adsmod-core")
     parser.add_argument("--config", required=True, type=Path)
     return parser
-
 
 ###############################################################################
 def main() -> None:

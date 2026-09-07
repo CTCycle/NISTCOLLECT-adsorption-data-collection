@@ -12,6 +12,7 @@ config = context.config
 target_metadata = Base.metadata
 
 
+###############################################################################
 def include_object(
     object_: object,
     name: str | None,
@@ -27,6 +28,7 @@ def include_object(
     return True
 
 
+###############################################################################
 def _configure(connection: Connection) -> None:
     context.configure(
         connection=connection,
@@ -41,6 +43,7 @@ def _configure(connection: Connection) -> None:
     )
 
 
+###############################################################################
 def _database_config() -> DatabaseConfig:
     database = config.attributes.get("database")
     if not isinstance(database, DatabaseConfig):
@@ -50,6 +53,7 @@ def _database_config() -> DatabaseConfig:
     return database
 
 
+###############################################################################
 def run_migrations_offline() -> None:
     database = _database_config()
     manager = DatabaseManager(database)
@@ -71,12 +75,14 @@ def run_migrations_offline() -> None:
         manager.dispose()
 
 
+###############################################################################
 def _run_online(connection: Connection) -> None:
     _configure(connection)
     with context.begin_transaction():
         context.run_migrations()
 
 
+###############################################################################
 def run_migrations_online() -> None:
     injected = config.attributes.get("connection")
     if injected is not None:

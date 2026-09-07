@@ -11,9 +11,9 @@ from adsmod_ml.learning.device import DeviceConfig, DeviceDataLoader
 
 # [TOOLS FOR TRAINING MACHINE LEARNING MODELS]
 
-
 ###############################################################################
 class ModelTraining:
+
     # -------------------------------------------------------------------------
     def __init__(
         self, configuration: dict[str, Any], metadata: dict[str, Any] | None = None

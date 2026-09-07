@@ -7,6 +7,7 @@ import pandas as pd
 from adsmod_common.training_data import TrainingDataAccess
 
 
+###############################################################################
 class DatasetCompositionService:
     """Resolve training sources through the backend's immutable snapshot service."""
 
@@ -21,9 +22,11 @@ class DatasetCompositionService:
         "adsorption_units",
     )
 
+    # -------------------------------------------------------------------------
     def __init__(self, snapshot_access: TrainingDataAccess) -> None:
         self.snapshot_access = snapshot_access
 
+    # -------------------------------------------------------------------------
     def list_sources(self) -> list[dict[str, Any]]:
         sources = self.snapshot_access.list_sources()
         return sorted(
@@ -34,6 +37,7 @@ class DatasetCompositionService:
             ),
         )
 
+    # -------------------------------------------------------------------------
     def compose_datasets(
         self,
         selections: list[dict[str, Any]],
@@ -54,6 +58,7 @@ class DatasetCompositionService:
         dataset_label = "+".join(label for label in labels if label)[:120]
         return frame, None, None, dataset_label or "composed"
 
+    # -------------------------------------------------------------------------
     def _require_columns(self, frame: pd.DataFrame) -> None:
         missing = [
             column for column in self.required_columns if column not in frame.columns
@@ -64,6 +69,7 @@ class DatasetCompositionService:
                 + ", ".join(missing)
             )
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _normalize_frame(frame: pd.DataFrame) -> pd.DataFrame:
         normalized = frame.copy()

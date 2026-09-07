@@ -14,6 +14,7 @@ from adsmod_core.repositories.database.initializer import prepare_database_for_s
 from adsmod_core.services.container import CoreServiceContainer
 
 
+###############################################################################
 def _json_safe(value: object) -> object:
     if value is None or isinstance(value, (str, bool, int)):
         return value
@@ -29,16 +30,21 @@ def _json_safe(value: object) -> object:
     return str(value)
 
 
+###############################################################################
 class TrainingDataService:
+
+    # -------------------------------------------------------------------------
     def __init__(self, container: CoreServiceContainer, *, owns_database: bool = False) -> None:
         self.container = container
         self.snapshot_store = SnapshotStore(container.database)
         self.owns_database = owns_database
 
+    # -------------------------------------------------------------------------
     def close(self) -> None:
         if self.owns_database:
             self.container.database.dispose()
 
+    # -------------------------------------------------------------------------
     def list_sources(self) -> list[dict[str, Any]]:
         sources: list[dict[str, Any]] = []
         nist_count = int(self.container.nist_repository.count_nist_rows().get("single_component_rows", 0))
@@ -47,10 +53,12 @@ class TrainingDataService:
         sources.extend({"source": item["source"], "dataset_name": item["name"], "display_name": item["name"], "row_count": item["observation_count"], "dataset_id": item["id"]} for item in self.container.datasets.list_summaries() if item["source"] == "uploaded")
         return sources
 
+    # -------------------------------------------------------------------------
     def create_snapshot(self, rows: list[dict[str, Any]], *, metadata: dict[str, Any] | None = None) -> SnapshotReference:
         record = self.snapshot_store.create(rows, metadata=metadata)
         return SnapshotReference(record.snapshot_id, record.content_hash)
 
+    # -------------------------------------------------------------------------
     def create_snapshot_from_selections(self, selections: list[dict[str, Any]], *, metadata: dict[str, Any] | None = None) -> SnapshotReference:
         validated = [SnapshotDatasetSelection.model_validate(selection) for selection in selections]
         rows: list[dict[str, Any]] = []
@@ -61,6 +69,7 @@ class TrainingDataService:
                 rows.extend(self._nist_snapshot_rows(selection.dataset_name))
         return self.create_snapshot(rows, metadata={**dict(metadata or {}), "selections": [selection.model_dump(mode="json") for selection in validated]})
 
+    # -------------------------------------------------------------------------
     def fetch_snapshot(self, snapshot_id: str) -> SnapshotPayload:
         rows: list[dict[str, Any]] = []
         page_number = 1
@@ -81,6 +90,7 @@ class TrainingDataService:
             raise RuntimeError("Snapshot content hash verification failed.")
         return SnapshotPayload(snapshot_id, content_hash, tuple(rows))
 
+    # -------------------------------------------------------------------------
     def _uploaded_snapshot_rows(self, dataset_name: str, dataset_id: int | None) -> list[dict[str, Any]]:
         summaries = self.container.datasets.list_summaries()
         dataset = next((item for item in summaries if item["source"] == "uploaded" and ((dataset_id is None and item["name"] == dataset_name) or item["id"] == dataset_id)), None)
@@ -97,6 +107,7 @@ class TrainingDataService:
             rows.append(record)
         return rows
 
+    # -------------------------------------------------------------------------
     def _nist_snapshot_rows(self, dataset_name: str) -> list[dict[str, Any]]:
         adsorption, guests, _ = self.container.nist_repository.load_adsorption_datasets()
         if adsorption.empty:
@@ -113,6 +124,7 @@ class TrainingDataService:
         return rows
 
 
+###############################################################################
 def open_training_data_service(config: AdsmodConfig) -> TrainingDataService:
     storage_root = resolve_storage_root(config)
     storage_root.mkdir(parents=True, exist_ok=True)

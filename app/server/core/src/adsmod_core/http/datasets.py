@@ -27,9 +27,9 @@ from adsmod_core.services.container import CoreServiceContainer
 from adsmod_core.services.data.datasets import DatasetService
 from adsmod_core.common.constants import DATASETS_ROUTER_PREFIX, MAX_UPLOAD_SIZE_BYTES
 
-
 ###############################################################################
 class DatasetEndpoint:
+
     # -------------------------------------------------------------------------
     def __init__(self, router: APIRouter, service: DatasetService) -> None:
         self.router = router
@@ -228,7 +228,6 @@ class DatasetEndpoint:
             methods=["DELETE"],
             status_code=status.HTTP_204_NO_CONTENT,
         )
-
 
 ###############################################################################
 def create_dataset_router(container: CoreServiceContainer) -> APIRouter:

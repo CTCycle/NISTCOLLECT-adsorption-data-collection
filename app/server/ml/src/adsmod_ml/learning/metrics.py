@@ -9,12 +9,12 @@ from adsmod_ml.common.constants import PAD_VALUE
 
 # [LOSS FUNCTION]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(
     package="CustomLoss", name="MaskedMeanSquaredError"
 )
 class MaskedMeanSquaredError(keras.losses.Loss):
+
     # -------------------------------------------------------------------------
     def __init__(self, name: str = "MaskedMeanSquaredError", **kwargs) -> None:
         super().__init__(name=name, **kwargs)
@@ -45,12 +45,12 @@ class MaskedMeanSquaredError(keras.losses.Loss):
 
 # [METRICS]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(
     package="CustomMetrics", name="MaskedRSquared"
 )
 class MaskedRSquared(keras.metrics.Metric):
+
     # -------------------------------------------------------------------------
     def __init__(self, name: str = "MaskedR2", **kwargs) -> None:
         super().__init__(name=name, **kwargs)

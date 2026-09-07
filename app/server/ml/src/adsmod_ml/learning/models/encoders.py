@@ -11,10 +11,10 @@ from adsmod_ml.learning.models.transformers import AddNorm, FeedForward
 
 # [STATE ENCODER]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(package="Encoders", name="StateEncoder")
 class StateEncoder(keras.layers.Layer):
+
     # -------------------------------------------------------------------------
     def __init__(self, dropout_rate: float = 0.2, seed: int = 42, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -58,12 +58,12 @@ class StateEncoder(keras.layers.Layer):
 
 # [PRESSURE SERIES ENCODER]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(
     package="Encoders", name="PressureSerierEncoder"
 )
 class PressureSerierEncoder(keras.layers.Layer):
+
     # -------------------------------------------------------------------------
     def __init__(
         self,
@@ -158,10 +158,10 @@ class PressureSerierEncoder(keras.layers.Layer):
 
 # [UPTAKE DECODER]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(package="Decoders", name="QDecoder")
 class QDecoder(keras.layers.Layer):
+
     # -------------------------------------------------------------------------
     def __init__(
         self,

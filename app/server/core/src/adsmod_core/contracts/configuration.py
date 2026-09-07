@@ -4,14 +4,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-
 ###############################################################################
 class NumericBounds(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     minimum: int | float
     maximum: int | float
-
 
 ###############################################################################
 class ParameterDefaults(BaseModel):
@@ -21,7 +19,6 @@ class ParameterDefaults(BaseModel):
     upper: float
     initial: float
 
-
 ###############################################################################
 class DisplayUnitCapabilities(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -30,7 +27,6 @@ class DisplayUnitCapabilities(BaseModel):
     uptake: tuple[str, ...]
     default_pressure: str
     default_uptake: str
-
 
 ###############################################################################
 class FittingConfigurationResponse(BaseModel):

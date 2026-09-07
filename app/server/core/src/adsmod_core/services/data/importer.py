@@ -33,16 +33,15 @@ PARSER_VERSION = "2.0"
 PREVIEW_ROWS = 12
 EXPERIMENT_PREVIEW_POINTS = 8
 
-
 ###############################################################################
 @dataclass
 class ValidationBundle:
     response: ImportValidationResponse
     experiments: list[dict[str, Any]]
 
-
 ###############################################################################
 class AdsorptionImportEngine:
+
     # -------------------------------------------------------------------------
     def preview(self, payload: bytes, filename: str | None) -> ImportPreviewResponse:
         frame = read_tabular(payload, filename)

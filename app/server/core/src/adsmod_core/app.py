@@ -32,6 +32,7 @@ from .services.container import CoreServiceContainer
 from .services.training_data import TrainingDataService
 
 
+###############################################################################
 @dataclass
 class ApplicationRuntime:
     config: AdsmodConfig
@@ -42,6 +43,7 @@ class ApplicationRuntime:
     ml_container: Any | None = None
 
 
+###############################################################################
 def capabilities(request: Request) -> CapabilitiesResponse:
     runtime: ApplicationRuntime = request.app.state.runtime
     available = runtime.machine_learning_available
@@ -58,6 +60,7 @@ def capabilities(request: Request) -> CapabilitiesResponse:
     )
 
 
+###############################################################################
 def configuration(request: Request) -> FittingConfigurationResponse:
     config: AdsmodConfig = request.app.state.runtime.config
     fitting = config.application.fitting
@@ -90,6 +93,7 @@ def configuration(request: Request) -> FittingConfigurationResponse:
     )
 
 
+###############################################################################
 def _build_system_router() -> APIRouter:
     router = APIRouter()
     router.add_api_route(
@@ -109,6 +113,7 @@ def _build_system_router() -> APIRouter:
     return router
 
 
+###############################################################################
 def _register_optional_ml(application: FastAPI, runtime: ApplicationRuntime) -> None:
     try:
         bootstrap = import_module("adsmod_ml.bootstrap")
@@ -131,6 +136,7 @@ def _register_optional_ml(application: FastAPI, runtime: ApplicationRuntime) -> 
     application.state.ml_container = ml_container
 
 
+###############################################################################
 @asynccontextmanager
 async def app_lifespan(application: FastAPI) -> AsyncIterator[None]:
     config: AdsmodConfig = application.state.config
@@ -151,6 +157,7 @@ async def app_lifespan(application: FastAPI) -> AsyncIterator[None]:
         close_file_logging()
 
 
+###############################################################################
 def create_app(config: AdsmodConfig) -> FastAPI:
     container = CoreServiceContainer(config)
     runtime = ApplicationRuntime(
@@ -187,6 +194,7 @@ def create_app(config: AdsmodConfig) -> FastAPI:
     return application
 
 
+###############################################################################
 def create_app_from_path(config_path: str | Path) -> FastAPI:
     return create_app(load_config(config_path))
 

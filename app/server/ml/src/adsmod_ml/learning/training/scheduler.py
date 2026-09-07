@@ -8,10 +8,10 @@ import numpy as np
 
 # [LEARNING RATE SCHEDULER]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(package="LinearDecayLRScheduler")
 class LinearDecayLRScheduler(keras.optimizers.schedules.LearningRateSchedule):
+
     # -------------------------------------------------------------------------
     def __init__(
         self,

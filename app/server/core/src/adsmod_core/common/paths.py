@@ -12,6 +12,7 @@ from pathlib import Path
 from adsmod_common.config import AdsmodConfig
 
 
+###############################################################################
 def resolve_storage_root(config: AdsmodConfig) -> Path:
     """Return the configured, absolute storage root without changing it."""
 

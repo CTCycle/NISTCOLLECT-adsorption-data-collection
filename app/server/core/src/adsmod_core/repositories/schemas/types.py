@@ -7,7 +7,6 @@ from typing import Any
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.types import JSON, DateTime, TypeDecorator
 
-
 ###############################################################################
 def normalize_identity(value: str) -> str:
     """Return the application-owned identity representation used by unique keys."""
@@ -15,7 +14,6 @@ def normalize_identity(value: str) -> str:
     if not normalized:
         raise ValueError("Identity values must not be empty.")
     return normalized
-
 
 ###############################################################################
 class UTCDateTime(TypeDecorator[datetime]):
@@ -45,7 +43,6 @@ class UTCDateTime(TypeDecorator[datetime]):
             return None
         return value.replace(tzinfo=timezone.utc)
 
-
 ###############################################################################
 class _StrictJSON(TypeDecorator[Any]):
     impl = JSON
@@ -56,7 +53,6 @@ class _StrictJSON(TypeDecorator[Any]):
         if dialect.name == "postgresql":
             return dialect.type_descriptor(JSONB)
         return dialect.type_descriptor(JSON)
-
 
 ###############################################################################
 class JSONList(_StrictJSON):
@@ -78,7 +74,6 @@ class JSONList(_StrictJSON):
             raise TypeError("JSONList values must be lists.")
         return value
 
-
 ###############################################################################
 class JSONMapping(_StrictJSON):
     cache_ok = True
@@ -98,7 +93,6 @@ class JSONMapping(_StrictJSON):
         if not isinstance(value, dict):
             raise TypeError("JSONMapping values must be mappings.")
         return value
-
 
 ###############################################################################
 class JSONSequence(_StrictJSON):

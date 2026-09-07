@@ -10,6 +10,7 @@ from typing import Any
 import httpx
 
 
+###############################################################################
 class ProviderCapability(StrEnum):
     ADSORPTION = "adsorption"
     MATERIALS = "materials"
@@ -18,22 +19,27 @@ class ProviderCapability(StrEnum):
     REFERENCES = "references"
 
 
+###############################################################################
 class ProviderError(RuntimeError):
     """Base class for public-data provider failures."""
 
 
+###############################################################################
 class ProviderNotFoundError(ProviderError):
     """Raised when a provider cannot resolve the requested record."""
 
 
+###############################################################################
 class ProviderUnavailableError(ProviderError):
     """Raised for transient or invalid remote-service responses."""
 
 
+###############################################################################
 class ProviderRateLimitError(ProviderUnavailableError):
     """Raised when a provider still throttles ADSMOD after retries."""
 
 
+###############################################################################
 @dataclass(frozen=True)
 class ProviderHealth:
     status: str
@@ -41,6 +47,7 @@ class ProviderHealth:
     checked_at: datetime
 
 
+###############################################################################
 class PublicDataProvider(ABC):
     key: str
     name: str
@@ -51,6 +58,7 @@ class PublicDataProvider(ABC):
     terms_url: str | None
     capabilities: tuple[ProviderCapability, ...]
 
+    # -------------------------------------------------------------------------
     def source_definition(self) -> dict[str, Any]:
         return {
             "key": self.key,
@@ -63,16 +71,19 @@ class PublicDataProvider(ABC):
             "capabilities": [capability.value for capability in self.capabilities],
         }
 
+    # -------------------------------------------------------------------------
     @abstractmethod
     async def health(self) -> ProviderHealth:
         raise NotImplementedError
 
 
+###############################################################################
 class RetryingHttpProvider(PublicDataProvider):
     """Shared timeout, retry, and bounded-concurrency policy for public HTTP sources."""
 
     retry_statuses = frozenset({429, 500, 502, 503, 504})
 
+    # -------------------------------------------------------------------------
     def __init__(
         self,
         *,
@@ -84,9 +95,11 @@ class RetryingHttpProvider(PublicDataProvider):
         self.request_timeout_seconds = max(0.1, float(request_timeout_seconds))
         self.max_attempts = max(1, int(retry_attempts))
 
+    # -------------------------------------------------------------------------
     async def _before_attempt(self) -> None:
         """Provider-specific pacing hook called before every remote attempt."""
 
+    # -------------------------------------------------------------------------
     async def _request(
         self,
         method: str,
@@ -145,6 +158,7 @@ class RetryingHttpProvider(PublicDataProvider):
             f"{self.name} could not be reached after {self.max_attempts} attempts."
         ) from last_error
 
+    # -------------------------------------------------------------------------
     async def health(self) -> ProviderHealth:
         try:
             await self._health_request()
@@ -160,6 +174,7 @@ class RetryingHttpProvider(PublicDataProvider):
             checked_at=datetime.now(timezone.utc),
         )
 
+    # -------------------------------------------------------------------------
     @abstractmethod
     async def _health_request(self) -> None:
         raise NotImplementedError

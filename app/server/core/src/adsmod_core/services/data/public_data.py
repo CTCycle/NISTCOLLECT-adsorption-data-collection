@@ -23,9 +23,11 @@ from adsmod_core.providers.public_data import PublicDataProvider
 from adsmod_core.repositories.public_data import PublicDataRepository
 
 
+###############################################################################
 class PublicDataService:
     """Coordinate normalized public-data queries and provider adapters."""
 
+    # -------------------------------------------------------------------------
     def __init__(
         self,
         *,
@@ -35,6 +37,7 @@ class PublicDataService:
         self.repository = repository
         self.providers = {provider.key: provider for provider in providers}
 
+    # -------------------------------------------------------------------------
     async def list_sources(self, *, check_health: bool = True) -> PublicSourceListResponse:
         persisted = {row["key"]: row for row in self.repository.source_rows()}
         health_by_key: dict[str, Any] = {}
@@ -80,6 +83,7 @@ class PublicDataService:
             )
         return PublicSourceListResponse(sources=items)
 
+    # -------------------------------------------------------------------------
     def list_adsorption(self, **filters: Any) -> AdsorptionPageResponse:
         rows, total = self.repository.list_adsorption(**filters)
         return AdsorptionPageResponse(
@@ -91,11 +95,13 @@ class PublicDataService:
             ),
         )
 
+    # -------------------------------------------------------------------------
     def get_adsorption(self, isotherm_id: int) -> AdsorptionDetailResponse:
         return AdsorptionDetailResponse.model_validate(
             self.repository.get_adsorption(isotherm_id)
         )
 
+    # -------------------------------------------------------------------------
     def list_materials(self, **filters: Any) -> MaterialPageResponse:
         rows, total = self.repository.list_materials(**filters)
         return MaterialPageResponse(
@@ -107,6 +113,7 @@ class PublicDataService:
             ),
         )
 
+    # -------------------------------------------------------------------------
     def list_chemicals(self, **filters: Any) -> ChemicalPageResponse:
         rows, total = self.repository.list_chemicals(**filters)
         return ChemicalPageResponse(
@@ -118,11 +125,13 @@ class PublicDataService:
             ),
         )
 
+    # -------------------------------------------------------------------------
     def get_chemical(self, adsorbate_id: int) -> ChemicalRecordView:
         return ChemicalRecordView.model_validate(
             self.repository.get_chemical(adsorbate_id)
         )
 
+    # -------------------------------------------------------------------------
     async def resolve_pubchem(self, query: str) -> ChemicalRecordView:
         provider = self.providers.get("pubchem")
         if not isinstance(provider, PubChemProvider):
@@ -133,6 +142,7 @@ class PublicDataService:
         )
         return self.get_chemical(adsorbate_id)
 
+    # -------------------------------------------------------------------------
     async def search_cod(
         self,
         *,
@@ -146,6 +156,7 @@ class PublicDataService:
         rows = await provider.search(text=text, formula=formula, cod_id=cod_id)
         return CODSearchResponse(items=rows)
 
+    # -------------------------------------------------------------------------
     async def import_cod(
         self, request: CODStructureImportRequest
     ) -> StructureRecordView:
@@ -165,6 +176,7 @@ class PublicDataService:
             self.repository.get_structure(structure_id)
         )
 
+    # -------------------------------------------------------------------------
     def list_structures(self, **filters: Any) -> StructurePageResponse:
         rows, total = self.repository.list_structures(**filters)
         return StructurePageResponse(
@@ -176,6 +188,7 @@ class PublicDataService:
             ),
         )
 
+    # -------------------------------------------------------------------------
     def get_structure(self, structure_id: int) -> StructureRecordView:
         return StructureRecordView.model_validate(
             self.repository.get_structure(structure_id)

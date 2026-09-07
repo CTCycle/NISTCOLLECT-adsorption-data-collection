@@ -12,6 +12,7 @@ from adsmod_common.training_data import TrainingDataAccess
 from adsmod_ml.contracts.training import TrainingMetadata
 
 
+###############################################################################
 class TrainingDataSerializer:
     """ML-side manifest for backend-owned immutable training snapshots."""
 
@@ -21,6 +22,7 @@ class TrainingDataSerializer:
     sample_key_column = "sample_key"
     series_columns = ["pressure", "adsorbed_amount", "adsorbate_encoded_SMILE"]
 
+    # -------------------------------------------------------------------------
     def __init__(
         self, snapshot_access: TrainingDataAccess, artifact_root: Path
     ) -> None:
@@ -29,6 +31,7 @@ class TrainingDataSerializer:
         self.artifact_root.mkdir(parents=True, exist_ok=True)
         self.manifest_path = self.artifact_root / "training-manifest.json"
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def normalize_dataset_label(dataset_label: str | None) -> str:
         normalized = str(dataset_label or "").strip()
@@ -36,6 +39,7 @@ class TrainingDataSerializer:
             raise ValueError("dataset_label is required.")
         return normalized
 
+    # -------------------------------------------------------------------------
     @classmethod
     def build_sample_key(cls, row: pd.Series) -> str:
         payload = {
@@ -52,6 +56,7 @@ class TrainingDataSerializer:
         serialized = json.dumps(payload, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def parse_sequence_value(value: Any) -> list[Any]:
         if value is None or (isinstance(value, float) and pd.isna(value)):
@@ -80,6 +85,7 @@ class TrainingDataSerializer:
             return list(tolist())
         return [value]
 
+    # -------------------------------------------------------------------------
     def coerce_sequence_columns(self, dataset: pd.DataFrame) -> pd.DataFrame:
         if dataset.empty:
             return dataset.copy()
@@ -89,6 +95,7 @@ class TrainingDataSerializer:
                 normalized[column] = normalized[column].apply(self.parse_sequence_value)
         return normalized
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _jsonable(value: Any) -> Any:
         if value is None or isinstance(value, (str, bool, int, float)):
@@ -109,6 +116,7 @@ class TrainingDataSerializer:
             return None
         return str(value)
 
+    # -------------------------------------------------------------------------
     def _read_manifest(self) -> dict[str, dict[str, Any]]:
         if not self.manifest_path.is_file():
             return {}
@@ -124,6 +132,7 @@ class TrainingDataSerializer:
             if isinstance(entry, dict)
         }
 
+    # -------------------------------------------------------------------------
     def _write_manifest(self, manifest: dict[str, dict[str, Any]]) -> None:
         temporary = self.manifest_path.with_suffix(".tmp")
         temporary.write_text(
@@ -132,6 +141,7 @@ class TrainingDataSerializer:
         )
         temporary.replace(self.manifest_path)
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _require_columns(frame: pd.DataFrame, columns: set[str], context: str) -> None:
         missing = columns.difference(frame.columns)
@@ -140,6 +150,7 @@ class TrainingDataSerializer:
                 f"{context} is missing required columns: {', '.join(sorted(missing))}"
             )
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def require_dataset_hash(dataset_hash: Any) -> str:
         normalized = (
@@ -153,6 +164,7 @@ class TrainingDataSerializer:
             raise ValueError("dataset_hash must be a 64-character hexadecimal digest.")
         return normalized
 
+    # -------------------------------------------------------------------------
     def save_training_dataset(
         self,
         dataset: pd.DataFrame,
@@ -198,6 +210,7 @@ class TrainingDataSerializer:
         }
         self._write_manifest(manifest)
 
+    # -------------------------------------------------------------------------
     def save_training_metadata(
         self, metadata: pd.DataFrame, dataset_label: str
     ) -> None:
@@ -225,6 +238,7 @@ class TrainingDataSerializer:
         manifest[label] = entry
         self._write_manifest(manifest)
 
+    # -------------------------------------------------------------------------
     def load_training_metadata(self, dataset_label: str) -> TrainingMetadata:
         label = self.normalize_dataset_label(dataset_label)
         entry = self._read_manifest().get(label)
@@ -232,6 +246,7 @@ class TrainingDataSerializer:
             return TrainingMetadata()
         return TrainingMetadata.model_validate(entry["metadata"])
 
+    # -------------------------------------------------------------------------
     def load_training_data(
         self,
         dataset_label: str,
@@ -261,6 +276,7 @@ class TrainingDataSerializer:
             metadata,
         )
 
+    # -------------------------------------------------------------------------
     def collect_dataset_hashes(self) -> set[str]:
         return {
             str(entry["dataset_hash"])
@@ -268,6 +284,7 @@ class TrainingDataSerializer:
             if entry.get("dataset_hash")
         }
 
+    # -------------------------------------------------------------------------
     def clear_training_dataset(self, dataset_label: str | None = None) -> None:
         manifest = self._read_manifest()
         if dataset_label is None:
@@ -276,6 +293,7 @@ class TrainingDataSerializer:
             manifest.pop(self.normalize_dataset_label(dataset_label), None)
         self._write_manifest(manifest)
 
+    # -------------------------------------------------------------------------
     def list_processed_datasets(self) -> list[dict[str, Any]]:
         datasets: list[dict[str, Any]] = []
         for label, entry in sorted(self._read_manifest().items()):
@@ -293,6 +311,7 @@ class TrainingDataSerializer:
             )
         return datasets
 
+    # -------------------------------------------------------------------------
     def get_training_dataset_info(self, dataset_label: str) -> dict[str, Any] | None:
         label = self.normalize_dataset_label(dataset_label)
         metadata = self.load_training_metadata(label)
@@ -303,6 +322,7 @@ class TrainingDataSerializer:
             **metadata.model_dump(),
         }
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def compute_metadata_hash(metadata: TrainingMetadata) -> str:
         payload = {
@@ -320,6 +340,7 @@ class TrainingDataSerializer:
         serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def validate_metadata(
         metadata: TrainingMetadata, target_metadata: TrainingMetadata

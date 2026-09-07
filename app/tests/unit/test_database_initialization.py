@@ -17,6 +17,7 @@ from adsmod_core.repositories.database.manager import DatabaseManager
 from adsmod_core.repositories.schemas.models import Base
 
 
+###############################################################################
 def sqlite_config(path: Path, *, timeout: int = 5) -> DatabaseConfig:
     return DatabaseConfig(
         embedded_database=True,
@@ -26,6 +27,7 @@ def sqlite_config(path: Path, *, timeout: int = 5) -> DatabaseConfig:
     )
 
 
+###############################################################################
 def table_names(path: Path) -> set[str]:
     connection = sqlite3.connect(path)
     try:
@@ -39,6 +41,7 @@ def table_names(path: Path) -> set[str]:
         connection.close()
 
 
+###############################################################################
 def test_sqlite_missing_database_runs_baseline_and_is_idempotent(
     tmp_path: Path,
 ) -> None:
@@ -54,6 +57,7 @@ def test_sqlite_missing_database_runs_baseline_and_is_idempotent(
     assert len(table_names(path) & set(Base.metadata.tables)) == len(Base.metadata.tables)
 
 
+###############################################################################
 def test_sqlite_empty_existing_file_is_initialized(tmp_path: Path) -> None:
     path = tmp_path / "empty.db"
     path.touch()
@@ -64,6 +68,7 @@ def test_sqlite_empty_existing_file_is_initialized(tmp_path: Path) -> None:
     assert table_names(path) >= {"alembic_version", "datasets"}
 
 
+###############################################################################
 def test_nonempty_unversioned_database_is_rejected_without_inference(
     tmp_path: Path,
 ) -> None:
@@ -77,6 +82,7 @@ def test_nonempty_unversioned_database_is_rejected_without_inference(
     assert table_names(path) == {"unrelated"}
 
 
+###############################################################################
 def test_empty_version_table_with_application_tables_fails_safely(
     tmp_path: Path,
 ) -> None:
@@ -96,6 +102,7 @@ def test_empty_version_table_with_application_tables_fails_safely(
         migrator.migrate_database(sqlite_config(path))
 
 
+###############################################################################
 def test_failed_migration_rolls_back_schema(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -119,6 +126,7 @@ def test_failed_migration_rolls_back_schema(
     assert "alembic_version" not in table_names(path)
 
 
+###############################################################################
 def test_concurrent_sqlite_startup_serializes_migrations(tmp_path: Path) -> None:
     path = tmp_path / "concurrent.db"
 
@@ -132,6 +140,7 @@ def test_concurrent_sqlite_startup_serializes_migrations(tmp_path: Path) -> None
     assert table_names(path) >= {"alembic_version", "datasets"}
 
 
+###############################################################################
 def test_sqlite_migration_lock_timeout_is_reported(tmp_path: Path) -> None:
     path = tmp_path / "locked.db"
     blocker = sqlite3.connect(path, timeout=5)
@@ -144,6 +153,7 @@ def test_sqlite_migration_lock_timeout_is_reported(tmp_path: Path) -> None:
         blocker.close()
 
 
+###############################################################################
 def test_database_initialization_sanitizes_sqlalchemy_errors(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -162,6 +172,7 @@ def test_database_initialization_sanitizes_sqlalchemy_errors(
     assert "verify" in str(error.value)
 
 
+###############################################################################
 def test_postgres_creation_permission_error_is_actionable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

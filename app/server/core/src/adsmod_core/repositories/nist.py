@@ -21,11 +21,11 @@ from adsmod_core.repositories.schemas.types import normalize_identity
 
 NIST_DATASET_NAME = "NIST ISODB"
 
-
 ###############################################################################
 class NISTRepository:
     """Own canonical NIST persistence and query operations."""
 
+    # -------------------------------------------------------------------------
     def __init__(
         self,
         *,
@@ -39,6 +39,7 @@ class NISTRepository:
         self.materials = materials
         self.public_data = public_data
 
+    # -------------------------------------------------------------------------
     def list_nist_experiment_ids(self) -> set[str]:
         with self.database.session_factory() as session:
             values = session.scalars(
@@ -48,6 +49,7 @@ class NISTRepository:
             )
             return {value.casefold() for value in values}
 
+    # -------------------------------------------------------------------------
     def list_adsorbate_inchi_keys(self) -> set[str]:
         with self.database.session_factory() as session:
             values = session.scalars(
@@ -66,6 +68,7 @@ class NISTRepository:
             )
             return {str(value).casefold() for value in values}
 
+    # -------------------------------------------------------------------------
     def list_adsorbent_hash_keys(self) -> set[str]:
         with self.database.session_factory() as session:
             values = session.scalars(
@@ -80,6 +83,7 @@ class NISTRepository:
             )
             return {str(value).casefold() for value in values}
 
+    # -------------------------------------------------------------------------
     def count_local_records_by_category(self) -> dict[str, int]:
         with self.database.session_factory() as session:
             experiments = session.scalar(
@@ -109,6 +113,7 @@ class NISTRepository:
             "host": int(hosts or 0),
         }
 
+    # -------------------------------------------------------------------------
     def count_nist_rows(self) -> dict[str, int]:
         with self.database.session_factory() as session:
             experiments_count = session.scalar(
@@ -156,6 +161,7 @@ class NISTRepository:
             "host_rows": int(host_rows or 0),
         }
 
+    # -------------------------------------------------------------------------
     def load_adsorption_datasets(
         self,
     ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -227,6 +233,7 @@ class NISTRepository:
         )
         return adsorption, guest, host
 
+    # -------------------------------------------------------------------------
     def save_materials(
         self,
         guest_records: list[dict[str, Any]],
@@ -276,6 +283,7 @@ class NISTRepository:
                 ),
             )
 
+    # -------------------------------------------------------------------------
     def save_experiments(
         self, experiments: list[dict[str, Any]], _replace: bool = False
     ) -> None:

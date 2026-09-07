@@ -10,6 +10,7 @@ from adsmod_core.providers.public_data import (
 from adsmod_core.services.data.nist_service import NISTDataService
 
 
+###############################################################################
 class NISTPublicDataProvider(PublicDataProvider):
     key = "nist"
     name = "NIST/ARPA-E Database of Novel and Emerging Adsorbent Materials"
@@ -28,9 +29,11 @@ class NISTPublicDataProvider(PublicDataProvider):
         ProviderCapability.REFERENCES,
     )
 
+    # -------------------------------------------------------------------------
     def __init__(self, service: NISTDataService) -> None:
         self.service = service
 
+    # -------------------------------------------------------------------------
     async def health(self) -> ProviderHealth:
         checked_at = datetime.now(timezone.utc)
         try:

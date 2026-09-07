@@ -15,20 +15,26 @@ from adsmod_ml.learning.serialization.model import ModelSerializer
 from adsmod_ml.learning.serialization.training import TrainingDataSerializer
 
 
+###############################################################################
 class FakeSnapshotAccess:
+
+    # -------------------------------------------------------------------------
     def __init__(self, response_rows: list[dict[str, Any]] | None = None) -> None:
         self.response_rows = response_rows
         self.captured: list[dict[str, Any]] = []
         self.snapshots: dict[str, SnapshotPayload] = {}
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _hash(rows: list[dict[str, Any]]) -> str:
         payload = json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
+    # -------------------------------------------------------------------------
     def list_sources(self) -> list[dict[str, Any]]:
         return []
 
+    # -------------------------------------------------------------------------
     def create_snapshot(
         self,
         rows: list[dict[str, Any]],
@@ -47,6 +53,7 @@ class FakeSnapshotAccess:
         )
         return reference
 
+    # -------------------------------------------------------------------------
     def create_snapshot_from_selections(
         self,
         selections: list[dict[str, Any]],
@@ -55,10 +62,12 @@ class FakeSnapshotAccess:
     ) -> SnapshotReference:
         raise AssertionError("selection snapshots are not used by serializer tests")
 
+    # -------------------------------------------------------------------------
     def fetch_snapshot(self, snapshot_id: str) -> SnapshotPayload:
         return self.snapshots[snapshot_id]
 
 
+###############################################################################
 def create_basis_metadata(**kwargs: object) -> TrainingMetadata:
     defaults: dict[str, object] = {
         "sample_size": 1.0,
@@ -76,6 +85,7 @@ def create_basis_metadata(**kwargs: object) -> TrainingMetadata:
     return TrainingMetadata(**defaults)
 
 
+###############################################################################
 def _serializer(
     tmp_path: Path,
     *,
@@ -85,10 +95,12 @@ def _serializer(
     return TrainingDataSerializer(access, tmp_path / "artifacts"), access
 
 
+###############################################################################
 def test_validate_metadata_identical() -> None:
     assert TrainingDataSerializer.validate_metadata(create_basis_metadata(), create_basis_metadata()) is True
 
 
+###############################################################################
 def test_validate_metadata_rejects_parameter_and_vocabulary_changes() -> None:
     assert TrainingDataSerializer.validate_metadata(
         create_basis_metadata(sample_size=1.0),
@@ -104,12 +116,14 @@ def test_validate_metadata_rejects_parameter_and_vocabulary_changes() -> None:
     ) is False
 
 
+###############################################################################
 def test_compute_metadata_hash_is_deterministic() -> None:
     first = create_basis_metadata(smile_vocabulary={"A": 1, "B": 2})
     second = create_basis_metadata(smile_vocabulary={"B": 2, "A": 1})
     assert TrainingDataSerializer.compute_metadata_hash(first) == TrainingDataSerializer.compute_metadata_hash(second)
 
 
+###############################################################################
 def test_save_training_dataset_deduplicates_rows_and_publishes_snapshot(tmp_path: Path) -> None:
     serializer, access = _serializer(tmp_path)
     dataset = pd.DataFrame([
@@ -142,6 +156,7 @@ def test_save_training_dataset_deduplicates_rows_and_publishes_snapshot(tmp_path
     assert rows[0]["adsorbate_encoded_SMILE"] == [1, 2, 3]
 
 
+###############################################################################
 def test_save_training_metadata_normalizes_json_mappings(tmp_path: Path) -> None:
     serializer, access = _serializer(tmp_path)
     serializer.save_training_dataset(pd.DataFrame([{"split": "train"}]), "small_dataset", "a" * 64)
@@ -165,17 +180,20 @@ def test_save_training_metadata_normalizes_json_mappings(tmp_path: Path) -> None
     assert len(access.captured) == 1
 
 
+###############################################################################
 def test_training_dataset_requires_canonical_hash(tmp_path: Path) -> None:
     serializer, _ = _serializer(tmp_path)
     with pytest.raises(ValueError, match="dataset_hash"):
         serializer.save_training_dataset(pd.DataFrame({"split": ["train"]}), "small_dataset", "")
 
 
+###############################################################################
 def test_training_metadata_rejects_legacy_fields() -> None:
     with pytest.raises(ValidationError):
         TrainingMetadata(hashcode="a" * 64)
 
 
+###############################################################################
 def test_training_data_read_requires_canonical_columns(tmp_path: Path) -> None:
     rows = [{"split": "train"}]
     serializer, access = _serializer(tmp_path, response_rows=rows)
@@ -191,6 +209,7 @@ def test_training_data_read_requires_canonical_columns(tmp_path: Path) -> None:
         serializer.load_training_data("default")
 
 
+###############################################################################
 def test_checkpoint_metadata_rejects_legacy_hash_alias(tmp_path: Path) -> None:
     configuration_dir = tmp_path / "configuration"
     configuration_dir.mkdir()
@@ -203,6 +222,7 @@ def test_checkpoint_metadata_rejects_legacy_hash_alias(tmp_path: Path) -> None:
         ModelSerializer(tmp_path).load_training_configuration(str(tmp_path))
 
 
+###############################################################################
 def test_checkpoint_loader_allows_adsmod_owned_lambda_layers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -20,6 +20,7 @@ branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 
+###############################################################################
 def upgrade() -> None:
     # Training data is now represented by immutable Core snapshots. Existing
     # processed training tables are intentionally retired; callers must build
@@ -70,6 +71,7 @@ def upgrade() -> None:
         )
 
 
+###############################################################################
 def downgrade() -> None:
     raise RuntimeError(
         "The v3 cutover is intentionally irreversible: recreate a pre-v3 database "

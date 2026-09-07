@@ -17,6 +17,7 @@ from adsmod_core.repositories.schemas.models import (
 )
 
 
+###############################################################################
 @dataclass(frozen=True)
 class SnapshotRecord:
     snapshot_id: str
@@ -26,6 +27,7 @@ class SnapshotRecord:
     rows: tuple[dict[str, Any], ...]
 
 
+###############################################################################
 @dataclass(frozen=True)
 class SnapshotPage:
     snapshot_id: str
@@ -36,12 +38,15 @@ class SnapshotPage:
     rows: tuple[dict[str, Any], ...]
 
 
+###############################################################################
 class SnapshotStore:
     """Core-owned immutable snapshot storage in the operational database."""
 
+    # -------------------------------------------------------------------------
     def __init__(self, database: DatabaseManager) -> None:
         self.database = database
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _canonical_rows(
         rows: list[dict[str, Any]],
@@ -55,6 +60,7 @@ class SnapshotStore:
         )
         return payload, frozen_rows
 
+    # -------------------------------------------------------------------------
     def create(
         self,
         rows: list[dict[str, Any]],
@@ -91,6 +97,7 @@ class SnapshotStore:
             rows=frozen_rows,
         )
 
+    # -------------------------------------------------------------------------
     def get_page(self, snapshot_id: str, page: int, page_size: int) -> SnapshotPage:
         if page < 1:
             raise ValueError("page must be >= 1")

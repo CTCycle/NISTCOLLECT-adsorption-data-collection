@@ -24,15 +24,20 @@ from adsmod_core.services.container import CoreServiceContainer
 from adsmod_core.services.data.public_data import PublicDataService
 
 
+###############################################################################
 class PublicDataEndpoint:
+
+    # -------------------------------------------------------------------------
     def __init__(self, router: APIRouter, service: PublicDataService) -> None:
         self.router = router
         self.service = service
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _lookup_error(exc: LookupError) -> HTTPException:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _provider_error(exc: Exception) -> HTTPException:
         if isinstance(exc, ProviderNotFoundError):
@@ -43,9 +48,11 @@ class PublicDataEndpoint:
             code = status.HTTP_503_SERVICE_UNAVAILABLE
         return HTTPException(status_code=code, detail=str(exc))
 
+    # -------------------------------------------------------------------------
     async def list_sources(self, check_health: bool = True) -> PublicSourceListResponse:
         return await self.service.list_sources(check_health=check_health)
 
+    # -------------------------------------------------------------------------
     def list_adsorption(
         self,
         page: int = Query(1, ge=1),
@@ -75,12 +82,14 @@ class PublicDataEndpoint:
             temperature_max_k=temperature_max_k,
         )
 
+    # -------------------------------------------------------------------------
     def get_adsorption(self, isotherm_id: int) -> AdsorptionDetailResponse:
         try:
             return self.service.get_adsorption(isotherm_id)
         except LookupError as exc:
             raise self._lookup_error(exc) from exc
 
+    # -------------------------------------------------------------------------
     def list_materials(
         self,
         page: int = Query(1, ge=1),
@@ -99,6 +108,7 @@ class PublicDataEndpoint:
             has_structure=has_structure,
         )
 
+    # -------------------------------------------------------------------------
     def list_chemicals(
         self,
         page: int = Query(1, ge=1),
@@ -128,12 +138,14 @@ class PublicDataEndpoint:
             molecular_weight_max=molecular_weight_max,
         )
 
+    # -------------------------------------------------------------------------
     def get_chemical(self, adsorbate_id: int) -> ChemicalRecordView:
         try:
             return self.service.get_chemical(adsorbate_id)
         except LookupError as exc:
             raise self._lookup_error(exc) from exc
 
+    # -------------------------------------------------------------------------
     async def resolve_pubchem(self, request: PubChemResolveRequest) -> ChemicalRecordView:
         try:
             return await self.service.resolve_pubchem(request.query)
@@ -145,6 +157,7 @@ class PublicDataEndpoint:
                 detail=str(exc),
             ) from exc
 
+    # -------------------------------------------------------------------------
     async def search_cod(
         self,
         q: str | None = Query(default=None, max_length=512),
@@ -161,6 +174,7 @@ class PublicDataEndpoint:
         except (ProviderNotFoundError, ProviderRateLimitError, ProviderUnavailableError) as exc:
             raise self._provider_error(exc) from exc
 
+    # -------------------------------------------------------------------------
     async def import_cod(
         self, request: CODStructureImportRequest
     ) -> StructureRecordView:
@@ -176,6 +190,7 @@ class PublicDataEndpoint:
         except (ProviderNotFoundError, ProviderRateLimitError, ProviderUnavailableError) as exc:
             raise self._provider_error(exc) from exc
 
+    # -------------------------------------------------------------------------
     def list_structures(
         self,
         page: int = Query(1, ge=1),
@@ -192,12 +207,14 @@ class PublicDataEndpoint:
             linked_only=linked_only,
         )
 
+    # -------------------------------------------------------------------------
     def get_structure(self, structure_id: int) -> StructureRecordView:
         try:
             return self.service.get_structure(structure_id)
         except LookupError as exc:
             raise self._lookup_error(exc) from exc
 
+    # -------------------------------------------------------------------------
     def add_routes(self) -> None:
         self.router.add_api_route(
             "/sources",
@@ -267,6 +284,7 @@ class PublicDataEndpoint:
         )
 
 
+###############################################################################
 def create_public_data_router(container: CoreServiceContainer) -> APIRouter:
     router = APIRouter(prefix="/public-data", tags=["public-data"])
     PublicDataEndpoint(router=router, service=container.public_data_service).add_routes()

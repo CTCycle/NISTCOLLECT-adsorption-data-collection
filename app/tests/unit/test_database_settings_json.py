@@ -6,13 +6,13 @@ from pathlib import Path
 CANONICAL_CONFIGURATION_FILE = Path("app/resources/adsmod.json")
 
 
+###############################################################################
 def project(payload: dict[str, object]) -> DatabaseConfig:
     canonical = load_config(
         CANONICAL_CONFIGURATION_FILE
     ).application.database.model_dump(mode="python")
     canonical.update(payload)
     return DatabaseConfig.model_validate(canonical)
-
 
 ###############################################################################
 def test_db_embedded_json_configuration() -> None:
@@ -35,7 +35,6 @@ def test_db_embedded_json_configuration() -> None:
     assert database.ssl_ca is None
     assert database.connect_timeout == 45
     assert database.insert_batch_size == 6000
-
 
 ###############################################################################
 def test_db_external_json_configuration() -> None:
@@ -67,7 +66,6 @@ def test_db_external_json_configuration() -> None:
     assert database.connect_timeout == 45
     assert database.insert_batch_size == 6000
 
-
 ###############################################################################
 def test_db_settings_use_canonical_values_when_no_override_is_given() -> None:
     database = project({})
@@ -83,7 +81,6 @@ def test_db_settings_use_canonical_values_when_no_override_is_given() -> None:
     assert database.ssl_ca is None
     assert database.connect_timeout == 30
     assert database.insert_batch_size == 5000
-
 
 ###############################################################################
 def test_db_settings_allow_minimal_external_payload() -> None:

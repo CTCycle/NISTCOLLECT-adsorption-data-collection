@@ -21,10 +21,12 @@ branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 
+###############################################################################
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+###############################################################################
 def upgrade() -> None:
     op.create_table(
         "data_sources",
@@ -375,6 +377,7 @@ def upgrade() -> None:
     _backfill_nist_provenance()
 
 
+###############################################################################
 def _backfill_nist_provenance() -> None:
     bind = op.get_bind()
     source_id = bind.execute(
@@ -477,6 +480,7 @@ def _backfill_nist_provenance() -> None:
         )
 
 
+###############################################################################
 def _source_record_id(
     bind: sa.Connection,
     *,
@@ -523,6 +527,7 @@ def _source_record_id(
     )
 
 
+###############################################################################
 def downgrade() -> None:
     op.drop_table("source_record_references")
     op.drop_index("ix_references_year", table_name="references")

@@ -68,10 +68,14 @@ SOURCE_DEFINITIONS: tuple[dict[str, Any], ...] = (
 )
 
 
+###############################################################################
 class PublicDataRepository:
+
+    # -------------------------------------------------------------------------
     def __init__(self, database: DatabaseManager) -> None:
         self.database = database
 
+    # -------------------------------------------------------------------------
     def ensure_sources(self) -> None:
         with self.database.transaction() as session:
             for definition in SOURCE_DEFINITIONS:
@@ -86,6 +90,7 @@ class PublicDataRepository:
                         setattr(source, key, value)
                 source.enabled = True
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _source(session: Session, key: str) -> DataSource:
         source = session.scalar(select(DataSource).where(DataSource.key == key))
@@ -93,6 +98,7 @@ class PublicDataRepository:
             raise LookupError(f"Public data source {key!r} is not registered.")
         return source
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _record(
         session: Session,
@@ -131,6 +137,7 @@ class PublicDataRepository:
                 record.raw_metadata = raw_metadata
         return record
 
+    # -------------------------------------------------------------------------
     def source_rows(self) -> list[dict[str, Any]]:
         with self.database.session_factory() as session:
             rows = session.execute(
@@ -155,6 +162,7 @@ class PublicDataRepository:
                 for source, count in rows
             ]
 
+    # -------------------------------------------------------------------------
     def link_adsorbate_record(
         self,
         *,
@@ -186,6 +194,7 @@ class PublicDataRepository:
                     )
                 )
 
+    # -------------------------------------------------------------------------
     def link_adsorbent_record(
         self,
         *,
@@ -217,6 +226,7 @@ class PublicDataRepository:
                     )
                 )
 
+    # -------------------------------------------------------------------------
     def link_isotherm_record(
         self,
         *,
@@ -256,6 +266,7 @@ class PublicDataRepository:
                     )
                 )
 
+    # -------------------------------------------------------------------------
     def upsert_pubchem_compound(self, payload: dict[str, Any]) -> int:
         cid = str(payload["cid"])
         inchi_key = str(payload.get("inchi_key") or "").strip() or None
@@ -370,6 +381,7 @@ class PublicDataRepository:
             session.flush()
             return adsorbate.id
 
+    # -------------------------------------------------------------------------
     def upsert_cod_structure(
         self,
         *,
@@ -457,6 +469,7 @@ class PublicDataRepository:
             session.flush()
             return structure.id
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _provenance_entries(
         session: Session, entity: str, entity_ids: list[int]
@@ -513,6 +526,7 @@ class PublicDataRepository:
             )
         return result
 
+    # -------------------------------------------------------------------------
     @classmethod
     def _external_identifiers(
         cls, session: Session, entity: str, entity_id: int
@@ -524,6 +538,7 @@ class PublicDataRepository:
             )
         ]
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _references_for_records(
         session: Session, source_record_ids: list[int]
@@ -552,6 +567,7 @@ class PublicDataRepository:
             )
         return result
 
+    # -------------------------------------------------------------------------
     @classmethod
     def _reference_for_record(
         cls, session: Session, source_record_id: int | None
@@ -562,6 +578,7 @@ class PublicDataRepository:
             source_record_id
         )
 
+    # -------------------------------------------------------------------------
     def list_adsorption(
         self,
         *,
@@ -621,6 +638,7 @@ class PublicDataRepository:
             ).all()
             return self._adsorption_summaries(session, rows), total
 
+    # -------------------------------------------------------------------------
     def _adsorption_summaries(
         self, session: Session, rows: list[Any]
     ) -> list[dict[str, Any]]:
@@ -689,9 +707,11 @@ class PublicDataRepository:
             )
         return items
 
+    # -------------------------------------------------------------------------
     def _adsorption_summary(self, session: Session, row: Any) -> dict[str, Any]:
         return self._adsorption_summaries(session, [row])[0]
 
+    # -------------------------------------------------------------------------
     def get_adsorption(self, isotherm_id: int) -> dict[str, Any]:
         with self.database.session_factory() as session:
             row = session.execute(
@@ -756,6 +776,7 @@ class PublicDataRepository:
             )
             return summary
 
+    # -------------------------------------------------------------------------
     def list_materials(
         self,
         *,
@@ -826,6 +847,7 @@ class PublicDataRepository:
                 for item in rows
             ], total
 
+    # -------------------------------------------------------------------------
     def list_chemicals(
         self,
         *,
@@ -877,6 +899,7 @@ class PublicDataRepository:
             ).all()
             return self._chemical_views(session, rows), total
 
+    # -------------------------------------------------------------------------
     def get_chemical(self, adsorbate_id: int) -> dict[str, Any]:
         with self.database.session_factory() as session:
             item = session.get(Adsorbate, adsorbate_id)
@@ -884,6 +907,7 @@ class PublicDataRepository:
                 raise LookupError(f"Chemical {adsorbate_id} was not found.")
             return self._chemical_view(session, item)
 
+    # -------------------------------------------------------------------------
     def _chemical_views(
         self, session: Session, items: list[Adsorbate]
     ) -> list[dict[str, Any]]:
@@ -935,9 +959,11 @@ class PublicDataRepository:
             for item in items
         ]
 
+    # -------------------------------------------------------------------------
     def _chemical_view(self, session: Session, item: Adsorbate) -> dict[str, Any]:
         return self._chemical_views(session, [item])[0]
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _chemical_payload(
         item: Adsorbate,
@@ -998,6 +1024,7 @@ class PublicDataRepository:
             ),
         }
 
+    # -------------------------------------------------------------------------
     def list_structures(
         self,
         *,
@@ -1041,6 +1068,7 @@ class PublicDataRepository:
             ).all()
             return self._structure_views(session, rows, include_atoms=False), total
 
+    # -------------------------------------------------------------------------
     def get_structure(self, structure_id: int) -> dict[str, Any]:
         with self.database.session_factory() as session:
             item = session.get(Structure, structure_id)
@@ -1048,6 +1076,7 @@ class PublicDataRepository:
                 raise LookupError(f"Structure {structure_id} was not found.")
             return self._structure_view(session, item, include_atoms=True)
 
+    # -------------------------------------------------------------------------
     def _structure_views(
         self,
         session: Session,
@@ -1136,6 +1165,7 @@ class PublicDataRepository:
             )
         return result
 
+    # -------------------------------------------------------------------------
     def _structure_view(
         self, session: Session, item: Structure, *, include_atoms: bool
     ) -> dict[str, Any]:

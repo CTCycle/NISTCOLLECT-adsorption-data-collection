@@ -11,7 +11,6 @@ from adsmod_core.repositories.database.migrator import (
 )
 from adsmod_core.repositories.schemas.models import Base
 
-
 ###############################################################################
 def _sqlite_settings(path: str) -> DatabaseConfig:
     return DatabaseConfig(
@@ -20,7 +19,6 @@ def _sqlite_settings(path: str) -> DatabaseConfig:
         insert_batch_size=100,
         sqlite_path=path,
     )
-
 
 ###############################################################################
 def test_packaged_history_has_one_head_and_no_pending_operations(tmp_path) -> None:  # type: ignore[no-untyped-def]

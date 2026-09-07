@@ -17,9 +17,10 @@ from adsmod_core.services.data.public_data import PublicDataService
 from adsmod_core.services.fitting import FittingService
 from adsmod_core.services.jobs import JobManager
 
-
 ###############################################################################
 class CoreServiceContainer:
+
+    # -------------------------------------------------------------------------
     def __init__(self, config: AdsmodConfig) -> None:
         self.config = config
         self.job_manager = JobManager(logger=logger)

@@ -38,7 +38,6 @@ HISTORY_KEY_ALIASES = {
     "val_masked_r_squared": "val_masked_r2",
 }
 
-
 ###############################################################################
 def put_worker_result(result_queue: Any | None, payload: dict[str, Any]) -> None:
     if result_queue is None:
@@ -51,9 +50,9 @@ def put_worker_result(result_queue: Any | None, payload: dict[str, Any]) -> None
         except Exception:
             return
 
-
 ###############################################################################
 class TrainingProcessRunner:
+
     # -------------------------------------------------------------------------
     def __init__(
         self,
@@ -313,7 +312,6 @@ class TrainingProcessRunner:
             checkpoint_path, history, train_config, model_metadata
         )
 
-
 ###############################################################################
 def run_training_process(
     configuration: dict[str, Any] | None,
@@ -355,9 +353,9 @@ def run_training_process(
         if snapshot_access is not None:
             snapshot_access.close()
 
-
 ###############################################################################
 class TrainingManager:
+
     # -------------------------------------------------------------------------
     def __init__(
         self,

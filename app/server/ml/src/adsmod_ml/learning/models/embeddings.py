@@ -10,12 +10,12 @@ from adsmod_ml.common.constants import PAD_VALUE
 
 # [POSITIONAL EMBEDDING]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(
     package="Embeddings", name="MolecularEmbedding"
 )
 class MolecularEmbedding(layers.Layer):
+
     # -------------------------------------------------------------------------
     def __init__(
         self,

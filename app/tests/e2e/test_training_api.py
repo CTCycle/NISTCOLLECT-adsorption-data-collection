@@ -7,7 +7,6 @@ import os
 import pytest
 from playwright.sync_api import APIRequestContext
 
-
 ###############################################################################
 class TestTrainingDatasets:
     """Tests for training dataset availability endpoint."""
@@ -25,7 +24,6 @@ class TestTrainingDatasets:
         if data.get("available"):
             assert "train_samples" in data or "name" in data
 
-
 ###############################################################################
 class TestCheckpoints:
     """Tests for the checkpoints listing endpoint."""
@@ -39,7 +37,6 @@ class TestCheckpoints:
         data = response.json()
         assert "checkpoints" in data
         assert isinstance(data["checkpoints"], list)
-
 
 ###############################################################################
 class TestTrainingStatus:
@@ -59,7 +56,6 @@ class TestTrainingStatus:
         assert "total_epochs" in data
         assert "progress" in data
 
-
 ###############################################################################
 class TestDatasetInfo:
     """Tests for the dataset info endpoint."""
@@ -71,7 +67,6 @@ class TestDatasetInfo:
 
         assert response.ok
         assert "available" in response.json()
-
 
 ###############################################################################
 class TestDatasetBuild:
@@ -127,7 +122,6 @@ class TestDatasetBuild:
 
         assert response.status == 422
 
-
 ###############################################################################
 class TestClearDataset:
     """Tests for the clear dataset endpoint."""
@@ -142,7 +136,6 @@ class TestClearDataset:
         assert data.get("status") in {"success", "error"}
         assert "message" in data
 
-
 ###############################################################################
 class TestDatasetSources:
     """Tests for the training source catalog."""
@@ -156,7 +149,6 @@ class TestDatasetSources:
         )
 
         assert response.status == 404
-
 
 ###############################################################################
 class TestTrainingLifecycle:

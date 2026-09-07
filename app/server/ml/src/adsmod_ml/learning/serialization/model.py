@@ -29,9 +29,9 @@ from adsmod_ml.learning.training.scheduler import LinearDecayLRScheduler
 from adsmod_ml.common.utils.logger import logger
 from adsmod_ml.common.utils.security import resolve_checkpoint_path
 
-
 ###############################################################################
 class ModelSerializer:
+
     # -------------------------------------------------------------------------
     def __init__(self, checkpoints_dir: Path, model_name: str = "SCADS") -> None:
         self.model_name = model_name

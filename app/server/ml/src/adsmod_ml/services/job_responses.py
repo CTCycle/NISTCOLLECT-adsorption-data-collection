@@ -10,9 +10,9 @@ from adsmod_ml.contracts.jobs import (
     JobStatusResponse,
 )
 
-
 ###############################################################################
 class JobResponseFactory:
+
     # -------------------------------------------------------------------------
     @staticmethod
     def start(

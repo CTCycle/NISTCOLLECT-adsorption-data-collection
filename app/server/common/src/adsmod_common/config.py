@@ -6,11 +6,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-
 ###############################################################################
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-
 
 ###############################################################################
 class RuntimeConfig(StrictModel):
@@ -18,6 +16,7 @@ class RuntimeConfig(StrictModel):
     backend_port: int = Field(ge=1024, le=65535)
     frontend_port: int = Field(ge=1024, le=65535)
 
+    # -------------------------------------------------------------------------
     @model_validator(mode="after")
     def validate_runtime(self) -> "RuntimeConfig":
         if self.backend_port == self.frontend_port:
@@ -26,11 +25,9 @@ class RuntimeConfig(StrictModel):
             raise ValueError("runtime.host must be a loopback address")
         return self
 
-
 ###############################################################################
 class StorageConfig(StrictModel):
     root: Path
-
 
 ###############################################################################
 class DatabaseConfig(StrictModel):
@@ -47,6 +44,7 @@ class DatabaseConfig(StrictModel):
     insert_batch_size: int = Field(default=5000, ge=1)
     sqlite_path: str | None
 
+    # -------------------------------------------------------------------------
     @field_validator(
         "host",
         "database_name",
@@ -63,18 +61,19 @@ class DatabaseConfig(StrictModel):
         text = str(value).strip()
         return text or None
 
+    # -------------------------------------------------------------------------
     @field_validator("engine", mode="before")
     @classmethod
     def normalize_engine(cls, value: Any) -> str:
         text = str(value).strip() if value is not None else ""
         return text or "postgres"
 
-
 ###############################################################################
 class DatasetConfig(StrictModel):
     allowed_extensions: tuple[str, ...]
     column_detection_cutoff: float = Field(ge=0.0, le=1.0)
 
+    # -------------------------------------------------------------------------
     @field_validator("allowed_extensions", mode="before")
     @classmethod
     def normalize_extensions(cls, value: Any) -> tuple[str, ...]:
@@ -92,12 +91,10 @@ class DatasetConfig(StrictModel):
             raise ValueError("datasets.allowed_extensions must not be empty")
         return cleaned
 
-
 ###############################################################################
 class NISTConfig(StrictModel):
     parallel_tasks: int = Field(ge=1)
     pubchem_parallel_tasks: int = Field(ge=1, le=3)
-
 
 ###############################################################################
 class PublicDataConfig(StrictModel):
@@ -105,7 +102,6 @@ class PublicDataConfig(StrictModel):
     retry_attempts: int = Field(default=3, ge=1, le=6)
     pubchem_parallel_requests: int = Field(default=2, ge=1, le=3)
     cod_max_interactive_results: int = Field(default=250, ge=1, le=1000)
-
 
 ###############################################################################
 class FittingConfig(StrictModel):
@@ -117,12 +113,14 @@ class FittingConfig(StrictModel):
     preview_row_limit: int = Field(ge=1)
     best_model_metric: str
 
+    # -------------------------------------------------------------------------
     @field_validator("best_model_metric", mode="before")
     @classmethod
     def normalize_metric(cls, value: Any) -> str:
         text = str(value).strip() if value is not None else ""
         return text or "AICc"
 
+    # -------------------------------------------------------------------------
     @model_validator(mode="after")
     def validate_bounds(self) -> "FittingConfig":
         if self.max_iterations_upper_bound < self.default_max_iterations:
@@ -135,11 +133,9 @@ class FittingConfig(StrictModel):
             )
         return self
 
-
 ###############################################################################
 class JobConfig(StrictModel):
     polling_interval: float = Field(ge=0.0)
-
 
 ###############################################################################
 class TrainingConfig(StrictModel):
@@ -149,12 +145,12 @@ class TrainingConfig(StrictModel):
     dataloader_workers: int = Field(default=0, ge=0)
     persistent_workers: bool
 
+    # -------------------------------------------------------------------------
     @field_validator("jit_backend", mode="before")
     @classmethod
     def normalize_backend(cls, value: Any) -> str:
         text = str(value).strip() if value is not None else ""
         return text or "inductor"
-
 
 ###############################################################################
 class ApplicationConfig(StrictModel):
@@ -166,14 +162,12 @@ class ApplicationConfig(StrictModel):
     jobs: JobConfig
     training: TrainingConfig
 
-
 ###############################################################################
 class AdsmodConfig(StrictModel):
     version: Literal["3.0.0"]
     runtime: RuntimeConfig
     storage: StorageConfig
     application: ApplicationConfig
-
 
 ###############################################################################
 def load_config(path: str | Path) -> AdsmodConfig:

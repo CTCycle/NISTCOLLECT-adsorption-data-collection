@@ -12,7 +12,6 @@ from adsmod_core.repositories.materials import MaterialRepository
 from adsmod_core.repositories.nist import NISTRepository
 from adsmod_core.repositories.schemas.models import Base
 
-
 ###############################################################################
 def build_nist_repository(path: Path) -> NISTRepository:
     settings = DatabaseConfig(
@@ -29,7 +28,6 @@ def build_nist_repository(path: Path) -> NISTRepository:
         datasets=datasets,
         materials=MaterialRepository(database),
     )
-
 
 ###############################################################################
 def test_nist_repository_counts_and_loader_frame_are_canonical(
@@ -137,6 +135,7 @@ def test_nist_repository_counts_and_loader_frame_are_canonical(
     assert set(hosts["name"]) == {"silica", "carbon"}
 
 
+###############################################################################
 def test_nist_mapper_skips_experiment_with_unsupported_uptake_unit(caplog) -> None:
     mapper = NISTCanonicalMapper()
     single_component = pd.DataFrame(

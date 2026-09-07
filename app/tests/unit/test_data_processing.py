@@ -9,7 +9,6 @@ from adsmod_core.common.utils.encoding import sanitize_dataframe_strings
 from adsmod_ml.services.data.conversion import PressureConversion, UptakeConversion
 from adsmod_ml.services.data.sanitizer import DataSanitizer
 
-
 ###############################################################################
 def test_sanitize_dataframe_strings_handles_pandas_string_dtype() -> None:
     frame = pd.DataFrame({"name": ["zeolite\u200b-a", "na\u00a0y"]}).astype("string")
@@ -20,7 +19,6 @@ def test_sanitize_dataframe_strings_handles_pandas_string_dtype() -> None:
     assert sanitized.loc[0, "name"] == "zeolite-a"
     assert sanitized.loc[1, "name"] == "na y"
 
-
 ###############################################################################
 def test_pressure_conversion_returns_frame_without_unit_column() -> None:
     converter = PressureConversion()
@@ -30,7 +28,6 @@ def test_pressure_conversion_returns_frame_without_unit_column() -> None:
 
     assert "pressure_units" not in converted.columns
     assert converted.loc[0, "pressure"] == 100000.0
-
 
 ###############################################################################
 @pytest.mark.parametrize(
@@ -43,7 +40,6 @@ def test_pressure_conversion_uses_canonical_registry(unit: str) -> None:
     converted = PressureConversion().convert_pressure_units(frame)
 
     assert converted.loc[0, "pressure"] == 2.0 * UnitRegistry.PRESSURE_TO_PA[resolved]
-
 
 ###############################################################################
 @pytest.mark.parametrize(
@@ -76,7 +72,6 @@ def test_uptake_conversion_uses_canonical_registry(unit: str) -> None:
 
     assert converted.loc[0, "adsorbed_amount"] == pytest.approx(expected)
     assert "adsorption_units" not in converted.columns
-
 
 ###############################################################################
 def test_exclude_oob_values_uses_copy_safe_assignment() -> None:

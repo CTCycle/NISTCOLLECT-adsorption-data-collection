@@ -10,6 +10,7 @@ from adsmod_core.common.utils.logger import logger
 from adsmod_core.repositories.database.initializer import prepare_database_for_startup
 
 
+###############################################################################
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Initialize the canonical ADSMOD database."

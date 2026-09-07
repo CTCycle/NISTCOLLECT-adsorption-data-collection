@@ -9,9 +9,9 @@ from sklearn.preprocessing import LabelEncoder
 
 from adsmod_ml.common.utils.logger import logger
 
-
 ###############################################################################
 class AggregateDatasets:
+
     # -------------------------------------------------------------------------
     def __init__(self, configuration: dict[str, Any]) -> None:
         self.guest_properties = [
@@ -66,9 +66,9 @@ class AggregateDatasets:
 
         return grouped_data
 
-
 ###############################################################################
 class DataSanitizer:
+
     # -------------------------------------------------------------------------
     def __init__(self, configuration: dict[str, Any]) -> None:
         self.separator = " "
@@ -136,9 +136,9 @@ class DataSanitizer:
         dataset = dataset.dropna().reset_index(drop=True)
         return dataset
 
-
 ###############################################################################
 class AdsorbentEncoder:
+
     # -------------------------------------------------------------------------
     def __init__(
         self, configuration: dict[str, Any], train_dataset: pd.DataFrame
@@ -176,9 +176,9 @@ class AdsorbentEncoder:
 
         return dataset, mapping
 
-
 ###############################################################################
 class FeatureNormalizer:
+
     # -------------------------------------------------------------------------
     def __init__(
         self,
@@ -234,9 +234,9 @@ class FeatureNormalizer:
 
         return dataset
 
-
 ###############################################################################
 class TrainValidationSplit:
+
     # -------------------------------------------------------------------------
     def __init__(self, configuration: dict[str, Any]) -> None:
         self.P_COL = "pressure"

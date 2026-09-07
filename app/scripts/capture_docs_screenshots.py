@@ -16,7 +16,6 @@ BASE_URL = "http://127.0.0.1:9580"
 VIEWPORT = {"width": 1440, "height": 900}
 MAX_RETRIES = 3
 
-
 ###############################################################################
 @dataclass(slots=True)
 class CaptureRecord:
@@ -26,11 +25,9 @@ class CaptureRecord:
     viewport: dict[str, int]
     notes: str
 
-
 ###############################################################################
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
-
 
 ###############################################################################
 def wait_for_idle(page: Page, timeout_ms: int = 15000) -> None:
@@ -39,7 +36,6 @@ def wait_for_idle(page: Page, timeout_ms: int = 15000) -> None:
     except TimeoutError:
         # Some polling widgets keep the network active; continue after a short settle.
         page.wait_for_timeout(1200)
-
 
 ###############################################################################
 def make_deterministic(page: Page) -> None:
@@ -53,7 +49,6 @@ def make_deterministic(page: Page) -> None:
         }
         """
     )
-
 
 ###############################################################################
 def dismiss_common_overlays(page: Page) -> None:
@@ -95,7 +90,6 @@ def dismiss_common_overlays(page: Page) -> None:
         """
     )
 
-
 ###############################################################################
 def goto_with_retry(
     page: Page, url: str, description: str, retries: int = MAX_RETRIES
@@ -115,7 +109,6 @@ def goto_with_retry(
         f"Failed to load {description} at {url}: {last_error}"
     ) from last_error
 
-
 ###############################################################################
 def click_with_retry(
     action: Callable[[], None], label: str, retries: int = MAX_RETRIES
@@ -131,7 +124,6 @@ def click_with_retry(
                 time.sleep(0.6 * attempt)
     raise RuntimeError(f"Failed action '{label}': {last_error}") from last_error
 
-
 ###############################################################################
 def take_screenshot_with_segments(
     page: Page, output_name: str
@@ -140,7 +132,6 @@ def take_screenshot_with_segments(
     page.wait_for_timeout(250)
     page.screenshot(path=str(FIGURES_DIR / output_name), full_page=False)
     return [output_name], "Viewport screenshot."
-
 
 ###############################################################################
 def maybe_capture_scrolled_container(
@@ -171,11 +162,9 @@ def maybe_capture_scrolled_container(
         page.locator(selector).evaluate("(el) => { el.scrollTop = 0; }")
     return extra_files
 
-
 ###############################################################################
 def expect_visible(page: Page, selector: str, timeout_ms: int = 15000) -> None:
     page.locator(selector).first.wait_for(state="visible", timeout=timeout_ms)
-
 
 ###############################################################################
 def capture_view(
@@ -209,7 +198,6 @@ def capture_view(
         viewport=VIEWPORT,
         notes=merged_notes,
     )
-
 
 ###############################################################################
 def main() -> int:

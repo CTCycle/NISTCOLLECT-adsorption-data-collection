@@ -3,7 +3,6 @@ from __future__ import annotations
 from adsmod_core.contracts.datasets import ImportMapping
 from adsmod_core.services.data.importer import AdsorptionImportEngine
 
-
 ###############################################################################
 def test_atomic_import_groups_rows_and_normalizes_units() -> None:
     payload = b"experiment_id,Pressure [bar],Uptake [mmol/g],Temperature [K],Adsorbate,Adsorbent\nEXP-1,0.1,0.42,298.15,CO2,13X\nEXP-1,0.2,0.73,298.15,CO2,13X\n"
@@ -23,7 +22,6 @@ def test_atomic_import_groups_rows_and_normalizes_units() -> None:
     assert bundle.experiments[0]["observations"][0]["pressure_canonical"] == 10_000
     assert bundle.experiments[0]["observations"][0]["uptake_mol_kg"] == 0.42
 
-
 ###############################################################################
 def test_aggregated_arrays_require_equal_lengths() -> None:
     payload = b'experiment_id,pressure,uptake,temperature,adsorbate,adsorbent\nEXP-1,"[1;2]","[3]",298.15,CO2,13X\n'
@@ -41,7 +39,6 @@ def test_aggregated_arrays_require_equal_lengths() -> None:
     bundle = engine.validate(payload, "sample.csv", mapping)
     assert bundle.response.status == "invalid"
     assert any(issue.code == "invalid_row" for issue in bundle.response.issues)
-
 
 ###############################################################################
 def test_atomic_import_preserves_adsorbate_smiles_for_training() -> None:

@@ -9,7 +9,10 @@ from adsmod_ml.services.jobs import JobManager
 from adsmod_ml.services.training import TrainingJobRunner, TrainingService, TrainingSession
 
 
+###############################################################################
 class MlServiceContainer:
+
+    # -------------------------------------------------------------------------
     def __init__(self, config: AdsmodConfig, *, snapshot_access: TrainingDataAccess) -> None:
         self.config = config
         self.snapshot_access = snapshot_access

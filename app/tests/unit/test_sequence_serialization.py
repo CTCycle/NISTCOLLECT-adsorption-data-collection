@@ -10,6 +10,7 @@ from adsmod_core.repositories.schemas.types import JSONSequence
 Base = declarative_base()
 
 
+###############################################################################
 class SequenceModel(Base):
     __tablename__ = "test_data"
 
@@ -17,6 +18,7 @@ class SequenceModel(Base):
     sequence = Column(JSONSequence)
 
 
+###############################################################################
 @pytest.fixture
 def session():
     engine = create_engine("sqlite:///:memory:")
@@ -26,6 +28,7 @@ def session():
         yield current_session
 
 
+###############################################################################
 def test_json_sequence_round_trip(session) -> None:  # type: ignore[no-untyped-def]
     data = [1.1, 2.2, 3.3]
     session.add(SequenceModel(sequence=data))
@@ -37,6 +40,7 @@ def test_json_sequence_round_trip(session) -> None:  # type: ignore[no-untyped-d
     assert isinstance(retrieved.sequence, list)
 
 
+###############################################################################
 def test_json_sequence_empty_list(session) -> None:  # type: ignore[no-untyped-def]
     session.add(SequenceModel(sequence=[]))
     session.commit()
@@ -46,6 +50,7 @@ def test_json_sequence_empty_list(session) -> None:  # type: ignore[no-untyped-d
     assert retrieved.sequence == []
 
 
+###############################################################################
 def test_json_sequence_none(session) -> None:  # type: ignore[no-untyped-def]
     session.add(SequenceModel(sequence=None))
     session.commit()
@@ -55,6 +60,7 @@ def test_json_sequence_none(session) -> None:  # type: ignore[no-untyped-def]
     assert retrieved.sequence is None
 
 
+###############################################################################
 def test_string_payload_raises_for_json_sequence(session) -> None:  # type: ignore[no-untyped-def]
     session.execute(SequenceModel.__table__.insert().values(sequence="1.1, 2.2, 3.3"))
     session.commit()

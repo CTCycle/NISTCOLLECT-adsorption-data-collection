@@ -16,7 +16,6 @@ REGEX_LONG_NAME = r"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
 REGEX_BACKEND = r"^[A-Za-z0-9_.-]+$"
 REGEX_DATASET_NAME = r"^[A-Za-z0-9_. -]+$"
 
-
 ###############################################################################
 class TrainingConfigRequest(BaseModel):
     model_config = STRICT_STRIPPED_CONFIG
@@ -78,7 +77,6 @@ class TrainingConfigRequest(BaseModel):
         pattern=REGEX_NAME,
     )
 
-
 ###############################################################################
 class ResumeTrainingRequest(BaseModel):
     model_config = STRICT_STRIPPED_CONFIG
@@ -91,14 +89,12 @@ class ResumeTrainingRequest(BaseModel):
     )
     additional_epochs: int = Field(default=10, ge=1, le=100)
 
-
 ###############################################################################
 class TrainingDatasetResponse(BaseModel):
     available: bool
     name: str | None = None
     train_samples: int | None = None
     validation_samples: int | None = None
-
 
 ###############################################################################
 class CheckpointDetailInfo(BaseModel):
@@ -108,7 +104,6 @@ class CheckpointDetailInfo(BaseModel):
     final_accuracy: float | None = None
     is_compatible: bool = True
 
-
 ###############################################################################
 class CheckpointFullDetailsResponse(BaseModel):
     name: str
@@ -116,11 +111,9 @@ class CheckpointFullDetailsResponse(BaseModel):
     metadata: TrainingMetadata | None = None
     history: dict[str, Any] | None = None
 
-
 ###############################################################################
 class CheckpointsResponse(BaseModel):
     checkpoints: list[CheckpointDetailInfo]
-
 
 ###############################################################################
 class TrainingStartResponse(BaseModel):
@@ -128,7 +121,6 @@ class TrainingStartResponse(BaseModel):
     session_id: str
     message: str
     poll_interval: float | None = None
-
 
 ###############################################################################
 class TrainingStatusResponse(BaseModel):
@@ -141,7 +133,6 @@ class TrainingStatusResponse(BaseModel):
     log: list[str] = Field(default_factory=list)
     poll_interval: float | None = None
 
-
 ###############################################################################
 class DatasetSelection(BaseModel):
     model_config = STRICT_STRIPPED_CONFIG
@@ -153,7 +144,6 @@ class DatasetSelection(BaseModel):
         max_length=128,
         pattern=REGEX_DATASET_NAME,
     )
-
 
 ###############################################################################
 class DatasetBuildRequest(BaseModel):
@@ -180,7 +170,6 @@ class DatasetBuildRequest(BaseModel):
         pattern=REGEX_LABEL,
     )
 
-
 ###############################################################################
 class DatasetSourceInfo(BaseModel):
     source: Literal["nist", "uploaded"]
@@ -189,17 +178,14 @@ class DatasetSourceInfo(BaseModel):
     row_count: int
     dataset_id: int | None = None
 
-
 ###############################################################################
 class DatasetSourcesResponse(BaseModel):
     datasets: list[DatasetSourceInfo]
-
 
 ###############################################################################
 class OperationStatusResponse(BaseModel):
     status: str
     message: str
-
 
 ###############################################################################
 class DatasetBuildResponse(BaseModel):
@@ -208,7 +194,6 @@ class DatasetBuildResponse(BaseModel):
     total_samples: int | None = None
     train_samples: int | None = None
     validation_samples: int | None = None
-
 
 ###############################################################################
 class DatasetInfoResponse(BaseModel):
@@ -234,7 +219,6 @@ class DatasetInfoResponse(BaseModel):
     adsorbent_vocabulary_size: int | None = None
     normalization_stats: dict[str, Any] | None = None
 
-
 ###############################################################################
 class ProcessedDatasetInfo(BaseModel):
     dataset_label: str
@@ -246,11 +230,9 @@ class ProcessedDatasetInfo(BaseModel):
     validation_samples: int
     created_at: str | None = None
 
-
 ###############################################################################
 class ProcessedDatasetsResponse(BaseModel):
     datasets: list[ProcessedDatasetInfo]
-
 
 ###############################################################################
 class TrainingMetadata(BaseModel):

@@ -16,6 +16,7 @@ ProviderCapability = Literal[
 ]
 
 
+###############################################################################
 class PublicSourceSummary(BaseModel):
     key: str
     name: str
@@ -31,16 +32,19 @@ class PublicSourceSummary(BaseModel):
     last_checked_at: datetime | None = None
 
 
+###############################################################################
 class PublicSourceListResponse(BaseModel):
     sources: list[PublicSourceSummary]
 
 
+###############################################################################
 class Pagination(BaseModel):
     page: int = Field(ge=1)
     page_size: int = Field(ge=1, le=100)
     total: int = Field(ge=0)
 
 
+###############################################################################
 class ExternalIdentifierView(BaseModel):
     source: str
     external_id: str
@@ -49,6 +53,7 @@ class ExternalIdentifierView(BaseModel):
     source_version: str | None = None
 
 
+###############################################################################
 class AdsorptionRecordView(BaseModel):
     id: int
     external_id: str
@@ -66,11 +71,13 @@ class AdsorptionRecordView(BaseModel):
     retrieved_at: datetime | None = None
 
 
+###############################################################################
 class AdsorptionPageResponse(BaseModel):
     items: list[AdsorptionRecordView]
     pagination: Pagination
 
 
+###############################################################################
 class MeasurementView(BaseModel):
     sequence_index: int
     adsorbate: str
@@ -82,6 +89,7 @@ class MeasurementView(BaseModel):
     uptake_mol_kg: float
 
 
+###############################################################################
 class AdsorptionDetailResponse(AdsorptionRecordView):
     pressure_basis: str
     conditions: dict[str, object]
@@ -90,6 +98,7 @@ class AdsorptionDetailResponse(AdsorptionRecordView):
     external_identifiers: list[ExternalIdentifierView]
 
 
+###############################################################################
 class MaterialRecordView(BaseModel):
     id: int
     name: str
@@ -99,11 +108,13 @@ class MaterialRecordView(BaseModel):
     external_identifiers: list[ExternalIdentifierView]
 
 
+###############################################################################
 class MaterialPageResponse(BaseModel):
     items: list[MaterialRecordView]
     pagination: Pagination
 
 
+###############################################################################
 class ChemicalPropertyView(BaseModel):
     key: str
     value_number: float | None = None
@@ -112,6 +123,7 @@ class ChemicalPropertyView(BaseModel):
     source: str
 
 
+###############################################################################
 class ChemicalRecordView(BaseModel):
     id: int
     name: str
@@ -131,15 +143,18 @@ class ChemicalRecordView(BaseModel):
     retrieved_at: datetime | None = None
 
 
+###############################################################################
 class ChemicalPageResponse(BaseModel):
     items: list[ChemicalRecordView]
     pagination: Pagination
 
 
+###############################################################################
 class PubChemResolveRequest(BaseModel):
     query: str = Field(min_length=1, max_length=512)
 
 
+###############################################################################
 class CODSearchResult(BaseModel):
     cod_id: str
     name: str | None = None
@@ -160,15 +175,18 @@ class CODSearchResult(BaseModel):
     cif_url: str
 
 
+###############################################################################
 class CODSearchResponse(BaseModel):
     items: list[CODSearchResult]
 
 
+###############################################################################
 class CODStructureImportRequest(BaseModel):
     cod_id: str = Field(pattern=r"^\d{4,12}$")
     adsorbent_id: int | None = Field(default=None, ge=1)
 
 
+###############################################################################
 class StructureAtomView(BaseModel):
     sequence_index: int
     label: str
@@ -179,6 +197,7 @@ class StructureAtomView(BaseModel):
     occupancy: float | None = None
 
 
+###############################################################################
 class StructureRecordView(BaseModel):
     id: int
     source: str
@@ -206,6 +225,7 @@ class StructureRecordView(BaseModel):
     atoms: list[StructureAtomView] = Field(default_factory=list)
 
 
+###############################################################################
 class StructurePageResponse(BaseModel):
     items: list[StructureRecordView]
     pagination: Pagination

@@ -173,7 +173,6 @@ ROLE_ALIASES: dict[str, set[str]] = {
     },
 }
 
-
 ###############################################################################
 def normalize_header(value: object) -> str:
     text = unicodedata.normalize("NFKD", str(value or ""))
@@ -183,7 +182,6 @@ def normalize_header(value: object) -> str:
     text = re.sub(r"[^a-z0-9/°%]+", " ", text)
     return " ".join(text.split())
 
-
 ###############################################################################
 def safe_cell(value: Any) -> Any:
     if value is None or (isinstance(value, float) and math.isnan(value)):
@@ -192,11 +190,9 @@ def safe_cell(value: Any) -> Any:
         return value
     return str(value)
 
-
 ###############################################################################
 def source_hash(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
-
 
 ###############################################################################
 def read_tabular(
@@ -254,7 +250,6 @@ def read_tabular(
         raise ValueError("Uploaded dataset contains duplicate column headers.")
     return frame
 
-
 ###############################################################################
 def parse_series_cell(
     value: Any,
@@ -300,7 +295,6 @@ def parse_series_cell(
             raw = [item.strip() for item in text.split(selected)]
     return [parse_number(item, decimal_separator) for item in raw]
 
-
 ###############################################################################
 def is_array_like(value: Any) -> bool:
     if isinstance(value, (list, tuple)):
@@ -311,7 +305,6 @@ def is_array_like(value: Any) -> bool:
     return (text.startswith("[") and text.endswith("]")) or sum(
         token in text for token in (";", "|", "\t")
     ) == 1
-
 
 ###############################################################################
 def infer_column(column: str, series: pd.Series) -> ColumnDetection:
@@ -390,7 +383,6 @@ def infer_column(column: str, series: pd.Series) -> ColumnDetection:
         array_like=array_ratio >= 0.5,
     )
 
-
 ###############################################################################
 def detect_structure(columns: list[ColumnDetection]) -> tuple[str, float]:
     pressure = next(
@@ -418,7 +410,6 @@ def detect_structure(columns: list[ColumnDetection]) -> tuple[str, float]:
             return "mixed", 0.75
         return "atomic", 0.95
     return "ambiguous", 0.25
-
 
 ###############################################################################
 def infer_pressure_basis(columns: list[ColumnDetection]) -> str | None:

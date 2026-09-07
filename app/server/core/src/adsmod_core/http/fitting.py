@@ -22,9 +22,9 @@ from adsmod_core.contracts.jobs import (
     JobStatusResponse,
 )
 
-
 ###############################################################################
 class FittingEndpoint:
+
     # -------------------------------------------------------------------------
     def __init__(self, router: APIRouter, service: FittingService) -> None:
         self.router = router
@@ -125,7 +125,6 @@ class FittingEndpoint:
             methods=["GET"],
             response_model=PersistedRunResponse,
         )
-
 
 ###############################################################################
 def create_fitting_router(container: CoreServiceContainer) -> APIRouter:

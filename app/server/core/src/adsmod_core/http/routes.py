@@ -8,7 +8,6 @@ from adsmod_core.http.nist import create_nist_router
 from adsmod_core.http.public_data import create_public_data_router
 from adsmod_core.services.container import CoreServiceContainer
 
-
 ###############################################################################
 def register_core_routes(
     app: FastAPI,

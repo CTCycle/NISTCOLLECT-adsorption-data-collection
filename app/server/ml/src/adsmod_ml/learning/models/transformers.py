@@ -8,10 +8,10 @@ from keras import activations, layers
 
 # [ADD NORM LAYER]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(package="CustomLayers", name="AddNorm")
 class AddNorm(keras.layers.Layer):
+
     # -------------------------------------------------------------------------
     def __init__(self, epsilon: float = 10e-10, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -54,10 +54,10 @@ class AddNorm(keras.layers.Layer):
 
 # [FEED FORWARD]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(package="CustomLayers", name="FeedForward")
 class FeedForward(keras.layers.Layer):
+
     # -------------------------------------------------------------------------
     def __init__(
         self, dense_units: int, dropout: float, seed: int = 42, **kwargs
@@ -104,10 +104,10 @@ class FeedForward(keras.layers.Layer):
 
 # [TRANSFORMER ENCODER]
 
-
 ###############################################################################
 @keras.saving.register_keras_serializable(package="Encoders", name="TransformerEncoder")
 class TransformerEncoder(keras.layers.Layer):
+
     # -------------------------------------------------------------------------
     def __init__(
         self, embedding_dims: int, num_heads: int, seed: int, **kwargs

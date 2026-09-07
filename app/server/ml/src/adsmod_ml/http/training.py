@@ -26,9 +26,9 @@ from adsmod_ml.contracts.jobs import (
     JobStatusResponse,
 )
 
-
 ###############################################################################
 class TrainingEndpoint:
+
     # -------------------------------------------------------------------------
     def __init__(self, router: APIRouter, service: TrainingService) -> None:
         self.router = router
@@ -374,7 +374,6 @@ class TrainingEndpoint:
             response_model=TrainingStatusResponse,
             status_code=status.HTTP_200_OK,
         )
-
 
 ###############################################################################
 def create_training_router(container: MlServiceContainer) -> APIRouter:

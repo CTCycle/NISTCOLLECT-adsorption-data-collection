@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from playwright.sync_api import Page, expect
 
-
 ###############################################################################
 class TestHomepage:
     """Tests for the main application shell and custom datasets page."""
@@ -21,7 +20,6 @@ class TestHomepage:
         expect(page.locator("nav[aria-label='Primary']").first).to_be_visible()
         expect(page.locator(".custom-datasets-page")).to_be_visible()
         expect(page.locator("input[type='file']").first).to_be_attached()
-
 
 ###############################################################################
 class TestHeaderNavigation:

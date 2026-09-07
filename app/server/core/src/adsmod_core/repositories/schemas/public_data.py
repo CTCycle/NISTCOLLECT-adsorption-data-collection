@@ -19,6 +19,7 @@ from adsmod_core.repositories.schemas.models import Base, utc_now
 from adsmod_core.repositories.schemas.types import JSONList, JSONMapping, UTCDateTime
 
 
+###############################################################################
 class DataSource(Base):
     __tablename__ = "data_sources"
 
@@ -38,6 +39,7 @@ class DataSource(Base):
     )
 
 
+###############################################################################
 class SourceRecord(Base):
     __tablename__ = "source_records"
 
@@ -69,6 +71,7 @@ class SourceRecord(Base):
     )
 
 
+###############################################################################
 class AdsorbateSourceRecord(Base):
     __tablename__ = "adsorbate_source_records"
 
@@ -87,6 +90,7 @@ class AdsorbateSourceRecord(Base):
     )
 
 
+###############################################################################
 class AdsorbentSourceRecord(Base):
     __tablename__ = "adsorbent_source_records"
 
@@ -105,6 +109,7 @@ class AdsorbentSourceRecord(Base):
     )
 
 
+###############################################################################
 class IsothermSourceRecord(Base):
     __tablename__ = "isotherm_source_records"
 
@@ -123,6 +128,7 @@ class IsothermSourceRecord(Base):
     )
 
 
+###############################################################################
 class Structure(Base):
     __tablename__ = "structures"
 
@@ -157,6 +163,7 @@ class Structure(Base):
     )
 
 
+###############################################################################
 class StructureSourceRecord(Base):
     __tablename__ = "structure_source_records"
 
@@ -175,6 +182,7 @@ class StructureSourceRecord(Base):
     )
 
 
+###############################################################################
 class StructureAtom(Base):
     __tablename__ = "structure_atoms"
 
@@ -203,6 +211,7 @@ class StructureAtom(Base):
     )
 
 
+###############################################################################
 class AdsorbateSynonym(Base):
     __tablename__ = "adsorbate_synonyms"
 
@@ -227,6 +236,7 @@ class AdsorbateSynonym(Base):
     )
 
 
+###############################################################################
 class ChemicalProperty(Base):
     __tablename__ = "chemical_properties"
 
@@ -254,6 +264,7 @@ class ChemicalProperty(Base):
     )
 
 
+###############################################################################
 class MaterialProperty(Base):
     __tablename__ = "material_properties"
 
@@ -281,6 +292,7 @@ class MaterialProperty(Base):
     )
 
 
+###############################################################################
 class Reference(Base):
     __tablename__ = "references"
 
@@ -295,6 +307,7 @@ class Reference(Base):
     __table_args__ = (Index("ix_references_year", "year"),)
 
 
+###############################################################################
 class SourceRecordReference(Base):
     __tablename__ = "source_record_references"
 

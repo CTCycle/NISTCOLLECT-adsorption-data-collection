@@ -4,7 +4,6 @@ from adsmod_common.config import DatabaseConfig, StorageConfig, load_config
 from adsmod_core.repositories.database.manager import resolve_sqlite_path
 from adsmod_core.persistence.paths import resolve_database_path
 
-
 ###############################################################################
 def test_relative_database_path_follows_the_canonical_storage_root(
     tmp_path: Path,

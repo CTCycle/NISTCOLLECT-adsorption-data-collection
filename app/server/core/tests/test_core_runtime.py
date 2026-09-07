@@ -8,6 +8,7 @@ from adsmod_core.app import create_app, create_app_from_path
 CONFIG_PATH = Path("app/resources/adsmod.json")
 
 
+###############################################################################
 def _temporary_config(directory: str):
     base = load_config(CONFIG_PATH)
     return base.model_copy(update={
@@ -18,6 +19,7 @@ def _temporary_config(directory: str):
     })
 
 
+###############################################################################
 def test_unified_runtime_contracts(tmp_path: Path) -> None:
     with TemporaryDirectory(dir=tmp_path) as directory:
         with TestClient(create_app(_temporary_config(directory))) as client:
@@ -30,12 +32,14 @@ def test_unified_runtime_contracts(tmp_path: Path) -> None:
             assert client.get("/api/v1/training/configuration").status_code == 200
 
 
+###############################################################################
 def test_factory_uses_single_backend_port() -> None:
     application = create_app_from_path(CONFIG_PATH)
     assert application.state.config.runtime.backend_port > 0
     assert not hasattr(application.state.config.runtime, "ml_port")
 
 
+###############################################################################
 def test_in_process_snapshot_access_preserves_hash(tmp_path: Path) -> None:
     with TemporaryDirectory(dir=tmp_path) as directory:
         with TestClient(create_app(_temporary_config(directory))) as client:

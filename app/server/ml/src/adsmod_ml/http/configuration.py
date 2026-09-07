@@ -9,6 +9,7 @@ from adsmod_ml.contracts.configuration import RuntimeDeviceCapabilities, Trainin
 from adsmod_ml.contracts.training import DatasetBuildRequest, ResumeTrainingRequest, TrainingConfigRequest
 
 
+###############################################################################
 def _numeric_constraints(model: type[Any]) -> dict[str, dict[str, int | float]]:
     constraints: dict[str, dict[str, int | float]] = {}
     for name, field in model.model_fields.items():
@@ -28,6 +29,7 @@ def _numeric_constraints(model: type[Any]) -> dict[str, dict[str, int | float]]:
     return constraints
 
 
+###############################################################################
 def _device_capabilities() -> RuntimeDeviceCapabilities:
     import torch
 
@@ -42,6 +44,7 @@ def _device_capabilities() -> RuntimeDeviceCapabilities:
     )
 
 
+###############################################################################
 def configuration(request: Request) -> TrainingConfigurationResponse:
     config: AdsmodConfig = request.app.state.config
     training_defaults = TrainingConfigRequest().model_dump(mode="json")
@@ -78,6 +81,7 @@ def configuration(request: Request) -> TrainingConfigurationResponse:
     )
 
 
+###############################################################################
 def create_configuration_router() -> APIRouter:
     router = APIRouter(prefix="/training", tags=["training"])
     router.add_api_route(

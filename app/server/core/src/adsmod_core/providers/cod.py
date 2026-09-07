@@ -16,6 +16,7 @@ _NUMBER_PREFIX = re.compile(r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[Ee][+-]?\d+)?")
 _ELEMENT_PREFIX = re.compile(r"^[A-Z][a-z]?")
 
 
+###############################################################################
 class CODProvider(RetryingHttpProvider):
     key = "cod"
     name = "Crystallography Open Database"
@@ -35,6 +36,7 @@ class CODProvider(RetryingHttpProvider):
     search_url = "https://www.crystallography.net/cod/result"
     entry_base_url = "https://www.crystallography.net/cod"
 
+    # -------------------------------------------------------------------------
     def __init__(
         self,
         *,
@@ -49,6 +51,7 @@ class CODProvider(RetryingHttpProvider):
         )
         self.max_interactive_results = max(1, int(max_interactive_results))
 
+    # -------------------------------------------------------------------------
     async def _health_request(self) -> None:
         await self._request(
             "GET",
@@ -57,6 +60,7 @@ class CODProvider(RetryingHttpProvider):
             headers={"Accept": "text/plain"},
         )
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _float(value: Any) -> float | None:
         if value in (None, "", "?", "."):
@@ -69,11 +73,13 @@ class CODProvider(RetryingHttpProvider):
         except ValueError:
             return None
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _integer(value: Any) -> int | None:
         number = CODProvider._float(value)
         return int(number) if number is not None else None
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _text(row: dict[str, Any], *keys: str) -> str | None:
         for key in keys:
@@ -82,6 +88,7 @@ class CODProvider(RetryingHttpProvider):
                 return str(value).strip()
         return None
 
+    # -------------------------------------------------------------------------
     @staticmethod
     def _has_coordinates(row: dict[str, Any]) -> bool:
         flags = str(row.get("flags") or "").lower()
@@ -91,6 +98,7 @@ class CODProvider(RetryingHttpProvider):
             "yes",
         }
 
+    # -------------------------------------------------------------------------
     def normalize_result(self, row: dict[str, Any]) -> dict[str, Any]:
         cod_id = str(row.get("file") or row.get("id") or "").strip()
         if not cod_id:
@@ -119,6 +127,7 @@ class CODProvider(RetryingHttpProvider):
             "raw_metadata": row,
         }
 
+    # -------------------------------------------------------------------------
     async def search(
         self,
         *,
@@ -171,6 +180,7 @@ class CODProvider(RetryingHttpProvider):
             raise ProviderUnavailableError("COD returned an unexpected JSON result shape.")
         return [self.normalize_result(dict(row)) for row in rows if isinstance(row, dict)]
 
+    # -------------------------------------------------------------------------
     async def fetch_record(self, cod_id: str) -> tuple[dict[str, Any], str]:
         matches = await self.search(cod_id=cod_id)
         if not matches:
@@ -186,6 +196,7 @@ class CODProvider(RetryingHttpProvider):
             raise ProviderUnavailableError(f"COD entry {cod_id} returned an empty CIF file.")
         return metadata, cif_text
 
+    # -------------------------------------------------------------------------
     @classmethod
     def parse_atoms(cls, cif_text: str) -> list[dict[str, Any]]:
         """Parse the standard atom-site fractional-coordinate loop from a CIF.

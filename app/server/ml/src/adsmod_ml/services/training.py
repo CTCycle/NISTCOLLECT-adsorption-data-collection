@@ -38,7 +38,6 @@ from adsmod_ml.contracts.jobs import (
 from adsmod_ml.services.job_responses import JobResponseFactory
 from adsmod_ml.services.jobs import JobManager
 
-
 ###############################################################################
 def get_training_process_stop_timeout_seconds(config: AdsmodConfig) -> float:
     return max(
@@ -46,9 +45,9 @@ def get_training_process_stop_timeout_seconds(config: AdsmodConfig) -> float:
         float(config.application.jobs.polling_interval),
     )
 
-
 ###############################################################################
 class TrainingSession:
+
     # -------------------------------------------------------------------------
     def __init__(self, training_manager: TrainingManager) -> None:
         self.training_manager = training_manager
@@ -90,7 +89,6 @@ class TrainingSession:
         self.worker = None
         self.current_job_id = None
 
-
 ###############################################################################
 def determine_checkpoint_compatibility(
     checkpoint_name: str,
@@ -119,9 +117,9 @@ def determine_checkpoint_compatibility(
 
     return checkpoint_hash in dataset_hashes
 
-
 ###############################################################################
 class TrainingJobRunner:
+
     # -------------------------------------------------------------------------
     def __init__(
         self,
@@ -261,7 +259,6 @@ class TrainingJobRunner:
                 worker.join(timeout=5)
             worker.cleanup()
             self.session.finish_session()
-
 
 ###############################################################################
 class TrainingService:

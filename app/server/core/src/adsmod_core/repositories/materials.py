@@ -10,9 +10,9 @@ from adsmod_core.repositories.database.manager import DatabaseManager
 from adsmod_core.repositories.schemas.models import Adsorbate, Adsorbent
 from adsmod_core.repositories.schemas.types import normalize_identity
 
-
 ###############################################################################
 class MaterialRepository:
+
     # -------------------------------------------------------------------------
     def __init__(self, database: DatabaseManager) -> None:
         self.database = database

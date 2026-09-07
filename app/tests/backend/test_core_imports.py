@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 
+###############################################################################
 def test_core_app_import_does_not_load_ml_runtime() -> None:
     script = (
         "import sys; "

@@ -9,11 +9,9 @@ from typing import Any, Literal
 
 PressureBasis = Literal["absolute", "partial", "relative"]
 
-
 ###############################################################################
 class UnitConversionError(ValueError):
     pass
-
 
 ###############################################################################
 @dataclass(frozen=True)
@@ -24,13 +22,11 @@ class ConvertedValue:
     canonical_unit: str
     rule: str
 
-
 ###############################################################################
 def normalize_token(value: object) -> str:
     text = unicodedata.normalize("NFKC", str(value or "")).strip().casefold()
     text = text.replace("−", "-").replace("·", " ").replace("³", "3")
     return " ".join(text.split())
-
 
 ###############################################################################
 def parse_number(value: Any, decimal_separator: str = "auto") -> float:
@@ -85,7 +81,6 @@ def parse_number(value: Any, decimal_separator: str = "auto") -> float:
     if not math.isfinite(result):
         raise ValueError("Measurement must be finite.")
     return result
-
 
 ###############################################################################
 class UnitRegistry:
@@ -308,7 +303,6 @@ class UnitRegistry:
 
 
 HEADER_UNIT_PATTERN = re.compile(r"(?:\[|\()([^\])]+)(?:\]|\))")
-
 
 ###############################################################################
 def detect_header_unit(header: str, quantity: str) -> str | None:

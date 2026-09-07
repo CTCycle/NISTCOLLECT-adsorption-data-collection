@@ -8,7 +8,6 @@ from adsmod_common.config import AdsmodConfig
 
 SCHEMA_URI = "https://json-schema.org/draft/2020-12/schema"
 
-
 ###############################################################################
 def main() -> int:
     parser = argparse.ArgumentParser(

@@ -22,7 +22,6 @@ ZERO_WIDTH_CHARACTERS = {
     "\ufeff",  # ZERO WIDTH NO-BREAK SPACE / BOM
 }
 
-
 ###############################################################################
 def normalize_unicode_text(value: str) -> str:
     normalized = value.replace("\u00a0", " ")
@@ -35,7 +34,6 @@ def normalize_unicode_text(value: str) -> str:
         if ord(character) >= 32 or character in SAFE_CONTROL_CHARACTERS
     )
 
-
 ###############################################################################
 def normalize_error_text(value: str) -> str:
     return "".join(
@@ -43,7 +41,6 @@ def normalize_error_text(value: str) -> str:
         for character in normalize_unicode_text(value)
         if ord(character) < 128 or character in SAFE_CONTROL_CHARACTERS
     )
-
 
 ###############################################################################
 def sanitize_unicode_payload(value: Any) -> Any:
@@ -60,7 +57,6 @@ def sanitize_unicode_payload(value: Any) -> Any:
         }
     return value
 
-
 ###############################################################################
 def sanitize_dataframe_strings(dataframe: pd.DataFrame) -> pd.DataFrame:
     if dataframe.empty:
@@ -75,7 +71,6 @@ def sanitize_dataframe_strings(dataframe: pd.DataFrame) -> pd.DataFrame:
             )
         )
     return sanitized
-
 
 ###############################################################################
 def decode_json_response_bytes(raw_bytes: bytes) -> dict[str, Any] | list[Any]:

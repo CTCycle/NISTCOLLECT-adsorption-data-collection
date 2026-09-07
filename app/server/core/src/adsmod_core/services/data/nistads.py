@@ -14,9 +14,9 @@ from adsmod_core.common.utils.encoding import (
 )
 from adsmod_core.common.utils.logger import logger
 
-
 ###############################################################################
 class NISTDatasetBuilder:
+
     # -------------------------------------------------------------------------
     def __init__(self) -> None:
         self.raw_drop_cols = [
@@ -268,9 +268,9 @@ class NISTDatasetBuilder:
 
         return self.expand_dataset(single_component, binary_mixture)
 
-
 ###############################################################################
 class NISTApiClient:
+
     # -------------------------------------------------------------------------
     def __init__(self, parallel_tasks: int) -> None:
         self.parallel_tasks = max(1, int(parallel_tasks))
