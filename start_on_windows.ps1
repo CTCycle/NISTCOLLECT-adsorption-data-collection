@@ -28,6 +28,13 @@ $RuffCacheDir = Join-Path $TestCacheDir "ruff"
 $PythonCacheDir = Join-Path $TestCacheDir "python"
 $MypyCacheDir = Join-Path $TestCacheDir "mypy"
 $AngularCacheDir = Join-Path $TestCacheDir "angular"
+$LegacyUvCachePaths = @(
+    (Join-Path $RepoRoot '.uv-cache'),
+    (Join-Path $AppDir '.uv-cache'),
+    (Join-Path $BackendDir '.uv-cache'),
+    (Join-Path $ClientDir '.uv-cache'),
+    (Join-Path $TestsDir '.uv-cache')
+)
 $script:NextProgressId = 1
 $script:ActiveProgressActivities = [Collections.Generic.Dictionary[int, string]]::new()
 $script:LauncherInteractive = -not [Console]::IsInputRedirected -and -not [Console]::IsOutputRedirected
@@ -772,6 +779,10 @@ function Clear-Cache {
         New-Item -ItemType Directory -Path $cacheDirectory -Force | Out-Null
         Remove-RepoDirectoryContents $cacheDirectory
     }
+    foreach ($legacyUvCachePath in $LegacyUvCachePaths) {
+        [void](Remove-RepoPath $legacyUvCachePath)
+    }
+    [void](Remove-RepoPath $StartupTempDir)
 
     $legacyCacheNames = @('__pycache__', '.pytest_cache', '.ruff_cache', '.mypy_cache')
     $legacyCacheDirectories = @(
@@ -824,7 +835,7 @@ function Uninstall-Application {
         (Join-Path $ClientDir 'node_modules'),
         (Join-Path $ClientDir '.angular'),
         (Join-Path $ClientDir 'dist')
-    )
+    ) + @($LegacyUvCachePaths)
     foreach ($path in $paths) {
         Remove-RepoPath $path
     }
