@@ -735,8 +735,21 @@ function Invoke-TestSuite {
 # Data and maintenance actions
 # -----------------------------------------------------------------------------
 
+function Confirm-DestructiveAction([string]$Description) {
+    if (-not $script:LauncherInteractive) {
+        throw "The destructive action '$Description' requires an interactive console; no files were changed."
+    }
+    $confirmation = ([string](Read-Host "Continue to $($Description)? [y/N]")).Trim()
+    if ($confirmation -notmatch '^(?i:y|yes)$') {
+        Write-Info "Operation cancelled. No changes were made."
+        return $false
+    }
+    return $true
+}
+
 function Remove-Logs {
     Import-Settings | Out-Null
+    if (-not (Confirm-DestructiveAction 'remove application log files')) { return }
     Write-Step "Removing log files"
     if (Test-Path -LiteralPath $LogDir) {
         Get-ChildItem -LiteralPath $LogDir -Filter '*.log' -File -ErrorAction SilentlyContinue |
@@ -753,6 +766,7 @@ function Remove-Logs {
 }
 
 function Clear-Cache {
+    if (-not (Confirm-DestructiveAction 'clear runtime and test-tool caches')) { return }
     Write-Step "Clearing runtime and test-tool caches"
     foreach ($cacheDirectory in @($RuntimeCacheDir, $TestCacheDir)) {
         New-Item -ItemType Directory -Path $cacheDirectory -Force | Out-Null
@@ -794,6 +808,7 @@ function Clear-Cache {
 }
 
 function Uninstall-Application {
+    if (-not (Confirm-DestructiveAction 'remove local application runtimes and build artifacts')) { return }
     Write-Step "Removing local application runtimes and build artifacts"
     $runtimeContents = @()
     if (Test-Path -LiteralPath $RuntimesDir) {
@@ -872,23 +887,13 @@ function Clear-CheckpointFiles {
 
 function Remove-Checkpoints {
     Import-Settings | Out-Null
-    Write-Warn "This removes all saved training checkpoints."
-    $confirmation = ([string](Read-Host "Continue removing all saved training checkpoints? [y/N]")).Trim()
-    if ($confirmation -notmatch '^(?i:y|yes)$') {
-        Write-Warn "Remove Checkpoints cancelled."
-        return
-    }
+    if (-not (Confirm-DestructiveAction 'remove all saved training checkpoints')) { return }
     Clear-CheckpointFiles
 }
 
 function Remove-All-Data {
     Import-Settings | Out-Null
-    Write-Warn "This removes the local database, uploaded dataset records, saved checkpoints, and generated logs."
-    $confirmation = ([string](Read-Host "Continue removing all local user-generated data? [y/N]")).Trim()
-    if ($confirmation -notmatch '^(?i:y|yes)$') {
-        Write-Warn "Remove All Data cancelled."
-        return
-    }
+    if (-not (Confirm-DestructiveAction 'remove all local user-generated data')) { return }
 
     Write-Step "Removing local user-generated data"
     Remove-DatabaseFiles
