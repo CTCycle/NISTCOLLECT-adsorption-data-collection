@@ -38,6 +38,13 @@ def test_unified_routes_expose_core_optional_ml_and_public_data_surface(
         assert capabilities["features"]["datasets"] is True
         assert capabilities["features"]["machine_learning"] is True, client.app.state.runtime.machine_learning_reason
         assert client.get("/api/v1/datasets").status_code == 200
+        dataset_configuration = client.get("/api/v1/datasets/supported-units")
+        assert dataset_configuration.status_code == 200
+        assert dataset_configuration.json()["allowed_extensions"] == [
+            ".csv",
+            ".xls",
+            ".xlsx",
+        ]
         assert client.get("/api/v1/training/configuration").status_code == 200
         sources = client.get("/api/v1/public-data/sources?check_health=false")
         assert sources.status_code == 200

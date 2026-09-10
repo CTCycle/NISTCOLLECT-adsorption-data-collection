@@ -76,6 +76,10 @@ class PublicDataProvider(ABC):
     async def health(self) -> ProviderHealth:
         raise NotImplementedError
 
+    # -------------------------------------------------------------------------
+    async def close(self) -> None:
+        """Release provider-owned asynchronous resources."""
+
 
 ###############################################################################
 class RetryingHttpProvider(PublicDataProvider):
@@ -94,6 +98,32 @@ class RetryingHttpProvider(PublicDataProvider):
         self._semaphore = asyncio.Semaphore(max(1, parallel_requests))
         self.request_timeout_seconds = max(0.1, float(request_timeout_seconds))
         self.max_attempts = max(1, int(retry_attempts))
+        self._client: httpx.AsyncClient | None = None
+        self._client_loop: asyncio.AbstractEventLoop | None = None
+
+    # -------------------------------------------------------------------------
+    async def _get_client(self) -> httpx.AsyncClient:
+        loop = asyncio.get_running_loop()
+        if self._client is not None and self._client_loop is loop:
+            return self._client
+
+        if self._client is not None:
+            await self._client.aclose()
+
+        self._client = httpx.AsyncClient(
+            timeout=httpx.Timeout(self.request_timeout_seconds),
+            follow_redirects=True,
+        )
+        self._client_loop = loop
+        return self._client
+
+    # -------------------------------------------------------------------------
+    async def close(self) -> None:
+        client = self._client
+        self._client = None
+        self._client_loop = None
+        if client is not None:
+            await client.aclose()
 
     # -------------------------------------------------------------------------
     async def _before_attempt(self) -> None:
@@ -118,16 +148,13 @@ class RetryingHttpProvider(PublicDataProvider):
             await self._before_attempt()
             try:
                 async with self._semaphore:
-                    async with httpx.AsyncClient(
-                        timeout=httpx.Timeout(self.request_timeout_seconds),
-                        follow_redirects=True,
-                    ) as client:
-                        response = await client.request(
-                            method,
-                            url,
-                            params=params,
-                            headers=merged_headers,
-                        )
+                    client = await self._get_client()
+                    response = await client.request(
+                        method,
+                        url,
+                        params=params,
+                        headers=merged_headers,
+                    )
                 if response.status_code == 404:
                     raise ProviderNotFoundError(f"{self.name} record was not found.")
                 if response.status_code in self.retry_statuses:

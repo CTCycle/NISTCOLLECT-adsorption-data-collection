@@ -90,6 +90,12 @@ export function fetchDatasets(): Promise<
     return request('', { method: 'GET' });
 }
 
+export function fetchDatasetConfiguration(): Promise<
+    ApiResult<{ allowed_extensions: string[] }>
+> {
+    return request('/supported-units', { method: 'GET' });
+}
+
 export function fetchExperiments(
     datasetId: number,
 ): Promise<ApiResult<{ experiments: ExperimentSummary[] }>> {

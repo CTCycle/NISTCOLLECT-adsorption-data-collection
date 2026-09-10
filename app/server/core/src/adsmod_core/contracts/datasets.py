@@ -175,6 +175,7 @@ class SupportedUnitsResponse(BaseModel):
     pressure: list[str]
     uptake: list[str]
     temperature: list[str]
+    allowed_extensions: list[str]
 
 ###############################################################################
 class DatasetImportResponse(BaseModel):

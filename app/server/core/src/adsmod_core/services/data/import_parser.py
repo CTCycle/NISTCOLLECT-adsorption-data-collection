@@ -7,11 +7,13 @@ import json
 import math
 import re
 import unicodedata
+from collections.abc import Collection
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
+from adsmod_common.config import DEFAULT_DATASET_ALLOWED_EXTENSIONS
 from adsmod_core.contracts.datasets import ColumnDetection
 from adsmod_common.units import detect_header_unit, parse_number
 
@@ -199,6 +201,7 @@ def read_tabular(
     payload: bytes,
     filename: str | None,
     *,
+    allowed_extensions: Collection[str] = DEFAULT_DATASET_ALLOWED_EXTENSIONS,
     header_row: int = 0,
     field_delimiter: str | None = None,
     encoding: str = "utf-8",
@@ -207,6 +210,18 @@ def read_tabular(
     if not payload:
         raise ValueError("Uploaded dataset is empty.")
     suffix = Path(filename or "").suffix.casefold()
+    normalized_extensions = {
+        extension.strip().casefold()
+        if extension.strip().startswith(".")
+        else f".{extension.strip().casefold()}"
+        for extension in allowed_extensions
+        if extension.strip()
+    }
+    if suffix not in normalized_extensions:
+        allowed = ", ".join(sorted(normalized_extensions))
+        raise ValueError(
+            f"Unsupported file type '{suffix or 'unknown'}'. Allowed file types: {allowed}."
+        )
     buffer = io.BytesIO(payload)
     try:
         if suffix in {".xls", ".xlsx"}:

@@ -32,7 +32,10 @@ class CoreServiceContainer:
         self.materials = MaterialRepository(self.database)
         self.fitting = FittingRepository(self.database)
         self.public_data_repository = PublicDataRepository(self.database)
-        self.dataset_service = DatasetService(repository=self.datasets)
+        self.dataset_service = DatasetService(
+            repository=self.datasets,
+            allowed_extensions=config.application.datasets.allowed_extensions,
+        )
         self.nist_repository = NISTRepository(
             database=self.database,
             datasets=self.datasets,
@@ -72,3 +75,8 @@ class CoreServiceContainer:
     # -------------------------------------------------------------------------
     def shutdown(self) -> None:
         self.job_manager.shutdown()
+
+    # -------------------------------------------------------------------------
+    async def shutdown_async(self) -> None:
+        await self.public_data_service.close()
+        self.shutdown()

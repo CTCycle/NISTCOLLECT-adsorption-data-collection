@@ -256,6 +256,42 @@ def test_pubchem_resolution_normalizes_properties_without_network(monkeypatch) -
 
 
 ###############################################################################
+def test_retrying_provider_reuses_and_closes_its_http_client(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    created: list[object] = []
+
+    class FakeClient:
+        def __init__(self, **kwargs) -> None:  # type: ignore[no-untyped-def]
+            self.closed = False
+            self.requests = 0
+            created.append(self)
+
+        async def request(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+            del kwargs
+            self.requests += 1
+            return httpx.Response(200, request=httpx.Request(args[0], args[1]), text="{}")
+
+        async def aclose(self) -> None:
+            self.closed = True
+
+    monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
+    provider = CODProvider(
+        request_timeout_seconds=1.0,
+        retry_attempts=1,
+        max_interactive_results=10,
+    )
+
+    async def exercise() -> None:
+        await provider._request("GET", "https://example.test/one")
+        await provider._request("GET", "https://example.test/two")
+        assert len(created) == 1
+        assert created[0].requests == 2  # type: ignore[attr-defined]
+        await provider.close()
+        assert created[0].closed is True  # type: ignore[attr-defined]
+
+    asyncio.run(exercise())
+
+
+###############################################################################
 def test_pubchem_resolution_maps_successful_malformed_json_to_provider_error(
     monkeypatch,
 ) -> None:  # type: ignore[no-untyped-def]

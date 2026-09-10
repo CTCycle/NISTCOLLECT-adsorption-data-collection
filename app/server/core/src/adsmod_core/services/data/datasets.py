@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import json
 import hashlib
+from collections.abc import Collection
 from pathlib import Path
 
 from pydantic import ValidationError
 
+from adsmod_common.config import DEFAULT_DATASET_ALLOWED_EXTENSIONS
 from adsmod_core.contracts.datasets import (
     DatasetImportResponse,
     DatasetListResponse,
@@ -31,9 +33,13 @@ class DatasetService:
         self,
         repository: DatasetRepository,
         importer: AdsorptionImportEngine | None = None,
+        allowed_extensions: Collection[str] = DEFAULT_DATASET_ALLOWED_EXTENSIONS,
     ) -> None:
         self.repository = repository
-        self.importer = importer or AdsorptionImportEngine()
+        self.importer = importer or AdsorptionImportEngine(allowed_extensions)
+        self.allowed_extensions = list(
+            getattr(self.importer, "allowed_extensions", allowed_extensions)
+        )
 
     # -------------------------------------------------------------------------
     @staticmethod
@@ -118,6 +124,7 @@ class DatasetService:
             pressure=sorted(UnitRegistry.PRESSURE_ALIASES),
             uptake=sorted(UnitRegistry.UPTAKE_ALIASES),
             temperature=sorted(UnitRegistry.TEMPERATURE_ALIASES),
+            allowed_extensions=self.allowed_extensions,
         )
 
     # -------------------------------------------------------------------------

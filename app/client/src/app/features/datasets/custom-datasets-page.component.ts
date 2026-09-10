@@ -3,6 +3,9 @@ import { Component, inject, signal } from '@angular/core';
 import { CoreWorkspaceStore } from '../../core/state/core-workspace.store';
 import { DatasetManagementComponent } from '../source/dataset-management.component';
 import { DatasetImportWizardComponent } from '../source/dataset-import-wizard.component';
+import { fetchDatasetConfiguration } from '../../services/dataset.service';
+
+const DEFAULT_FILE_ACCEPT = '.csv,.xls,.xlsx';
 
 @Component({
     selector: 'adsmod-custom-datasets-page',
@@ -15,7 +18,7 @@ import { DatasetImportWizardComponent } from '../source/dataset-import-wizard.co
                 <h2>Custom Datasets</h2>
                 <p>Upload, inspect, and maintain datasets provided by your team. Public source collections are managed on their dedicated pages.</p>
             </div>
-            <input #sourceFileInput class="source-file-input" type="file" accept=".csv,.txt,.xlsx,.xls,.json" (change)="fileChanged($event)" />
+            <input #sourceFileInput class="source-file-input" type="file" [accept]="acceptedFileTypes()" (change)="fileChanged($event)" />
             @if (store.managementStatus()) {
                 <p class="dataset-status error" role="alert">{{ store.managementStatus() }}</p>
             }
@@ -37,6 +40,18 @@ import { DatasetImportWizardComponent } from '../source/dataset-import-wizard.co
 export class CustomDatasetsPageComponent {
     protected readonly store = inject(CoreWorkspaceStore);
     protected readonly pendingFile = signal<File | null>(null);
+    protected readonly acceptedFileTypes = signal(DEFAULT_FILE_ACCEPT);
+
+    constructor() {
+        void this.loadDatasetConfiguration();
+    }
+
+    private async loadDatasetConfiguration(): Promise<void> {
+        const result = await fetchDatasetConfiguration();
+        if (result.data?.allowed_extensions?.length) {
+            this.acceptedFileTypes.set(result.data.allowed_extensions.join(','));
+        }
+    }
 
     protected fileChanged(event: Event): void {
         const file = (event.target as HTMLInputElement).files?.[0];

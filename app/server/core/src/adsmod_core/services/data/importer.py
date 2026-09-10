@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Collection
 from dataclasses import dataclass
 from typing import Any
 
 import pandas as pd
 
+from adsmod_common.config import DEFAULT_DATASET_ALLOWED_EXTENSIONS
 from adsmod_core.contracts.datasets import (
     ColumnDetection,
     ImportIssue,
@@ -43,8 +45,27 @@ class ValidationBundle:
 class AdsorptionImportEngine:
 
     # -------------------------------------------------------------------------
+    def __init__(
+        self,
+        allowed_extensions: Collection[str] = DEFAULT_DATASET_ALLOWED_EXTENSIONS,
+    ) -> None:
+        self.allowed_extensions = tuple(
+            extension.strip().casefold()
+            if extension.strip().startswith(".")
+            else f".{extension.strip().casefold()}"
+            for extension in allowed_extensions
+            if extension.strip()
+        )
+        if not self.allowed_extensions:
+            raise ValueError("At least one dataset file extension is required.")
+
+    # -------------------------------------------------------------------------
     def preview(self, payload: bytes, filename: str | None) -> ImportPreviewResponse:
-        frame = read_tabular(payload, filename)
+        frame = read_tabular(
+            payload,
+            filename,
+            allowed_extensions=self.allowed_extensions,
+        )
         columns = [infer_column(name, frame[name]) for name in frame.columns]
         structure, confidence = detect_structure(columns)
         grouping = [
@@ -106,6 +127,7 @@ class AdsorptionImportEngine:
         frame = read_tabular(
             payload,
             filename,
+            allowed_extensions=self.allowed_extensions,
             header_row=mapping.header_row,
             field_delimiter=mapping.field_delimiter,
             encoding=mapping.encoding,

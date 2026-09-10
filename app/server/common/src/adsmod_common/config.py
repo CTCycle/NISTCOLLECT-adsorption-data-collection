@@ -10,6 +10,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
+
+DEFAULT_DATASET_ALLOWED_EXTENSIONS: tuple[str, ...] = (".csv", ".xls", ".xlsx")
+
+
 ###############################################################################
 class RuntimeConfig(StrictModel):
     host: str
@@ -78,7 +82,7 @@ class DatasetConfig(StrictModel):
     @classmethod
     def normalize_extensions(cls, value: Any) -> tuple[str, ...]:
         if value is None:
-            return (".csv", ".xls", ".xlsx")
+            return DEFAULT_DATASET_ALLOWED_EXTENSIONS
         if isinstance(value, str):
             values = [value]
         elif isinstance(value, (list, tuple, set)):
@@ -86,7 +90,7 @@ class DatasetConfig(StrictModel):
         else:
             raise ValueError("datasets.allowed_extensions must be a sequence or string")
 
-        cleaned = tuple(part.strip() for part in values if str(part).strip())
+        cleaned = tuple(part.strip().casefold() for part in values if str(part).strip())
         if not cleaned:
             raise ValueError("datasets.allowed_extensions must not be empty")
         return cleaned

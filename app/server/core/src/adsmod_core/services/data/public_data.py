@@ -38,6 +38,13 @@ class PublicDataService:
         self.providers = {provider.key: provider for provider in providers}
 
     # -------------------------------------------------------------------------
+    async def close(self) -> None:
+        await asyncio.gather(
+            *(provider.close() for provider in self.providers.values()),
+            return_exceptions=True,
+        )
+
+    # -------------------------------------------------------------------------
     async def list_sources(self, *, check_health: bool = True) -> PublicSourceListResponse:
         persisted = {row["key"]: row for row in self.repository.source_rows()}
         health_by_key: dict[str, Any] = {}

@@ -6587,13 +6587,21 @@
             },
             "type": "array",
             "title": "Temperature"
+          },
+          "allowed_extensions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Extensions"
           }
         },
         "type": "object",
         "required": [
           "pressure",
           "uptake",
-          "temperature"
+          "temperature",
+          "allowed_extensions"
         ],
         "title": "SupportedUnitsResponse"
       },

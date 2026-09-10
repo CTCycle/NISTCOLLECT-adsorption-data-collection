@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from adsmod_core.contracts.datasets import ImportMapping
 from adsmod_core.services.data.importer import AdsorptionImportEngine
 
@@ -58,3 +60,20 @@ def test_atomic_import_preserves_adsorbate_smiles_for_training() -> None:
     assert bundle.response.status == "valid"
     assert bundle.experiments[0]["adsorbates"][0]["smiles"] == "O=C=O"
     assert bundle.response.experiments[0].adsorbate_smiles == "O=C=O"
+
+###############################################################################
+def test_import_rejects_extensions_outside_the_canonical_policy() -> None:
+    payload = b"pressure,uptake,temperature,adsorbate,adsorbent\n1,2,298,CO2,13X\n"
+
+    with pytest.raises(ValueError, match=r"Allowed file types: \.csv, \.xls, \.xlsx"):
+        AdsorptionImportEngine().preview(payload, "sample.json")
+
+
+###############################################################################
+def test_import_engine_accepts_extensions_supplied_by_runtime_configuration() -> None:
+    preview = AdsorptionImportEngine(allowed_extensions=(".json",)).preview(
+        b'[{"pressure": 1, "uptake": 2, "temperature": 298, "adsorbate": "CO2", "adsorbent": "13X"}]',
+        "sample.json",
+    )
+
+    assert preview.filename == "sample.json"
