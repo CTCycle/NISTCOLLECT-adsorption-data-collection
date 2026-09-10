@@ -1,6 +1,6 @@
 # ADSMOD troubleshooting
 
-Last updated: 2026-09-02
+Last updated: 2026-09-10
 
 ## Backend or UI unreachable
 
@@ -8,6 +8,14 @@ Last updated: 2026-09-02
 - Confirm the backend responds at `/health/ready`.
 - Confirm the frontend preview serves the built Angular application.
 - Check backend and frontend launcher logs under the configured storage root.
+
+## Configured port is already in use
+
+The launcher reports the conflicting port, PID, and process name, then stops
+without terminating that process. Close the owning application and retry, or
+use **Stop application** in the launcher session that started ADSMOD. A
+process left running by an earlier launcher session is intentionally treated
+as an external owner because the current session cannot prove ownership of it.
 
 ## Missing dependencies
 

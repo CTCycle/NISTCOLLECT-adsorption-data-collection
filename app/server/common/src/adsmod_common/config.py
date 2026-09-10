@@ -135,7 +135,7 @@ class FittingConfig(StrictModel):
 
 ###############################################################################
 class JobConfig(StrictModel):
-    polling_interval: float = Field(ge=0.0)
+    polling_interval: float = Field(gt=0.0)
 
 ###############################################################################
 class TrainingConfig(StrictModel):

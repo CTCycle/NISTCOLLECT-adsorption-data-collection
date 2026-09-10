@@ -1,6 +1,6 @@
 # ADSMOD startup procedures
 
-Last updated: 2026-09-02
+Last updated: 2026-09-10
 
 ## Recommended startup
 
@@ -13,6 +13,12 @@ The launcher reads `app/resources/adsmod.json`, synchronizes the locked
 the client, starts one FastAPI backend, and waits for `/health/ready` before
 opening the browser. Optional machine learning support is loaded inside that
 backend when its dependencies were installed.
+
+Before starting either service, the launcher checks that the configured port
+is available. If another process owns a port, startup stops with its PID and
+process name; the launcher never terminates an unowned listener. After a
+successful launch, use **Stop application** in the same launcher session to
+stop only the backend and frontend processes started by that session.
 
 The interactive menu is generated from structured rows. Its order is
 `APPLICATION`, `SETUP & VALIDATION`, `SOURCE CONTROL` (Check before Update),

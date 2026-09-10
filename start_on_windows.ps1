@@ -38,6 +38,8 @@ $LegacyUvCachePaths = @(
 $script:NextProgressId = 1
 $script:ActiveProgressActivities = [Collections.Generic.Dictionary[int, string]]::new()
 $script:LauncherInteractive = -not [Console]::IsInputRedirected -and -not [Console]::IsOutputRedirected
+$script:BackendProcess = $null
+$script:FrontendProcess = $null
 
 $PythonVersion = "3.14.2"
 $PythonExe = Join-Path $PythonDir "python.exe"
@@ -623,29 +625,78 @@ function Test-DependenciesReady {
     return $true
 }
 
-function Stop-ListenerOnPort([int]$Port) {
-    $lines = netstat -ano | Select-String -Pattern ":$Port\s+.*LISTENING\s+(\d+)\s*$"
-    $processIds = @($lines | ForEach-Object {
-        if ($_.Matches.Count -gt 0) { [int]$_.Matches[0].Groups[1].Value }
-    } | Sort-Object -Unique)
+function Get-ListeningProcess([int]$Port) {
+    $connections = @(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue)
+    $processIds = @(
+        $connections |
+            Select-Object -ExpandProperty OwningProcess |
+            Sort-Object -Unique
+    )
     foreach ($processId in $processIds) {
-        if ($processId -eq $PID) {
-            throw "Refusing to terminate the launcher process on port $Port."
-        }
-        Write-Warn "Stopping process $processId on port $Port."
-        & taskkill.exe /PID $processId /T /F | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "Could not stop process $processId on port $Port."
+        $process = Get-Process -Id $processId -ErrorAction SilentlyContinue | Select-Object -First 1
+        [pscustomobject]@{
+            Id = [int]$processId
+            Name = if ($process) { $process.ProcessName } else { 'unknown' }
         }
     }
 }
 
-function Get-ListenerPid([int]$Port) {
-    $match = netstat -ano | Select-String -Pattern ":$Port\s+.*LISTENING\s+(\d+)\s*$" | Select-Object -First 1
-    if ($match -and $match.Matches.Count -gt 0) {
-        return [int]$match.Matches[0].Groups[1].Value
+function Assert-PortAvailable([int]$Port) {
+    $owners = @(Get-ListeningProcess -Port $Port)
+    if ($owners.Count -eq 0) {
+        return
     }
-    return $null
+
+    $ownerText = ($owners | ForEach-Object { "PID $($_.Id) ($($_.Name))" }) -join ', '
+    throw "Port $Port is already in use by $ownerText. ADSMOD will not terminate unowned processes; stop the owning application and retry."
+}
+
+function Stop-OwnedProcess {
+    param(
+        [System.Diagnostics.Process]$Process,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    if ($null -eq $Process) {
+        return
+    }
+
+    try {
+        $Process.Refresh()
+        if ($Process.HasExited) {
+            return
+        }
+        Write-Step "Stopping ADSMOD $Name (PID $($Process.Id))"
+        $Process.Kill($true)
+        if (-not $Process.WaitForExit(5000)) {
+            throw "ADSMOD $Name did not exit within five seconds."
+        }
+    }
+    catch [System.InvalidOperationException] {
+        # The process can exit between Refresh and Kill. That is already a
+        # successful stop for this launcher-owned process.
+        return
+    }
+}
+
+function Stop-Application {
+    $stopped = $false
+    if ($null -ne $script:FrontendProcess) {
+        Stop-OwnedProcess -Process $script:FrontendProcess -Name 'frontend'
+        $script:FrontendProcess = $null
+        $stopped = $true
+    }
+    if ($null -ne $script:BackendProcess) {
+        Stop-OwnedProcess -Process $script:BackendProcess -Name 'backend'
+        $script:BackendProcess = $null
+        $stopped = $true
+    }
+    if ($stopped) {
+        Write-Ok "ADSMOD processes started by this launcher session have stopped."
+    }
+    else {
+        Write-Warn "This launcher session does not own any ADSMOD processes."
+    }
 }
 
 function Start-Application {
@@ -655,25 +706,23 @@ function Start-Application {
     Set-RuntimeEnvironment
     $backendPort = $settings.BackendPort
     $uiPort = $settings.FrontendPort
-    Stop-ListenerOnPort -Port $backendPort
-    Stop-ListenerOnPort -Port $uiPort
+    Assert-PortAvailable -Port $backendPort
+    Assert-PortAvailable -Port $uiPort
     $backendArguments = @('-m', 'adsmod_core.cli', '--config', ('"{0}"' -f $ConfigFile))
     Write-Step "Starting ADSMOD backend"
-    $backendProcess = Start-Process -FilePath $VenvPython -ArgumentList $backendArguments -WorkingDirectory $RepoRoot -WindowStyle Hidden -PassThru
+    $script:BackendProcess = Start-Process -FilePath $VenvPython -ArgumentList $backendArguments -WorkingDirectory $RepoRoot -WindowStyle Hidden -PassThru
     $healthUrl = "http://$($settings.Host):$($settings.BackendPort)/health/ready"
     Write-Step "Waiting for backend readiness at $healthUrl"
-    try { Wait-ForHealth -Url $healthUrl -TimeoutSeconds 60 } catch { if ($backendProcess -and -not $backendProcess.HasExited) { Stop-Process -Id $backendProcess.Id -Force }; throw }
-    $backendPid = Get-ListenerPid -Port $backendPort
+    try { Wait-ForHealth -Url $healthUrl -TimeoutSeconds 60 } catch { Stop-OwnedProcess -Process $script:BackendProcess -Name 'backend'; $script:BackendProcess = $null; throw }
     Write-Step "Starting frontend preview"
-    $frontendProcess = Start-Process -FilePath $NpmCmd -ArgumentList @('run', 'preview', '--', '--host', $settings.Host, '--port', $settings.FrontendPort) -WorkingDirectory $ClientDir -WindowStyle Hidden -PassThru
+    $script:FrontendProcess = Start-Process -FilePath $NpmCmd -ArgumentList @('run', 'preview', '--', '--host', $settings.Host, '--port', $settings.FrontendPort) -WorkingDirectory $ClientDir -WindowStyle Hidden -PassThru
     $frontendUrl = "http://$($settings.Host):$($settings.FrontendPort)"
-    try { Wait-ForHealth -Url $frontendUrl -TimeoutSeconds 60 } catch { if (-not $frontendProcess.HasExited) { Stop-Process -Id $frontendProcess.Id -Force }; if ($backendProcess -and -not $backendProcess.HasExited) { Stop-Process -Id $backendProcess.Id -Force }; throw }
-    $frontendPid = Get-ListenerPid -Port $uiPort
+    try { Wait-ForHealth -Url $frontendUrl -TimeoutSeconds 60 } catch { Stop-OwnedProcess -Process $script:FrontendProcess -Name 'frontend'; $script:FrontendProcess = $null; Stop-OwnedProcess -Process $script:BackendProcess -Name 'backend'; $script:BackendProcess = $null; throw }
     Start-Process -FilePath 'explorer.exe' -ArgumentList $frontendUrl
     Write-Host ""
     Write-Ok "ADSMOD started successfully."
-    Write-Host "Backend: $healthUrl (PID $backendPid)" -ForegroundColor Green
-    Write-Host "Frontend: $frontendUrl (PID $frontendPid)" -ForegroundColor Green
+    Write-Host "Backend: $healthUrl (PID $($script:BackendProcess.Id))" -ForegroundColor Green
+    Write-Host "Frontend: $frontendUrl (PID $($script:FrontendProcess.Id))" -ForegroundColor Green
 }
 
 function Install-UpdateDependencies {
@@ -1032,6 +1081,7 @@ function Wait-ForMenu {
 function Get-MainMenuEntries {
     return @(
         [pscustomobject]@{ Section = 'APPLICATION'; Label = 'Launch application'; Hint = 'Start the local web workspace'; Key = 'Launch'; Destructive = $false }
+        [pscustomobject]@{ Section = 'APPLICATION'; Label = 'Stop application'; Hint = 'Stop ADSMOD processes started by this session'; Key = 'Stop'; Destructive = $false }
         [pscustomobject]@{ Section = 'SETUP & VALIDATION'; Label = 'Install / update dependencies'; Hint = 'Refresh local runtimes and packages'; Key = 'Install'; Destructive = $false }
         [pscustomobject]@{ Section = 'SETUP & VALIDATION'; Label = 'Rebuild frontend'; Hint = 'Install frontend packages and rebuild the bundle'; Key = 'Rebuild'; Destructive = $false }
         [pscustomobject]@{ Section = 'SETUP & VALIDATION'; Label = 'Initialize database'; Hint = 'Create or upgrade the Alembic-managed data store'; Key = 'Database'; Destructive = $false }
@@ -1123,8 +1173,8 @@ while (-not $exitMenu) {
             switch ($entry.Key) {
                 'Launch' {
                     Start-Application
-                    exit 0
                 }
+                'Stop' { Stop-Application }
                 'Install' { Install-UpdateDependencies }
                 'Rebuild' { Rebuild-Frontend }
                 'Database' { Initialize-Database }

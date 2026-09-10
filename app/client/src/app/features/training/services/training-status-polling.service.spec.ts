@@ -1,6 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TrainingStatusPollingService } from './training-status-polling.service';
+
+function deferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((promiseResolve, promiseReject) => {
+        resolve = promiseResolve;
+        reject = promiseReject;
+    });
+    return { promise, resolve, reject };
+}
 
 describe('TrainingStatusPollingService', () => {
     const fetchMock = vi.fn();
@@ -9,6 +19,10 @@ describe('TrainingStatusPollingService', () => {
         fetchMock.mockReset();
         vi.stubGlobal('fetch', fetchMock);
         TestBed.resetTestingModule();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     it('reports errors without publishing status', async () => {
@@ -85,5 +99,65 @@ describe('TrainingStatusPollingService', () => {
             history: [],
             log: [],
         });
+    });
+
+    it('does not overlap status requests when a response is slow', async () => {
+        vi.useFakeTimers();
+        const firstResponse = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
+        fetchMock.mockReturnValue(firstResponse.promise);
+        const service = TestBed.runInInjectionContext(() => new TrainingStatusPollingService());
+
+        service.startPolling(1, vi.fn(), vi.fn());
+        await vi.advanceTimersByTimeAsync(0);
+        await vi.advanceTimersByTimeAsync(5000);
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        firstResponse.resolve({
+            ok: true,
+            json: async () => ({
+                is_training: true,
+                current_epoch: 1,
+                total_epochs: 2,
+                progress: 50,
+                metrics: {},
+                history: [],
+                log: [],
+                poll_interval: 1,
+            }),
+        });
+        await vi.advanceTimersByTimeAsync(0);
+        await vi.advanceTimersByTimeAsync(1000);
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        service.stopPolling();
+    });
+
+    it('ignores a late response after polling is stopped', async () => {
+        const response = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
+        fetchMock.mockReturnValue(response.promise);
+        const service = TestBed.runInInjectionContext(() => new TrainingStatusPollingService());
+        const onStatus = vi.fn();
+
+        service.startPolling(1, onStatus, vi.fn());
+        await new Promise<void>((resolve) => queueMicrotask(resolve));
+        service.stopPolling();
+        response.resolve({
+            ok: true,
+            json: async () => ({
+                is_training: true,
+                current_epoch: 1,
+                total_epochs: 2,
+                progress: 50,
+                metrics: {},
+                history: [],
+                log: [],
+                poll_interval: 1,
+            }),
+        });
+        await response.promise;
+        await new Promise<void>((resolve) => queueMicrotask(resolve));
+
+        expect(onStatus).not.toHaveBeenCalled();
     });
 });

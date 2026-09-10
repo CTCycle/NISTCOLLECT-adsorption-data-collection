@@ -230,7 +230,7 @@
       "additionalProperties": false,
       "properties": {
         "polling_interval": {
-          "minimum": 0.0,
+          "exclusiveMinimum": 0.0,
           "title": "Polling Interval",
           "type": "number"
         }

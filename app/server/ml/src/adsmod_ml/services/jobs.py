@@ -369,6 +369,63 @@ class JobManager:
                 )
 
     # -------------------------------------------------------------------------
+    def _close_process_queue(
+        self,
+        process_queue: multiprocessing.Queue | None,
+        queue_name: str,
+    ) -> None:
+        if process_queue is None:
+            return
+        try:
+            process_queue.close()
+        except Exception as exc:  # noqa: BLE001
+            self._logger.debug(
+                "Could not close %s queue: %s", queue_name, exc
+            )
+        try:
+            process_queue.join_thread()
+        except Exception as exc:  # noqa: BLE001
+            self._logger.debug(
+                "Could not join %s queue feeder: %s", queue_name, exc
+            )
+
+    # -------------------------------------------------------------------------
+    def _cleanup_process_job(
+        self,
+        job_id: str,
+        *,
+        process: multiprocessing.Process | None,
+        stop_event: multiprocessing.Event | None,
+        result_queue: multiprocessing.Queue | None,
+        message_queue: multiprocessing.Queue | None,
+    ) -> None:
+        with self.lock:
+            registered = self.processes.pop(job_id, None)
+
+        if registered is not None:
+            process = registered.process
+            stop_event = registered.stop_event
+            result_queue = registered.result_queue
+            message_queue = registered.message_queue
+
+        if process is not None:
+            try:
+                if process.is_alive():
+                    if stop_event is not None:
+                        stop_event.set()
+                    process.join(timeout=1.0)
+                if process.is_alive():
+                    self.terminate_process_tree(process.pid)
+                    process.join(timeout=1.0)
+            except Exception as exc:  # noqa: BLE001
+                self._logger.warning(
+                    "Failed to clean up process for job %s: %s", job_id, exc
+                )
+
+        self._close_process_queue(result_queue, "result")
+        self._close_process_queue(message_queue, "message")
+
+    # -------------------------------------------------------------------------
     def finalize_job(
         self,
         job_id: str,
@@ -421,114 +478,118 @@ class JobManager:
 
         context = multiprocessing.get_context("spawn")
         stop_event = context.Event()
-        result_queue: multiprocessing.Queue = context.Queue(maxsize=1)
-        message_queue: multiprocessing.Queue = context.Queue()
-        run_kwargs = self.build_process_kwargs(
-            runner, kwargs, stop_event, message_queue
-        )
+        result_queue: multiprocessing.Queue | None = None
+        message_queue: multiprocessing.Queue | None = None
+        process: multiprocessing.Process | None = None
+        try:
+            result_queue = context.Queue(maxsize=1)
+            message_queue = context.Queue()
+            run_kwargs = self.build_process_kwargs(
+                runner, kwargs, stop_event, message_queue
+            )
 
-        process = context.Process(
-            target=run_process_runner,
-            args=(result_queue, message_queue, stop_event, runner, args, run_kwargs),
-        )
-        process.daemon = True
+            process = context.Process(
+                target=run_process_runner,
+                args=(
+                    result_queue,
+                    message_queue,
+                    stop_event,
+                    runner,
+                    args,
+                    run_kwargs,
+                ),
+            )
+            process.daemon = True
 
-        with self.lock:
-            self.processes[job_id] = _ProcessJobState(
+            with self.lock:
+                self.processes[job_id] = _ProcessJobState(
+                    process=process,
+                    stop_event=stop_event,
+                    result_queue=result_queue,
+                    message_queue=message_queue,
+                )
+
+            process.start()
+
+            stop_requested_at: float | None = None
+            while True:
+                process.join(timeout=0.2)
+                self.consume_process_messages(
+                    job_id, message_queue, config.process_message_handler
+                )
+
+                if not process.is_alive():
+                    break
+
+                with state.lock:
+                    stop_requested = state.stop_requested
+
+                if stop_requested or stop_event.is_set():
+                    if not stop_event.is_set():
+                        stop_event.set()
+                    if stop_requested_at is None:
+                        stop_requested_at = monotonic()
+                    elif (
+                        monotonic() - stop_requested_at
+                        > config.process_stop_timeout_seconds
+                    ):
+                        self._logger.warning(
+                            "Forcing process shutdown for job %s after timeout", job_id
+                        )
+                        self.terminate_process_tree(process.pid)
+                        break
+
+            self.consume_process_messages(
+                job_id, message_queue, config.process_message_handler
+            )
+
+            process.join(timeout=1.0)
+            if process.is_alive():
+                self.terminate_process_tree(process.pid)
+                process.join(timeout=1.0)
+
+            result: dict[str, Any] | None = None
+            error: str | None = None
+            try:
+                payload = result_queue.get_nowait()
+                if isinstance(payload, dict) and payload.get("status") == "error":
+                    error = payload.get("error")
+                elif isinstance(payload, dict) and payload.get("status") == "success":
+                    result = payload.get("result")
+                elif isinstance(payload, dict):
+                    result = payload
+                else:
+                    result = {"result": payload}
+            except queue.Empty:
+                exit_code = process.exitcode
+                if exit_code not in (None, 0):
+                    error = f"Process exited with code {exit_code}"
+
+            with state.lock:
+                stop_requested = state.stop_requested
+
+            if stop_requested:
+                self.finalize_job(job_id, "cancelled", None, None)
+            elif error:
+                self.finalize_job(job_id, "failed", None, error)
+            else:
+                final_result = (
+                    result
+                    if result is None or isinstance(result, dict)
+                    else {"result": result}
+                )
+                with state.lock:
+                    merged = {**(state.result or {}), **(final_result or {})}
+                self.finalize_job(job_id, "completed", merged if merged else None, None)
+                self._logger.info("Job %s completed successfully", job_id)
+        finally:
+            self._cleanup_process_job(
+                job_id,
                 process=process,
                 stop_event=stop_event,
                 result_queue=result_queue,
                 message_queue=message_queue,
             )
-
-        try:
-            process.start()
-        except Exception as exc:  # noqa: BLE001
-            error_msg = normalize_error_text(str(exc)).split("\n")[0][:200]
-            self.finalize_job(job_id, "failed", None, error_msg)
-            self._logger.error("Failed to start process job %s: %s", job_id, error_msg)
-            return
-
-        stop_requested_at: float | None = None
-        while True:
-            process.join(timeout=0.2)
-            self.consume_process_messages(
-                job_id, message_queue, config.process_message_handler
-            )
-
-            if not process.is_alive():
-                break
-
-            with state.lock:
-                stop_requested = state.stop_requested
-
-            if stop_requested or stop_event.is_set():
-                if not stop_event.is_set():
-                    stop_event.set()
-                if stop_requested_at is None:
-                    stop_requested_at = monotonic()
-                elif (
-                    monotonic() - stop_requested_at
-                    > config.process_stop_timeout_seconds
-                ):
-                    self._logger.warning(
-                        "Forcing process shutdown for job %s after timeout", job_id
-                    )
-                    self.terminate_process_tree(process.pid)
-                    break
-
-        self.consume_process_messages(
-            job_id, message_queue, config.process_message_handler
-        )
-
-        process.join(timeout=1.0)
-        if process.is_alive():
-            self.terminate_process_tree(process.pid)
-            process.join(timeout=1.0)
-
-        result: dict[str, Any] | None = None
-        error: str | None = None
-        try:
-            payload = result_queue.get_nowait()
-            if isinstance(payload, dict) and payload.get("status") == "error":
-                error = payload.get("error")
-            elif isinstance(payload, dict) and payload.get("status") == "success":
-                result = payload.get("result")
-            elif isinstance(payload, dict):
-                result = payload
-            else:
-                result = {"result": payload}
-        except queue.Empty:
-            exit_code = process.exitcode
-            if exit_code not in (None, 0):
-                error = f"Process exited with code {exit_code}"
-
-        with state.lock:
-            stop_requested = state.stop_requested
-
-        if stop_requested:
-            self.finalize_job(job_id, "cancelled", None, None)
-        elif error:
-            self.finalize_job(job_id, "failed", None, error)
-        else:
-            final_result = (
-                result
-                if result is None or isinstance(result, dict)
-                else {"result": result}
-            )
-            with state.lock:
-                merged = {**(state.result or {}), **(final_result or {})}
-            self.finalize_job(job_id, "completed", merged if merged else None, None)
-            self._logger.info("Job %s completed successfully", job_id)
-
-        with self.lock:
-            self.processes.pop(job_id, None)
-            self.job_configs.pop(job_id, None)
-
-        result_queue.close()
-        message_queue.close()
-        result_queue.join_thread()
-        message_queue.join_thread()
 
     # -------------------------------------------------------------------------
     def _run_job(
@@ -543,11 +604,11 @@ class JobManager:
             config = self.job_configs.get(job_id)
         if state is None or config is None:
             return
-        if config.run_mode == "process":
-            self.run_process_job(job_id, runner, args, kwargs, config)
-            return
-
         try:
+            if config.run_mode == "process":
+                self.run_process_job(job_id, runner, args, kwargs, config)
+                return
+
             result = runner(*args, **kwargs)
             if state.stop_requested:
                 self.finalize_job(job_id, "cancelled", None, None)
@@ -569,6 +630,7 @@ class JobManager:
         finally:
             with self.lock:
                 self.job_configs.pop(job_id, None)
+                self.threads.pop(job_id, None)
 
 ###############################################################################
 def format_error_message(exc: Exception) -> str:

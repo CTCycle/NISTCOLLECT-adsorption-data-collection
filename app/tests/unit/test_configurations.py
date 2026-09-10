@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from adsmod_common.config import PublicDataConfig, TrainingConfig, load_config
+import pytest
+from pydantic import ValidationError
+
+from adsmod_common.config import JobConfig, PublicDataConfig, TrainingConfig, load_config
 
 CANONICAL_CONFIGURATION_FILE = Path("app/resources/adsmod.json")
 
@@ -63,3 +66,11 @@ def test_canonical_runtime_configuration_validates() -> None:
     assert config.version == "3.0.0"
     assert config.application.datasets.allowed_extensions
     assert config.application.jobs.polling_interval > 0
+
+
+###############################################################################
+def test_job_polling_interval_must_be_strictly_positive() -> None:
+    with pytest.raises(ValidationError):
+        JobConfig.model_validate({"polling_interval": 0})
+
+    assert JobConfig.model_validate({"polling_interval": 0.5}).polling_interval == 0.5

@@ -9,11 +9,11 @@ export type JobStartResult = {
 };
 
 export const normalizePollingIntervalSeconds = (intervalSeconds: number | null | undefined): number | null => {
-    if (typeof intervalSeconds !== 'number' || Number.isNaN(intervalSeconds)) {
+    if (typeof intervalSeconds !== 'number' || !Number.isFinite(intervalSeconds) || intervalSeconds <= 0) {
         return null;
     }
 
-    return intervalSeconds < 0 ? 0 : intervalSeconds;
+    return intervalSeconds;
 };
 
 export const resolvePollingIntervalMs = (intervalSeconds: number | null | undefined): number | null => {
