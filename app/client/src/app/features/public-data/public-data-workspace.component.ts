@@ -188,7 +188,7 @@ const VIEWS: readonly PublicDataView[] = [
                     <section class="public-section">
                         <div class="section-heading"><div><p class="eyebrow">Crystallographic records</p><h3>Structures</h3><p>Search COD with a bounded query, inspect crystallographic metadata, then explicitly link imported structures to a canonical material when appropriate.</p></div></div>
                         <div class="provider-query structure-query"><div><label for="cod-query">COD search</label><span>Use a COD ID, formula, or text query. Broad result sets are rejected server-side.</span></div><input id="cod-query" [(ngModel)]="codQuery" placeholder="COD ID, formula, or text" (keyup.enter)="searchStructures()"/><select [(ngModel)]="codQueryType"><option value="text">Text</option><option value="formula">Formula</option><option value="id">COD ID</option></select><button class="button primary" type="button" [disabled]="providerBusy() || !codQuery.trim()" (click)="searchStructures()">Search</button></div>
-                        @if (codResults().length) {<div class="provider-results"><div class="section-heading small"><div><h4>COD results</h4><p>Importing stores the original CIF plus normalized unit-cell and atom-site coordinates.</p></div></div><div class="table-frame"><table><thead><tr><th>COD ID</th><th>Name</th><th>Formula</th><th>Space group</th><th>Cell volume</th><th>Coordinates</th><th></th></tr></thead><tbody>@for (item of codResults(); track item.cod_id) {<tr><td>{{ item.cod_id }}</td><td class="truncate-cell" [title]="item.name || ''">{{ item.name || '—' }}</td><td>{{ item.formula || '—' }}</td><td>{{ item.space_group || '—' }}</td><td>{{ item.cell_volume_angstrom3 === null ? '—' : formatNumber(item.cell_volume_angstrom3) + ' Å³' }}</td><td>{{ item.has_coordinates ? 'Yes' : 'Unknown' }}</td><td><button class="row-action" type="button" (click)="importStructure(item)">Import</button></td></tr>}</tbody></table></div></div>}
+                        @if (codResults().length) {<div class="provider-results"><div class="section-heading small"><div><h4>COD results</h4><p>Importing stores the original CIF plus normalized unit-cell and atom-site coordinates.</p></div></div><div class="table-frame"><table><thead><tr><th>COD ID</th><th>Name</th><th>Formula</th><th>Space group</th><th>Cell volume</th><th>Coordinates</th><th></th></tr></thead><tbody>@for (item of codResults(); track item.cod_id) {<tr><td>{{ item.cod_id }}</td><td class="truncate-cell" [title]="item.name || ''">{{ item.name || '—' }}</td><td>{{ item.formula || '—' }}</td><td>{{ item.space_group || '—' }}</td><td>{{ item.cell_volume_angstrom3 === null ? '—' : formatNumber(item.cell_volume_angstrom3) + ' Å³' }}</td><td>{{ item.has_coordinates ? 'Yes' : 'Unknown' }}</td><td><button class="row-action" type="button" (click)="importStructure(item)">Import</button></td></tr>}</tbody></table></div></div>} @else if (codSearchCompleted()) {<p class="empty-inline provider-empty-state" role="status">No COD records matched that query. Try a COD ID, formula, or narrower text query.</p>}
                         <div class="filter-bar compact"><label>Local structures<input [(ngModel)]="structureQuery" placeholder="Name or formula" /></label><label>Link status<select [(ngModel)]="structureLink"><option value="">Any</option><option value="linked">Linked to material</option><option value="unlinked">Unlinked</option></select></label><div class="filter-actions"><button class="button primary" type="button" (click)="applyStructureFilters()">Apply</button><button class="button secondary" type="button" (click)="resetStructureFilters()">Reset</button></div></div>
                         <div class="table-frame"><table><thead><tr><th>Source</th><th>Source ID</th><th>Material</th><th>Formula</th><th>Space group</th><th>Atoms</th><th>Retrieved</th><th></th></tr></thead><tbody>@for (item of structures()?.items ?? []; track item.id) {<tr><td><span class="source-key">{{ item.source }}</span></td><td>{{ item.external_id }}</td><td class="truncate-cell">{{ item.material_name || 'Unlinked' }}</td><td>{{ item.formula || '—' }}</td><td>{{ item.space_group || '—' }}</td><td>{{ item.atom_count }}</td><td>{{ formatDate(item.retrieved_at) }}</td><td><button class="row-action" type="button" (click)="openStructure(item.id)">Inspect</button></td></tr>} @empty {<tr><td colspan="8" class="empty-table">No imported structures match the current filters.</td></tr>}</tbody></table></div>
                         <div class="pagination-row">{{ pageSummary(structures()?.pagination) }}<div><button class="button secondary" type="button" [disabled]="page() <= 1" (click)="previousPage()">Previous</button><button class="button secondary" type="button" [disabled]="!hasNextPage(structures()?.pagination)" (click)="nextPage()">Next</button></div></div>
@@ -231,6 +231,7 @@ export class PublicDataWorkspaceComponent {
     protected readonly structures = signal<StructurePageResponse | null>(null);
     protected readonly structureDetail = signal<StructureRecordView | null>(null);
     protected readonly codResults = signal<CODSearchResult[]>([]);
+    protected readonly codSearchCompleted = signal(false);
     protected readonly statusMessages = signal<string[]>([]);
     protected readonly page = signal(1);
     protected readonly pageSize = 25;
@@ -406,11 +407,12 @@ export class PublicDataWorkspaceComponent {
     protected async searchStructures(): Promise<void> {
         const query = this.codQuery.trim();
         if (!query) return;
-        this.providerBusy.set(true); this.error.set(null);
+        this.providerBusy.set(true); this.error.set(null); this.codSearchCompleted.set(false); this.codResults.set([]);
         try {
             const params = this.codQueryType === 'id' ? { cod_id: query } : this.codQueryType === 'formula' ? { formula: query } : { q: query };
             const result = await searchCOD(params);
             this.codResults.set(result.data?.items ?? []);
+            this.codSearchCompleted.set(true);
             this.error.set(result.error);
         } finally { this.providerBusy.set(false); }
     }

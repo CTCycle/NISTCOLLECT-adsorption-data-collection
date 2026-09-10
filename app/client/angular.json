@@ -28,7 +28,7 @@
                 "output": "assets"
               }
             ],
-            "styles": ["src/styles.css", "src/ui-consistency.css"]
+            "styles": ["node_modules/katex/dist/katex.min.css", "src/styles.css", "src/ui-consistency.css"]
           },
           "configurations": {
             "production": {

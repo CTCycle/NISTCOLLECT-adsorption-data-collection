@@ -1,4 +1,4 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, OnInit, computed, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { DatasetBuildConfig, DatasetSelection } from '../../../models/dataset-build.model';
 import type { DatasetSourceInfo, NumericConstraint } from '../../../models/training.model';
@@ -108,7 +108,7 @@ const buildDatasetKey = (dataset: DatasetSourceInfo): string => `${dataset.sourc
         </div>
     `,
 })
-export class DatasetProcessingWizardComponent {
+export class DatasetProcessingWizardComponent implements OnInit {
     readonly selectedDatasets = input.required<DatasetSourceInfo[]>();
     readonly initialConfig = input.required<Partial<DatasetBuildConfig>>();
     readonly numericConstraints = input<Record<string, NumericConstraint>>({});
@@ -179,7 +179,7 @@ export class DatasetProcessingWizardComponent {
         return `dataset_${timestamp}`;
     }
 
-    constructor() {
-        queueMicrotask(() => this.form.patchValue(this.initialConfig()));
+    ngOnInit(): void {
+        this.form.patchValue(this.initialConfig());
     }
 }
