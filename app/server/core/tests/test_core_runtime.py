@@ -1,11 +1,20 @@
+import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from fastapi.testclient import TestClient
 from adsmod_common.config import StorageConfig, load_config
 from adsmod_core.app import create_app, create_app_from_path
 
 CONFIG_PATH = Path("app/resources/adsmod.json")
+
+
+###############################################################################
+def _shutdown_process_runner(stop_event: Any) -> dict[str, str]:
+    while not stop_event.is_set():
+        time.sleep(0.01)
+    return {"stopped": "true"}
 
 
 ###############################################################################
@@ -50,3 +59,56 @@ def test_in_process_snapshot_access_preserves_hash(tmp_path: Path) -> None:
             payload = access.fetch_snapshot(reference.snapshot_id)
             assert payload.rows[0] == {"id": 1, "value": "alpha"}
             assert payload.content_hash == reference.content_hash
+
+
+###############################################################################
+def test_in_process_snapshot_access_reconstructs_multiple_pages(
+    tmp_path: Path,
+) -> None:
+    with TemporaryDirectory(dir=tmp_path) as directory:
+        with TestClient(create_app(_temporary_config(directory))) as client:
+            access = client.app.state.runtime.training_data
+            rows = [
+                {"id": index, "value": f"value-{index}"}
+                for index in range(1001)
+            ]
+            reference = access.create_snapshot(rows)
+
+            payload = access.fetch_snapshot(reference.snapshot_id)
+
+            assert payload.snapshot_id == reference.snapshot_id
+            assert payload.content_hash == reference.content_hash
+            assert payload.rows == tuple(rows)
+
+
+###############################################################################
+def test_lifespan_stops_active_process_jobs(tmp_path: Path) -> None:
+    with TemporaryDirectory(dir=tmp_path) as directory:
+        manager = None
+        worker = None
+        with TestClient(create_app(_temporary_config(directory))) as client:
+            manager = client.app.state.core_container.job_manager
+            job_id = manager.start_job(
+                "shutdown-test",
+                _shutdown_process_runner,
+                run_mode="process",
+            )
+            deadline = time.monotonic() + 15.0
+            while time.monotonic() < deadline:
+                process_state = manager.processes.get(job_id)
+                worker = process_state.process if process_state is not None else None
+                if worker is not None and worker.is_alive():
+                    break
+                status = manager.get_job_status(job_id)
+                if status and status["status"] in {"completed", "failed", "cancelled"}:
+                    break
+                time.sleep(0.02)
+            assert worker is not None
+            assert worker.is_alive()
+
+        assert manager is not None
+        if worker is not None:
+            worker.join(timeout=3.0)
+            assert not worker.is_alive()
+        assert manager.processes == {}
+        assert manager.threads == {}

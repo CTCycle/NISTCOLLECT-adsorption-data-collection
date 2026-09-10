@@ -68,3 +68,7 @@ class CoreServiceContainer:
             results=self.fitting,
             job_manager=self.job_manager,
         )
+
+    # -------------------------------------------------------------------------
+    def shutdown(self) -> None:
+        self.job_manager.shutdown()

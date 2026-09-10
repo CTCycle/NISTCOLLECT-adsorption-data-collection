@@ -12,7 +12,7 @@ import threading
 import uuid
 from collections.abc import Callable
 from logging import Logger
-from time import monotonic
+from time import monotonic, sleep
 from typing import Any
 
 from adsmod_core.common.utils.encoding import normalize_error_text
@@ -139,6 +139,61 @@ class JobManager:
         self.processes: dict[str, _ProcessJobState] = {}
         self.job_configs: dict[str, _JobExecutionConfig] = {}
         self.lock = threading.Lock()
+
+    # -------------------------------------------------------------------------
+    def shutdown(self, timeout_seconds: float = 10.0) -> None:
+        """Cancel active jobs and release process resources before app close."""
+        with self.lock:
+            active_job_ids = list(self.threads)
+        for job_id in active_job_ids:
+            self.cancel_job(job_id)
+
+        deadline = monotonic() + max(0.0, timeout_seconds)
+        while True:
+            with self.lock:
+                threads = list(self.threads.values())
+                process_states = list(self.processes.values())
+            if not threads and not process_states:
+                return
+
+            for process_state in process_states:
+                process_state.stop_event.set()
+                try:
+                    if process_state.process.is_alive():
+                        process_state.process.join(timeout=0.2)
+                    if process_state.process.is_alive() and monotonic() >= deadline:
+                        self.terminate_process_tree(process_state.process.pid)
+                        process_state.process.join(timeout=1.0)
+                except Exception as exc:  # noqa: BLE001
+                    self._logger.warning(
+                        "Failed to stop process during shutdown: %s", exc
+                    )
+
+            remaining = max(0.0, deadline - monotonic())
+            for thread in threads:
+                thread.join(timeout=min(0.2, remaining))
+
+            if monotonic() >= deadline:
+                for process_state in process_states:
+                    try:
+                        if process_state.process.is_alive():
+                            self.terminate_process_tree(process_state.process.pid)
+                    except Exception as exc:  # noqa: BLE001
+                        self._logger.warning(
+                            "Failed to force process shutdown: %s", exc
+                        )
+                for thread in threads:
+                    thread.join(timeout=1.0)
+                with self.lock:
+                    if self.threads or self.processes:
+                        self._logger.warning(
+                            "Job manager shutdown timed out with %d thread(s) and %d process(es) still registered.",
+                            len(self.threads),
+                            len(self.processes),
+                        )
+                return
+
+            sleep(0.02)
 
     # -------------------------------------------------------------------------
     def start_job(

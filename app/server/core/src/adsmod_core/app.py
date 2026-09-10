@@ -153,6 +153,10 @@ async def app_lifespan(application: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         application.state.ready = False
+        ml_container = getattr(application.state, "ml_container", None)
+        if ml_container is not None:
+            ml_container.shutdown()
+        application.state.core_container.shutdown()
         application.state.core_container.database.dispose()
         close_file_logging()
 

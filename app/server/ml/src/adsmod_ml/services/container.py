@@ -24,5 +24,9 @@ class MlServiceContainer:
         self.training_job_runner = TrainingJobRunner(session=self.training_session, job_manager=self.job_manager, training_manager=self.training_manager, config=config, process_context={"config_payload": config.model_dump(mode="json"), "artifact_root": str(self.artifact_root), "checkpoints_dir": str(self.checkpoints_dir)})
         self.training_service = TrainingService(config=config, snapshot_access=self.snapshot_access, artifact_root=self.artifact_root, checkpoints_dir=self.checkpoints_dir, job_manager=self.job_manager, training_manager=self.training_manager, training_session=self.training_session, training_job_runner=self.training_job_runner)
 
+    # -------------------------------------------------------------------------
+    def shutdown(self) -> None:
+        self.job_manager.shutdown()
+
 
 __all__ = ["MlServiceContainer"]
