@@ -625,6 +625,8 @@ function Test-FrontendBuildCurrent {
 }
 
 function Test-DependenciesReady {
+    param([switch]$IgnoreFrontendBuild)
+
     $frontendPackage = Join-Path $ClientDir 'package.json'
     $frontendLock = Join-Path $ClientDir 'package-lock.json'
     $frontendModules = Join-Path $ClientDir 'node_modules'
@@ -645,7 +647,7 @@ function Test-DependenciesReady {
         -not (Test-Path -LiteralPath $frontendLock) -or
         -not (Test-Path -LiteralPath $frontendInstallState) -or
         -not (Test-Path -LiteralPath $frontendRunner) -or
-        -not (Test-FrontendBuildCurrent -BuildPath $frontendBuild)) {
+        (-not $IgnoreFrontendBuild -and -not (Test-FrontendBuildCurrent -BuildPath $frontendBuild))) {
         return $false
     }
 
@@ -738,7 +740,18 @@ function Stop-Application {
 function Start-Application {
     $settings = Import-Settings
     Set-RuntimeEnvironment
-    if (-not (Test-DependenciesReady)) { Write-Step "Required application environments or frontend build output are missing or unusable; repairing the base installation."; Sync-Dependencies -BuildFrontend -FeatureSet Base } else { Write-Ok "Application environments are ready; skipped dependency installation." }
+    $frontendBuild = Join-Path $ClientDir 'dist\browser\index.html'
+    if (-not (Test-DependenciesReady -IgnoreFrontendBuild)) {
+        Write-Step "Required application environments or frontend dependencies are missing or unusable; repairing the base installation."
+        Sync-Dependencies -BuildFrontend -FeatureSet Base
+    }
+    elseif (-not (Test-FrontendBuildCurrent -BuildPath $frontendBuild)) {
+        Write-Step "Frontend source or configuration is newer than the generated bundle; rebuilding the frontend."
+        Sync-FrontendDependencies -BuildFrontend
+    }
+    else {
+        Write-Ok "Application environments and frontend build are ready; skipped dependency installation."
+    }
     Set-RuntimeEnvironment
     $backendPort = $settings.BackendPort
     $uiPort = $settings.FrontendPort
