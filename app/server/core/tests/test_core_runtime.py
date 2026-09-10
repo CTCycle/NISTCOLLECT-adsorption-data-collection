@@ -1,10 +1,12 @@
 import time
+from types import SimpleNamespace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
 from fastapi.testclient import TestClient
 from adsmod_common.config import StorageConfig, load_config
+from adsmod_core import app as app_module
 from adsmod_core.app import create_app, create_app_from_path
 
 CONFIG_PATH = Path("app/resources/adsmod.json")
@@ -46,6 +48,48 @@ def test_factory_uses_single_backend_port() -> None:
     application = create_app_from_path(CONFIG_PATH)
     assert application.state.config.runtime.backend_port > 0
     assert not hasattr(application.state.config.runtime, "ml_port")
+
+
+###############################################################################
+def test_optional_ml_missing_package_is_reported_as_unavailable(
+    monkeypatch, caplog  # type: ignore[no-untyped-def]
+) -> None:
+    def missing_package(name: str):
+        raise ModuleNotFoundError(f"No module named {name!r}", name="adsmod_ml")
+
+    monkeypatch.setattr(app_module, "import_module", missing_package)
+    runtime = SimpleNamespace(
+        config=load_config(CONFIG_PATH),
+        training_data=None,
+        machine_learning_available=True,
+        machine_learning_reason=None,
+    )
+
+    app_module._register_optional_ml(object(), runtime)
+
+    assert runtime.machine_learning_available is False
+    assert "not installed" in caplog.text
+
+
+###############################################################################
+def test_optional_ml_bootstrap_failure_is_logged_as_initialization_error(
+    monkeypatch, caplog  # type: ignore[no-untyped-def]
+) -> None:
+    def broken_package(name: str):
+        raise RuntimeError(f"broken optional package at {name}")
+
+    monkeypatch.setattr(app_module, "import_module", broken_package)
+    runtime = SimpleNamespace(
+        config=load_config(CONFIG_PATH),
+        training_data=None,
+        machine_learning_available=True,
+        machine_learning_reason=None,
+    )
+
+    app_module._register_optional_ml(object(), runtime)
+
+    assert runtime.machine_learning_available is False
+    assert "initialization failed" in caplog.text
 
 
 ###############################################################################

@@ -125,10 +125,22 @@ def _register_optional_ml(application: FastAPI, runtime: ApplicationRuntime) -> 
             snapshot_access=runtime.training_data,
         )
         routes_module.register_ml_routes(application, ml_container, prefix="/api/v1")
+    except ModuleNotFoundError as exc:
+        runtime.machine_learning_available = False
+        runtime.machine_learning_reason = str(exc)
+        if exc.name == "adsmod_ml":
+            logger.info(
+                "Optional machine learning support is unavailable because adsmod_ml is not installed."
+            )
+        else:
+            logger.exception(
+                "Optional machine learning initialization failed while importing an installed package."
+            )
+        return
     except Exception as exc:  # noqa: BLE001
         runtime.machine_learning_available = False
         runtime.machine_learning_reason = str(exc)
-        logger.info("Optional machine learning support is unavailable: %s", exc)
+        logger.exception("Optional machine learning initialization failed: %s", exc)
         return
     runtime.ml_container = ml_container
     runtime.machine_learning_available = True
