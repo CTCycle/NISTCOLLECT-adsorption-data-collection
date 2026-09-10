@@ -10,6 +10,7 @@ from adsmod_core.providers.public_data import (
     ProviderCapability,
     ProviderError,
     ProviderNotFoundError,
+    ProviderUnavailableError,
     RetryingHttpProvider,
 )
 
@@ -132,7 +133,10 @@ class PubChemProvider(RetryingHttpProvider):
             "GET",
             f"{self.base_url}/compound/{namespace}/{encoded}/property/{property_path}/JSON",
         )
-        payload = response.json()
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise ProviderUnavailableError("PubChem returned malformed JSON.") from exc
         rows = payload.get("PropertyTable", {}).get("Properties", [])
         if not rows:
             raise ProviderNotFoundError(f"PubChem could not resolve {query!r}.")
@@ -146,7 +150,13 @@ class PubChemProvider(RetryingHttpProvider):
             synonym_response = await self._request(
                 "GET", f"{self.base_url}/compound/cid/{cid}/synonyms/JSON"
             )
-            synonym_rows = synonym_response.json().get("InformationList", {}).get(
+            try:
+                synonym_payload = synonym_response.json()
+            except ValueError as exc:
+                raise ProviderUnavailableError(
+                    "PubChem returned malformed JSON for synonyms."
+                ) from exc
+            synonym_rows = synonym_payload.get("InformationList", {}).get(
                 "Information", []
             )
             if synonym_rows:

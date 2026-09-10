@@ -171,7 +171,10 @@ class CODProvider(RetryingHttpProvider):
             self.search_url,
             params={**params, "format": "json"},
         )
-        payload = response.json()
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise ProviderUnavailableError("COD returned malformed JSON.") from exc
         if isinstance(payload, dict):
             rows = payload.get("data") or payload.get("results") or payload.get("records") or []
         else:

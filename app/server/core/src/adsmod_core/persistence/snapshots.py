@@ -8,7 +8,6 @@ from typing import Any
 import uuid
 
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 from adsmod_core.repositories.database.manager import DatabaseManager
 from adsmod_core.repositories.schemas.models import (
@@ -105,24 +104,27 @@ class SnapshotStore:
             raise ValueError("page_size must be between 1 and 1000")
         with self.database.session_factory() as session:
             snapshot = session.scalar(
-                select(TrainingSnapshot)
-                .where(TrainingSnapshot.snapshot_id == snapshot_id)
-                .options(selectinload(TrainingSnapshot.rows))
+                select(TrainingSnapshot).where(
+                    TrainingSnapshot.snapshot_id == snapshot_id
+                )
             )
             if snapshot is None:
                 raise KeyError(snapshot_id)
-            rows = tuple(
-                dict(row.payload)
-                for row in sorted(snapshot.rows, key=lambda row: row.row_index)
-            )
             offset = (page - 1) * page_size
+            rows = session.scalars(
+                select(TrainingSnapshotRow.payload)
+                .where(TrainingSnapshotRow.snapshot_id == snapshot.snapshot_id)
+                .order_by(TrainingSnapshotRow.row_index)
+                .offset(offset)
+                .limit(page_size)
+            ).all()
             return SnapshotPage(
                 snapshot_id=snapshot.snapshot_id,
                 content_hash=snapshot.content_hash,
                 page=page,
                 page_size=page_size,
                 total_rows=snapshot.row_count,
-                rows=rows[offset : offset + page_size],
+                rows=tuple(dict(row) for row in rows),
             )
 
 

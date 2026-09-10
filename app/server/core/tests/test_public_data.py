@@ -4,12 +4,14 @@ import asyncio
 from datetime import datetime, timezone
 
 import httpx
+import pytest
 from sqlalchemy import event, select
 from sqlalchemy.exc import IntegrityError
 
 from adsmod_common.config import DatabaseConfig
 from adsmod_core.providers.cod import CODProvider
 from adsmod_core.providers.pubchem import PubChemProvider
+from adsmod_core.providers.public_data import ProviderUnavailableError
 from adsmod_core.repositories.database.manager import DatabaseManager
 from adsmod_core.repositories.public_data import PublicDataRepository
 from adsmod_core.repositories.schemas import Base
@@ -254,6 +256,30 @@ def test_pubchem_resolution_normalizes_properties_without_network(monkeypatch) -
 
 
 ###############################################################################
+def test_pubchem_resolution_maps_successful_malformed_json_to_provider_error(
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    provider = PubChemProvider(parallel_requests=1)
+
+    async def fake_request(method: str, url: str, **kwargs):  # type: ignore[no-untyped-def]
+        del method, url, kwargs
+        return httpx.Response(200, text="{not valid json")
+
+    monkeypatch.setattr(provider, "_request", fake_request)
+
+    with pytest.raises(ProviderUnavailableError, match="malformed JSON"):
+        asyncio.run(provider.resolve("methane"))
+
+
+###############################################################################
+def test_pubchem_empty_query_preserves_local_validation_error() -> None:
+    provider = PubChemProvider(parallel_requests=1)
+
+    with pytest.raises(ValueError, match="must not be empty"):
+        asyncio.run(provider.resolve("  "))
+
+
+###############################################################################
 def test_pubchem_upsert_uses_strong_identity_and_does_not_merge_by_name() -> None:
     manager = _manager()
     try:
@@ -330,6 +356,42 @@ O1 O 0.500(2) 0.625 0.750 0.5
             "occupancy": 0.5,
         },
     ]
+
+
+###############################################################################
+def test_cod_search_maps_successful_malformed_json_to_provider_error(
+    monkeypatch,
+) -> None:  # type: ignore[no-untyped-def]
+    provider = CODProvider(
+        request_timeout_seconds=1.0,
+        retry_attempts=1,
+        max_interactive_results=10,
+    )
+
+    async def fake_request(method: str, url: str, **kwargs):  # type: ignore[no-untyped-def]
+        del method, url
+        if kwargs["params"]["format"] == "count":
+            return httpx.Response(200, text="1")
+        return httpx.Response(200, text="{not valid json")
+
+    monkeypatch.setattr(provider, "_request", fake_request)
+
+    with pytest.raises(ProviderUnavailableError, match="malformed JSON"):
+        asyncio.run(provider.search(text="silica"))
+
+
+###############################################################################
+def test_cod_search_validation_errors_remain_local_value_errors() -> None:
+    provider = CODProvider(
+        request_timeout_seconds=1.0,
+        retry_attempts=1,
+        max_interactive_results=10,
+    )
+
+    with pytest.raises(ValueError, match="at least three characters"):
+        asyncio.run(provider.search(text="Si"))
+    with pytest.raises(ValueError, match="Provide a COD ID"):
+        asyncio.run(provider.search())
 
 
 ###############################################################################
