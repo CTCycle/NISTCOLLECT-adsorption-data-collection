@@ -9,10 +9,11 @@ Last updated: 2026-09-10
 ```
 
 The launcher reads `app/resources/adsmod.json`, synchronizes the locked
-`app/server` workspace according to the selected dependency profile, builds
-the client, starts one FastAPI backend, and waits for `/health/ready` before
-opening the browser. Optional machine learning support is loaded inside that
-backend when its dependencies were installed.
+`app/server` workspace according to the selected dependency profile, checks
+the frontend build against its Angular source/configuration and public assets,
+and rebuilds it when stale before starting one FastAPI backend. It waits for
+`/health/ready` before opening the browser. Optional machine learning support
+is loaded inside that backend when its dependencies were installed.
 
 Before starting either service, the launcher checks that the configured port
 is available. If another process owns a port, startup stops with its PID and

@@ -9,6 +9,10 @@ Last updated: 2026-09-10
 - Confirm the frontend preview serves the built Angular application.
 - Check backend and frontend launcher logs under the configured storage root.
 
+If frontend source, build configuration, or public assets changed after the
+last build, the launcher rebuilds the bundle automatically. **Rebuild
+frontend** is available when a manual rebuild is preferred.
+
 ## Configured port is already in use
 
 The launcher reports the conflicting port, PID, and process name, then stops

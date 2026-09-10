@@ -24,10 +24,10 @@ const readJson = async <T>(url: string): Promise<ServiceResult<T>> => {
 let cachedCapabilities: ApplicationCapabilities | null = null;
 let capabilitiesRequest: Promise<ServiceResult<ApplicationCapabilities>> | null = null;
 export const fetchApplicationCapabilities = (refresh = false): Promise<ServiceResult<ApplicationCapabilities>> => {
+    if (capabilitiesRequest !== null) return capabilitiesRequest;
     if (!refresh && cachedCapabilities !== null) {
         return Promise.resolve({ data: cachedCapabilities, error: null });
     }
-    if (!refresh && capabilitiesRequest !== null) return capabilitiesRequest;
 
     const request = readJson<ApplicationCapabilities>(`${API_BASE_URL}/system/capabilities`).then((result) => {
         if (result.data !== null) cachedCapabilities = result.data;

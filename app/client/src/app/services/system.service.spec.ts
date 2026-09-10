@@ -1,5 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+function deferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((promiseResolve, promiseReject) => {
+        resolve = promiseResolve;
+        reject = promiseReject;
+    });
+    return { promise, resolve, reject };
+}
+
 const capabilities = (machineLearning: boolean) => ({
     version: '3.0.0',
     features: {
@@ -74,6 +84,53 @@ describe('system service capability discovery', () => {
         expect((await fetchApplicationCapabilities()).data?.features.machine_learning).toBe(false);
         expect((await fetchApplicationCapabilities(true)).data?.features.machine_learning).toBe(true);
         expect((await fetchApplicationCapabilities()).data?.features.machine_learning).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('coalesces concurrent forced capability refreshes', async () => {
+        const response = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
+        fetchMock.mockReturnValue(response.promise);
+        const { fetchApplicationCapabilities } = await loadService();
+
+        const first = fetchApplicationCapabilities(true);
+        const second = fetchApplicationCapabilities(true);
+
+        expect(second).toBe(first);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        response.resolve({
+            ok: true,
+            json: async () => capabilities(true),
+        });
+        expect((await first).data?.features.machine_learning).toBe(true);
+        expect((await second).data?.features.machine_learning).toBe(true);
+    });
+
+    it('allows a forced capability refresh to retry after failure', async () => {
+        const firstResponse = deferred<{ ok: boolean; status: number; json: () => Promise<unknown> }>();
+        fetchMock
+            .mockReturnValueOnce(firstResponse.promise)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => capabilities(true),
+            });
+        const { fetchApplicationCapabilities } = await loadService();
+
+        const first = fetchApplicationCapabilities(true);
+        const concurrent = fetchApplicationCapabilities(true);
+        expect(concurrent).toBe(first);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        firstResponse.resolve({
+            ok: false,
+            status: 503,
+            json: async () => ({ detail: 'backend unavailable' }),
+        });
+        expect((await first).data).toBeNull();
+        expect((await concurrent).data).toBeNull();
+
+        const retry = await fetchApplicationCapabilities(true);
+        expect(retry.data?.features.machine_learning).toBe(true);
         expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 });

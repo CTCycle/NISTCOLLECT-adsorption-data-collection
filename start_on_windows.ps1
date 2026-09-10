@@ -588,6 +588,42 @@ function Sync-Dependencies {
     Sync-FrontendDependencies -BuildFrontend:$BuildFrontend
 }
 
+function Test-FrontendBuildCurrent {
+    param([Parameter(Mandatory)][string]$BuildPath)
+
+    if (-not (Test-Path -LiteralPath $BuildPath -PathType Leaf)) {
+        return $false
+    }
+
+    $buildTimestamp = (Get-Item -LiteralPath $BuildPath).LastWriteTimeUtc
+    $sourcePaths = @(
+        (Join-Path $ClientDir 'angular.json'),
+        (Join-Path $ClientDir 'index.html'),
+        (Join-Path $ClientDir 'tsconfig.json'),
+        (Join-Path $ClientDir 'tsconfig.app.json'),
+        (Join-Path $ClientDir 'src'),
+        (Join-Path $ClientDir 'public')
+    )
+    foreach ($sourcePath in $sourcePaths) {
+        if (-not (Test-Path -LiteralPath $sourcePath)) {
+            continue
+        }
+        $source = Get-Item -LiteralPath $sourcePath
+        if ($source.LastWriteTimeUtc -gt $buildTimestamp) {
+            return $false
+        }
+        if ($source.PSIsContainer) {
+            $newerFile = Get-ChildItem -LiteralPath $sourcePath -File -Recurse -Force -ErrorAction SilentlyContinue |
+                Where-Object { $_.LastWriteTimeUtc -gt $buildTimestamp } |
+                Select-Object -First 1
+            if ($null -ne $newerFile) {
+                return $false
+            }
+        }
+    }
+    return $true
+}
+
 function Test-DependenciesReady {
     $frontendPackage = Join-Path $ClientDir 'package.json'
     $frontendLock = Join-Path $ClientDir 'package-lock.json'
@@ -609,7 +645,7 @@ function Test-DependenciesReady {
         -not (Test-Path -LiteralPath $frontendLock) -or
         -not (Test-Path -LiteralPath $frontendInstallState) -or
         -not (Test-Path -LiteralPath $frontendRunner) -or
-        -not (Test-Path -LiteralPath $frontendBuild -PathType Leaf)) {
+        -not (Test-FrontendBuildCurrent -BuildPath $frontendBuild)) {
         return $false
     }
 

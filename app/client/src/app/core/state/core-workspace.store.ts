@@ -55,6 +55,9 @@ export class CoreWorkspaceStore {
     readonly modelCatalog = signal<ModelCatalogResponse | null>(null);
     readonly modelCatalogError = signal<string | null>(null);
 
+    private experimentLoadRevision = 0;
+    private fittingRevision = 0;
+
     readonly selectedDataset = computed(() =>
         this.datasets().find(
             (dataset) => dataset.id === this.selectedDatasetId(),
@@ -131,22 +134,30 @@ export class CoreWorkspaceStore {
                 (dataset) => dataset.id === this.selectedDatasetId(),
             )
         ) {
-            this.selectedDatasetId.set(null);
-            this.experiments.set([]);
-            this.selectedExperimentId.set(null);
+            await this.selectDataset(null);
         }
     }
 
     async selectDataset(datasetId: number | null): Promise<void> {
+        const revision = ++this.experimentLoadRevision;
+        this.fittingRevision += 1;
+        this.fittingRunning.set(false);
         this.selectedDatasetId.set(datasetId);
         this.selectedExperimentId.set(null);
         this.experiments.set([]);
         this.fittingResult.set(null);
         if (datasetId === null) {
+            this.experimentsLoading.set(false);
             return;
         }
         this.experimentsLoading.set(true);
         const result = await fetchExperiments(datasetId);
+        if (
+            revision !== this.experimentLoadRevision ||
+            this.selectedDatasetId() !== datasetId
+        ) {
+            return;
+        }
         this.experimentsLoading.set(false);
         if (result.error || !result.data) {
             this.managementStatus.set(
@@ -161,6 +172,8 @@ export class CoreWorkspaceStore {
     }
 
     setSelectedExperiment(experimentId: number | null): void {
+        this.fittingRevision += 1;
+        this.fittingRunning.set(false);
         this.selectedExperimentId.set(experimentId);
         this.fittingResult.set(null);
     }
@@ -268,6 +281,12 @@ export class CoreWorkspaceStore {
             return;
         }
 
+        const revision = ++this.fittingRevision;
+        const fittingContext = {
+            datasetId,
+            experimentId: experiment.id,
+        };
+
         const payload: FittingPayload = {
             dataset_id: datasetId,
             isotherm_id: experiment.id,
@@ -285,6 +304,13 @@ export class CoreWorkspaceStore {
         this.fittingStatus.set('[INFO] Fitting canonical observation series…');
         this.fittingResult.set(null);
         const started = await startFittingJob(payload);
+        if (
+            revision !== this.fittingRevision ||
+            this.selectedDatasetId() !== fittingContext.datasetId ||
+            this.selectedExperimentId() !== fittingContext.experimentId
+        ) {
+            return;
+        }
         if (started.error || !started.jobId) {
             this.fittingRunning.set(false);
             this.fittingStatus.set(
@@ -296,6 +322,13 @@ export class CoreWorkspaceStore {
             started.jobId,
             started.pollInterval,
         );
+        if (
+            revision !== this.fittingRevision ||
+            this.selectedDatasetId() !== fittingContext.datasetId ||
+            this.selectedExperimentId() !== fittingContext.experimentId
+        ) {
+            return;
+        }
         this.fittingRunning.set(false);
         this.fittingStatus.set(result.message);
         this.fittingResult.set(result.data);
