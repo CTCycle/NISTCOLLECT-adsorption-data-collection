@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "ng serve --host 127.0.0.1 --port 5173 --proxy-config proxy.conf.cjs",
-        "build": "npm run verify:angular-migration && ng build",
+        "build": "node scripts/verify-angular-migration.mjs && node node_modules/@angular/cli/bin/ng.js build --progress=false",
         "preview": "node scripts/preview-serve.mjs",
         "lint": "npm run verify:angular-migration && eslint . --max-warnings 0",
         "test": "ng test --watch=false",
